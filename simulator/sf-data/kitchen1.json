@@ -1,0 +1,303 @@
+{
+"FRESH_ADJECTIVES": ["fresh"],
+"ROTTEN_ADJECTIVES": ["rotten", "expired", "rancid"],
+"TYPES_OF_COOKING": ["raw", "fried", "roasted", "grilled"],
+"TYPES_OF_CUTTING": ["uncut", "chopped", "sliced", "diced"],
+"TYPES_OF_COOKING_VERBS": {"fried": "fry", "roasted": "roast", "grilled": "grill"},
+"TYPES_OF_CUTTING_VERBS": {"chopped": "chop", "sliced": "slice", "diced": "dice"},
+"FOODS_SPLITS": {
+    "train": [
+        "orange bell pepper",
+        "block of cheese",
+        "black pepper",
+        "red hot pepper",
+        "yellow bell pepper",
+        "banana",
+        "salt",
+        "chicken leg",
+        "cilantro",
+        "white onion",
+        "purple potato",
+        "olive oil",
+        "flour",
+        "red onion",
+        "yellow potato",
+        "parsley",
+        "red potato",
+        "water",
+        "pork chop",
+        "red apple",
+        "chicken wing",
+        "carrot"
+    ],
+    "valid": [
+        "vegetable oil",
+        "green apple",
+        "red tuna",
+        "green bell pepper",
+        "red bell pepper",
+        "lettuce",
+        "peanut oil",
+        "chicken breast"
+    ],
+    "test": [
+        "milk",
+        "yellow onion",
+        "yellow apple",
+        "sugar",
+        "egg",
+        "green hot pepper",
+        "white tuna",
+        "tomato"
+    ]
+},
+"FOOD_PREPARATIONS_SPLITS": {
+    "train": {
+        "orange bell pepper": [
+            ["raw", "chopped"], ["roasted", "diced"], ["grilled", "uncut"], ["raw", "uncut"], ["raw", "sliced"],
+            ["grilled", "sliced"], ["roasted", "sliced"], ["fried", "diced"], ["grilled", "chopped"]
+        ],
+        "block of cheese": [
+            ["fried", "diced"], ["fried", "uncut"], ["grilled", "chopped"], ["raw", "chopped"], ["grilled", "diced"],
+            ["roasted", "chopped"], ["grilled", "sliced"], ["raw", "uncut"], ["raw", "sliced"]
+        ],
+        "black pepper": [
+            ["raw", "uncut"]
+        ],
+        "red hot pepper": [
+            ["roasted", "sliced"], ["fried", "chopped"], ["roasted", "uncut"], ["fried", "sliced"], ["raw", "sliced"],
+            ["grilled", "chopped"], ["fried", "uncut"], ["raw", "chopped"], ["grilled", "sliced"]
+        ],
+        "yellow bell pepper": [
+            ["roasted", "chopped"], ["grilled", "sliced"], ["fried", "sliced"], ["raw", "diced"], ["roasted", "diced"],
+            ["fried", "chopped"], ["roasted", "uncut"], ["grilled", "uncut"], ["fried", "uncut"]
+        ],
+        "banana": [
+            ["grilled", "diced"], ["fried", "chopped"], ["grilled", "chopped"], ["grilled", "sliced"], ["fried", "diced"],
+            ["roasted", "diced"], ["fried", "sliced"], ["raw", "sliced"], ["roasted", "sliced"]
+        ],
+        "salt": [
+            ["raw", "uncut"]
+        ],
+        "chicken leg": [
+            ["grilled", "uncut"]
+        ],
+        "cilantro": [
+            ["raw", "uncut"], ["raw", "diced"]
+        ],
+        "white onion": [
+            ["grilled", "uncut"], ["raw", "chopped"], ["roasted", "uncut"], ["roasted", "sliced"], ["fried", "diced"],
+            ["raw", "sliced"], ["grilled", "chopped"], ["roasted", "chopped"], ["roasted", "diced"]
+        ],
+        "purple potato": [
+            ["roasted", "sliced"], ["roasted", "diced"], ["grilled", "diced"], ["fried", "chopped"], ["fried", "sliced"],
+            ["fried", "diced"], ["roasted", "uncut"]
+        ],
+        "olive oil": [
+            ["raw", "uncut"]
+        ],
+        "flour": [
+            ["raw", "uncut"]
+        ],
+        "red onion": [
+            ["raw", "uncut"], ["roasted", "uncut"], ["roasted", "diced"], ["fried", "sliced"], ["raw", "sliced"],
+            ["grilled", "diced"], ["fried", "diced"], ["raw", "diced"], ["grilled", "sliced"]
+        ],
+        "yellow potato": [
+            ["grilled", "chopped"], ["grilled", "sliced"], ["fried", "diced"], ["fried", "sliced"], ["fried", "chopped"],
+            ["roasted", "chopped"], ["roasted", "uncut"]
+        ],
+        "parsley": [
+            ["raw", "diced"], ["raw", "sliced"]
+        ],
+        "red potato": [
+            ["roasted", "sliced"], ["grilled", "chopped"], ["fried", "uncut"], ["fried", "chopped"], ["fried", "diced"],
+            ["fried", "sliced"], ["roasted", "diced"]
+        ],
+        "water": [
+            ["raw", "uncut"]
+        ],
+        "pork chop": [
+            ["fried", "sliced"], ["roasted", "sliced"], ["grilled", "uncut"], ["roasted", "diced"], ["grilled", "diced"],
+            ["fried", "uncut"], ["fried", "chopped"]
+        ],
+        "red apple": [
+            ["grilled", "sliced"], ["fried", "diced"], ["roasted", "sliced"], ["fried", "sliced"], ["grilled", "diced"],
+            ["raw", "uncut"], ["raw", "sliced"], ["raw", "diced"], ["roasted", "chopped"]
+        ],
+        "chicken wing": [
+            ["grilled", "uncut"]
+        ],
+        "carrot": [
+            ["roasted", "sliced"], ["fried", "chopped"], ["raw", "uncut"], ["grilled", "uncut"], ["roasted", "uncut"],
+            ["grilled", "sliced"], ["raw", "sliced"], ["fried", "sliced"], ["raw", "chopped"]
+        ]},
+    "valid": {
+        "orange bell pepper": [["roasted", "chopped"], ["fried", "uncut"], ["fried", "sliced"], ["raw", "diced"]],
+        "block of cheese": [["roasted", "diced"], ["grilled", "uncut"], ["raw", "diced"], ["roasted", "sliced"]],
+        "black pepper": [["raw", "uncut"]],
+        "red hot pepper": [["raw", "diced"], ["roasted", "chopped"], ["roasted", "diced"], ["grilled", "diced"]],
+        "yellow bell pepper": [["raw", "chopped"], ["roasted", "sliced"], ["fried", "diced"], ["raw", "sliced"]],
+        "banana": [["roasted", "uncut"], ["grilled", "uncut"], ["raw", "diced"], ["roasted", "chopped"]],
+        "salt": [["raw", "uncut"]],
+        "chicken leg": [["fried", "uncut"]],
+        "cilantro": [["raw", "sliced"]],
+        "white onion": [["grilled", "sliced"], ["raw", "diced"], ["fried", "chopped"], ["fried", "uncut"]],
+        "purple potato": [["grilled", "chopped"], ["grilled", "uncut"], ["fried", "uncut"]],
+        "olive oil": [["raw", "uncut"]],
+        "flour": [["raw", "uncut"]],
+        "red onion": [["roasted", "chopped"], ["fried", "chopped"], ["fried", "uncut"], ["grilled", "chopped"]],
+        "yellow potato": [["roasted", "diced"], ["grilled", "uncut"], ["grilled", "diced"]],
+        "parsley": [["raw", "uncut"]],
+        "red potato": [["grilled", "diced"], ["grilled", "sliced"], ["roasted", "chopped"]],
+        "water": [["raw", "uncut"]],
+        "pork chop": [["fried", "diced"], ["roasted", "chopped"], ["roasted", "uncut"]],
+        "red apple": [["raw", "chopped"], ["roasted", "diced"], ["grilled", "uncut"], ["fried", "chopped"]],
+        "chicken wing": [["roasted", "uncut"]],
+        "carrot": [["grilled", "chopped"], ["fried", "uncut"], ["roasted", "chopped"], ["roasted", "diced"]]},
+    "test": {
+        "orange bell pepper": [["roasted", "uncut"], ["fried", "chopped"], ["grilled", "diced"]],
+        "block of cheese": [["fried", "chopped"], ["roasted", "uncut"], ["fried", "sliced"]],
+        "black pepper": [["raw", "uncut"]],
+        "red hot pepper": [["raw", "uncut"], ["grilled", "uncut"], ["fried", "diced"]],
+        "yellow bell pepper": [["grilled", "chopped"], ["raw", "uncut"], ["grilled", "diced"]],
+        "banana": [["raw", "chopped"], ["fried", "uncut"], ["raw", "uncut"]],
+        "salt": [["raw", "uncut"]],
+        "chicken leg": [["roasted", "uncut"]],
+        "cilantro": [["raw", "chopped"]],
+        "white onion": [["raw", "uncut"], ["fried", "sliced"], ["grilled", "diced"]],
+        "purple potato": [["grilled", "sliced"], ["roasted", "chopped"]],
+        "olive oil": [["raw", "uncut"]],
+        "flour": [["raw", "uncut"]],
+        "red onion": [["raw", "chopped"], ["grilled", "uncut"], ["roasted", "sliced"]],
+        "yellow potato": [["fried", "uncut"], ["roasted", "sliced"]],
+        "parsley": [["raw", "chopped"]],
+        "red potato": [["grilled", "uncut"], ["roasted", "uncut"]],
+        "water": [["raw", "uncut"]],
+        "pork chop": [["grilled", "sliced"], ["grilled", "chopped"]],
+        "red apple": [["fried", "uncut"], ["roasted", "uncut"], ["grilled", "chopped"]],
+        "chicken wing": [["fried", "uncut"]],
+        "carrot": [["raw", "diced"], ["grilled", "diced"], ["fried", "diced"]]
+    }
+},
+"FOODS_COMPACT": {
+    "egg": {
+        "properties": ["inedible", "cookable", "needs_cooking", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "milk": {
+        "indefinite": "some",
+        "properties": ["drinkable", "inedible", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "water": {
+        "indefinite": "some",
+        "properties": ["drinkable", "inedible", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "cooking oil": {
+        "names": ["vegetable oil", "peanut oil", "olive oil"],
+        "indefinite": "some",
+        "properties": ["inedible", "raw", "uncut"],
+        "locations": ["pantry.shelf", "supermarket.showcase"]
+    },
+    "chicken wing": {
+        "properties": ["inedible", "cookable", "needs_cooking", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "chicken leg": {
+        "properties": ["inedible", "cookable", "needs_cooking", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "chicken breast": {
+        "properties": ["inedible", "cookable", "needs_cooking", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "pork chop": {
+        "properties": ["inedible", "cookable", "needs_cooking", "cuttable", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "tuna": {
+        "indefinite": "some",
+        "names": ["red tuna", "white tuna"],
+        "properties": ["inedible", "cookable", "needs_cooking", "cuttable", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "carrot": {
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    },
+    "onion": {
+        "names": ["red onion", "white onion", "yellow onion"],
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    },
+    "lettuce": {
+        "indefinite": "some",
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    },
+    "potato": {
+        "names": ["red potato", "yellow potato", "purple potato"],
+        "properties": ["inedible", "cookable", "needs_cooking", "cuttable", "raw", "uncut"],
+        "locations": ["kitchen.counter", "garden"]
+    },
+    "apple": {
+        "names": ["red apple", "yellow apple", "green apple"],
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.counter", "garden"]
+    },
+    "banana": {
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.counter", "garden"]
+    },
+    "tomato": {
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.counter", "garden"]
+    },
+    "hot pepper": {
+        "names": ["red hot pepper", "green hot pepper"],
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.counter", "garden"]
+    },
+    "bell pepper": {
+        "names": ["red bell pepper", "yellow bell pepper", "green bell pepper", "orange bell pepper"],
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    },
+    "black pepper": {
+        "indefinite": "some",
+        "properties": ["edible", "raw", "uncut"],
+        "locations": ["pantry.shelf", "supermarket.showcase"]
+    },
+    "flour": {
+        "indefinite": "some",
+        "properties": ["edible", "raw", "uncut"],
+        "locations": ["pantry.shelf", "supermarket.showcase"]
+    },
+    "salt": {
+        "indefinite": "some",
+        "properties": ["edible", "raw", "uncut"],
+        "locations": ["pantry.shelf", "supermarket.showcase"]
+    },
+    "sugar": {
+        "indefinite": "some",
+        "properties": ["edible", "raw", "uncut"],
+        "locations": ["pantry.shelf", "supermarket.showcase"]
+    },
+    "block of cheese": {
+        "properties": ["edible", "cookable", "raw", "cuttable", "uncut"],
+        "locations": ["kitchen.fridge", "supermarket.showcase"]
+    },
+    "cilantro": {
+        "indefinite": "some",
+        "properties": ["edible", "cuttable", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    },
+    "parsley": {
+        "indefinite": "some",
+        "properties": ["edible", "cuttable", "raw", "uncut"],
+        "locations": ["kitchen.fridge", "garden"]
+    }
+}
+}

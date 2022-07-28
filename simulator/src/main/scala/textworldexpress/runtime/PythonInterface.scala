@@ -34,7 +34,7 @@ class PythonInterface() {
   /*
    * Load/reset/shutdown server
    */
-  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean = false): Unit = {
+  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean = false):StepResult = {
     // Clear variables
     this.game = null
     this.goldPath = Array.empty[String]
@@ -51,19 +51,18 @@ class PythonInterface() {
       println ("ERROR creating Game Generator: ")
       println (gameGenerator.errorStr)
       errorStr = gameGenerator.errorStr
-      return
+      return StepResult.mkErrorMessage(errorStr)
     }
 
     // Step 3: Generate new game
-    this.generateNewGame(seed, gameFold, generateGoldPath)
-
+    return this.generateNewGame(seed, gameFold, generateGoldPath)
   }
 
   // Assumes that load() has already been called, and gameGenerator is valud.
-  def generateNewGame(seed:Int, gameFold:String, generateGoldPath:Boolean):Unit = {
+  def generateNewGame(seed:Int, gameFold:String, generateGoldPath:Boolean):StepResult = {
     if (gameGenerator == null) {
       errorStr = "ERROR: Game generator is not initialized.  Call load() before attempting to generate new games."
-      return
+      return StepResult.mkErrorMessage(errorStr)
     }
 
     // Generate new game
@@ -82,10 +81,11 @@ class PythonInterface() {
 
     // Take first 'step'
     this.curStepResult = game.initalStep()
+    return this.curStepResult
   }
 
 
-  def resetWithRandomSeed(gameFold:String, generateGoldPath:Boolean):Unit = {
+  def resetWithRandomSeed(gameFold:String, generateGoldPath:Boolean):StepResult = {
     // Step 1: Create random seed according to fold
     var randSeed = -1
     gameFold match {
@@ -94,12 +94,12 @@ class PythonInterface() {
       case "test" => randSeed = this.getRandomSeedTest()
       case _ => {
         this.errorStr = "ERROR: Unknown game fold (" + gameFold + ").  Valid options are (train, dev, test)."
-        return
+        return StepResult.mkErrorMessage(this.errorStr)
       }
     }
 
     // Step 2: Generate new game
-    this.generateNewGame(seed = randSeed, gameFold, generateGoldPath)
+    return this.generateNewGame(seed = randSeed, gameFold, generateGoldPath)
   }
 
   // Shutdown server
@@ -179,25 +179,24 @@ class PythonInterface() {
   def getCompleted():Boolean = this.isComplete
 
   // Normal
-  def step(userInputString:String): String = {
+  def step(userInputString:String):StepResult = {
     // Error checking
-    if (this.errorStr != "") return this.errorStr
-    if (this.game == null) return this.ERROR_MESSAGE_UNINITIALIZED
+    if (this.errorStr != "") return StepResult.mkErrorMessage(this.errorStr)
+    if (this.game == null) return StepResult.mkErrorMessage(this.ERROR_MESSAGE_UNINITIALIZED)
 
     // Sanitize user input
     val userInputSanitized = userInputString.trim
 
     // Check for valid action
     if (!this.curStepResult.validActions.contains(userInputSanitized)) {
-      return "Unknown action: I am not sure how to do that."
+      return StepResult.mkInvalidStep(this.curStepResult)
     }
 
     // Take step
     this.curStepResult = game.step(userInputSanitized)
 
     // Return
-    // TODO: Change this to a JSON that converts from StepResult to JSON
-    return this.curStepResult.observationStr
+    return this.curStepResult
   }
 
 

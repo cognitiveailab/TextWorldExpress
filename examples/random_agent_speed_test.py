@@ -29,7 +29,7 @@ def randomModel(args):
     gameFold = "train"
     gameSeed = 0
     gameParams = ""
-    generateGoldPath = False
+    generateGoldPath = True
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath) 
     
 
@@ -42,7 +42,9 @@ def randomModel(args):
         # Initialize a random task variation in this set        
         obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
 
-    
+        if (generateGoldPath == True):
+            print("Gold path: " + str(env.getGoldActionSequence()))
+
         # Take action
         curIter = 0
 

@@ -165,9 +165,7 @@ class TextWorldExpressEnv:
 
     # Parse JSON (Helper)
     def parseJSONResponse(self):
-        #print("Response: ")
-        #print(self.responseStr)
-        # Python built-in JSON parsing (slow)
+        # Python built-in JSON parsing (slower)
         #self.parsedResponse = json.loads(self.responseStr)        
         # External JSON parser (faster)
         self.parsedResponse = orjson.loads(self.responseStr)

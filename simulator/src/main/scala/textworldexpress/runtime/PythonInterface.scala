@@ -31,7 +31,7 @@ class PythonInterface() {
 
     // Step 1: Convert properties from string
     // TODO: Convert paramStr to properties
-    println ("TODO: PARSE PROPERTIES STRING")
+    //println ("TODO: PARSE PROPERTIES STRING")
 
     // Step 2: Create the Game Generator
     val (success, gameGenerator) = GameGenerator.mkGameGenerator(gameName, properties)
@@ -180,9 +180,6 @@ class PythonInterface() {
 
   // Normal
   def step(userInputString:String):StepResult = {
-    // TODO: Add 'reward' in addition to 'score'?
-    println ("TODO: Add reward in addition to score")
-
     // Error checking
     if (this.errorStr != "") return StepResult.mkErrorMessage(this.errorStr)
     if (this.game == null) return StepResult.mkErrorMessage(this.ERROR_MESSAGE_UNINITIALIZED)

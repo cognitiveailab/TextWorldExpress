@@ -8,9 +8,9 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
   def toJSON():String = {
     val os = new StringBuilder()
     os.append("{")
-    os.append("\"observation\":\"" + observationStr + "\",")
-    os.append("\"look\":\"" + freeLookStr + "\",")
-    os.append("\"inventory\":\"" + inventoryStr + "\",")
+    os.append("\"observation\":\"" + sanitizeJSON(observationStr) + "\",")
+    os.append("\"look\":\"" + sanitizeJSON(freeLookStr) + "\",")
+    os.append("\"inventory\":\"" + sanitizeJSON(inventoryStr) + "\",")
     os.append("\"validActions\":[\"" + validActions.mkString("\",\"") + "\"],")
     os.append("\"scoreRaw\":" + scoreRaw + ",")
     os.append("\"score\":" + scoreNormalized + ",")
@@ -19,6 +19,17 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
     os.append("}")
 
     os.toString()
+  }
+
+
+  def sanitizeJSON(in:String):String = {
+    var out = in.replace("\"", "\\\"")
+    out = out.replace("\\", "\\\\")
+    out = out.replace("\n", "\\n")
+    out = out.replace("\r", "\\r")
+    out = out.replace("\t", "\\t")
+
+    return out
   }
 
 

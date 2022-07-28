@@ -5,12 +5,15 @@
 #   pip install py4j                                (for scala-python interface)
 #   pip install -U pywebio                          (for web server)
 
+from cgitb import reset
 from py4j.java_gateway import JavaGateway, GatewayParameters
 import subprocess
 
 import os
 import time
 import json
+import orjson       # pip install orjson (for faster json serialization)
+
 import textworld_express
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
 JAR_FILE = 'textworld-express-{version}.jar'.format(version=textworld_express.__version__)
@@ -79,9 +82,9 @@ class TextWorldExpressEnv:
 
     # Ask the simulator to load an environment from a script
     def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):        
-        print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
+        #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
 
-        self.responseStr = self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
+        self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
         self.parseJSONResponse()        
 
         # Reset last step score (used to calculate reward from current-previous score)
@@ -91,6 +94,12 @@ class TextWorldExpressEnv:
         self.goldPathGenerated = generateGoldPath
 
         return self.parsedResponse
+
+#    # Test to see if the storage class can be directly loaded
+#    def loadTEST(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):        
+#        #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
+#
+#        return self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
 
     # Ask the simulator to reset an environment back to it's initial state
     def resetWithSeed(self, gameFold, seed, generateGoldPath=False):
@@ -156,14 +165,20 @@ class TextWorldExpressEnv:
 
     # Parse JSON (Helper)
     def parseJSONResponse(self):
-        self.parsedResponse = json.loads(self.responseStr)        
+        #print("Response: ")
+        #print(self.responseStr)
+        # Python built-in JSON parsing (slow)
+        #self.parsedResponse = json.loads(self.responseStr)        
+        # External JSON parser (faster)
+        self.parsedResponse = orjson.loads(self.responseStr)
+    
     
     #
     # Step
     #
     def step(self, inputStr:str):
         # Take a step in the environment
-        self.responseStr = self.gateway.step(inputStr)
+        self.responseStr = self.gateway.stepJSON(inputStr)
         self.parseJSONResponse()        
 
         # Calculate reward

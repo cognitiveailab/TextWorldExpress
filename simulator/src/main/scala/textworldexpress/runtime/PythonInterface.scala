@@ -27,6 +27,7 @@ class PythonInterface() {
     this.goldPath = Array.empty[String]
     this.errorStr = ""
     this.curStepResult = null
+    this.gameGenerator = null
 
     // Step 1: Convert properties from string
     // TODO: Convert paramStr to properties
@@ -40,6 +41,7 @@ class PythonInterface() {
       errorStr = gameGenerator.errorStr
       return StepResult.mkErrorMessage(errorStr)
     }
+    this.gameGenerator = gameGenerator
 
     // Step 3: Generate new game
     return this.generateNewGame(seed, gameFold, generateGoldPath)
@@ -54,7 +56,7 @@ class PythonInterface() {
 
   // Assumes that load() has already been called, and gameGenerator is valud.
   def generateNewGame(seed:Int, gameFold:String, generateGoldPath:Boolean):StepResult = {
-    if (gameGenerator == null) {
+    if (this.gameGenerator == null) {
       errorStr = "ERROR: Game generator is not initialized.  Call load() before attempting to generate new games."
       return StepResult.mkErrorMessage(errorStr)
     }
@@ -62,15 +64,15 @@ class PythonInterface() {
     // Generate new game
     if (generateGoldPath) {
       // With gold path
-      val (_game, _goldPath) = gameGenerator.mkGameWithGoldPath(seed, gameFold)
-      game = _game
-      goldPath = _goldPath
+      val (_game, _goldPath) = this.gameGenerator.mkGameWithGoldPath(seed, gameFold)
+      this.game = _game
+      this.goldPath = _goldPath
 
       // Check gold path is present
       if (goldPath.length == 0) this.errorStr = "ERROR: Unable to generate gold path."
     } else {
       // Without gold path
-      game = gameGenerator.mkGame(seed, gameFold)
+      this.game = this.gameGenerator.mkGame(seed, gameFold)
     }
 
     // Take first 'step'

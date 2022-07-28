@@ -122,7 +122,7 @@ class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
 
 
 object LoadTWCDataJSON {
-  val DEFAULT_FILENAME = "twc_objects.json.folds.json"
+  val DEFAULT_FILENAME = "twc_objects.folds.json"
 
   def main(args:Array[String]): Unit = {
     val d = new LoadTWCDataJSON()

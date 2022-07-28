@@ -266,7 +266,7 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
 
 
 object LoadTWKitchenDataJSON {
-  val DEFAULT_FILENAME = "sf-data/kitchen1.json"
+  val DEFAULT_FILENAME = "cooking-world.json"
 
   def main(args:Array[String]): Unit = {
     val d = new LoadTWKitchenDataJSON()

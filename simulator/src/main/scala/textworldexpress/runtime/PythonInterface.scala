@@ -118,7 +118,7 @@ class PythonInterface() {
   /*
    * Get valid tasks/environments
    */
-  def getTaskNames():java.util.List[String] = {
+  def getGameNames():java.util.List[String] = {
     GameGenerator.VALID_GAME_NAMES.toList.asJava
   }
 

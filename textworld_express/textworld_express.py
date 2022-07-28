@@ -11,19 +11,18 @@ import subprocess
 import os
 import time
 import json
-import scienceworld
+import textworld_express
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
-JAR_FILE = 'scienceworld-{version}.jar'.format(version=scienceworld.__version__)
+JAR_FILE = 'textworld-express-{version}.jar'.format(version=textworld_express.__version__)
 JAR_PATH = os.path.join(BASEPATH, JAR_FILE)
 
 
-class ScienceWorldEnv:
+class TextWorldExpressEnv:
 
     #
     # Constructor
     #
-    def __init__(self, taskName, serverPath=None, envStepLimit=100, threadNum=0, launchServer=True):
-        self.taskName = taskName
+    def __init__(self, serverPath=None, envStepLimit=100, threadNum=0, launchServer=True):        
         serverPath = serverPath or JAR_PATH  # Use the builtin jar.
 
         # Define the port number
@@ -40,16 +39,20 @@ class ScienceWorldEnv:
         self.lastStepScore = 0
 
         # Load the script
-        self.load(self.taskName, 0, "")
+        #self.load(self.gameName, 0, "")
 
         # Set the environment step limit
         self.envStepLimit = envStepLimit
 
         # Clear the run histories
-        self.clearRunHistories()
+        #self.clearRunHistories()
 
         # By default, set that the gold path was not generated unless the user asked for it
-        self.goldPathGenerated = False
+        #self.goldPathGenerated = False
+
+        # Most recent response
+        self.responseStr = ""
+        self.parsedResponse = {}
 
     #
     #   Destructor
@@ -66,8 +69,8 @@ class ScienceWorldEnv:
 
     # Launches the PY4J server
     def launchServer(self, serverPath):
-        print("Launching ScienceWorld Server (Port " + str(self.portNum) + ") -- this may take a moment.")
-        cmd = "nohup java -cp " + serverPath + " scienceworld.runtime.pythonapi.PythonInterface " + str(self.portNum) + " >/dev/null 2>&1 &"
+        print("Launching TextWorldExpress Server (Port " + str(self.portNum) + ") -- this may take a moment.")
+        cmd = "nohup java -cp " + serverPath + " textworldexpress.runtime.PythonInterface " + str(self.portNum) + " >/dev/null 2>&1 &"
 
         subprocess.Popen(cmd, cwd=BASEPATH, shell=True)
         # The sleep command here is to give time for the server process to spawn.
@@ -75,17 +78,11 @@ class ScienceWorldEnv:
         time.sleep(5)
 
     # Ask the simulator to load an environment from a script
-    def load(self, taskName, variationIdx, simplificationStr, generateGoldPath=False):
-        self.scriptFilename = taskName
+    def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):        
+        print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
 
-        print("Load: " + self.scriptFilename + " (variation: " + str(variationIdx) + ")" + " (simplifications: " + simplificationStr + ")")
-
-        is_electrical_task = "power-component" in taskName or "conductivity" in taskName
-        if is_electrical_task and "noElectricalAction" in simplificationStr:
-            msg = "Invalid simplification. Task '{}' requires electrical actions but '--no-electrical' was provided."
-            raise ValueError(msg.format(taskName))
-
-        self.gateway.load(self.scriptFilename, variationIdx, simplificationStr, generateGoldPath)
+        self.responseStr = self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
+        self.parseJSONResponse()        
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
@@ -93,32 +90,27 @@ class ScienceWorldEnv:
         # Keep track of whether the gold path was generated, to generate verbose error messages
         self.goldPathGenerated = generateGoldPath
 
+        return self.parsedResponse
 
     # Ask the simulator to reset an environment back to it's initial state
-    def reset(self):
-        self.gateway.reset()
+    def resetWithSeed(self, gameFold, seed, generateGoldPath=False):
+        self.responseStr = self.gateway.generateNewGameJSON(gameFold, seed, generateGoldPath)
+        self.parseJSONResponse()        
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
-
-        # Make first move
-        observation, score, isCompleted, info = self.step("look around")
-
-        # Return a tuple that looks like the Jericho signiture for reset
-        return observation, info
+        
+        return self.parsedResponse
 
     # Ask the simulator to reset an environment back to it's initial state
-    def resetWithVariation(self, variationIdx, simplificationStr):
-        self.load(self.scriptFilename, variationIdx, simplificationStr)
+    def resetWithRandomSeed(self, gameFold, generateGoldPath=False):
+        self.responseStr = self.gateway.resetWithRandomSeedJSON(gameFold, generateGoldPath)
+        self.parseJSONResponse()        
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
-
-        # Make first move
-        observation, score, isCompleted, info = self.step("look around")
-
-        # Return a tuple that looks like the Jericho signiture for reset
-        return observation, info
+        
+        return self.parsedResponse
 
 
     # Shutdown the scala server
@@ -127,301 +119,66 @@ class ScienceWorldEnv:
             self.gateway.shutdown()
 
 
-    # Simplifications
-    def getSimplificationsUsed(self):
-        return self.gateway.getSimplificationsUsed()
-
-    def getPossibleSimplifications(self):
-        return self.gateway.getPossibleSimplifications()
-
-
     # Get a list of valid tasks/environments
-    def getTaskNames(self):
-        return list(self.gateway.getTaskNames())
-
-    # Get the maximum number of variations for this task
-    def getMaxVariations(self, taskName):
-        return self.gateway.getTaskMaxVariations(taskName)
-
-    # Get possible actions
-    def getPossibleActions(self):
-        return list(self.gateway.getPossibleActions())
-
-    # Get possible actions (and also include the template IDs for those actions)
-    def getPossibleActionsWithIDs(self):
-        jsonStr = self.gateway.getPossibleActionsWithIDs()
-        data = json.loads(jsonStr)
-        return data
-
-    # Get possible objects
-    def getPossibleObjects(self):
-        return list(self.gateway.getPossibleObjects())
-
-    # Get a list of object_ids to unique referents
-    def getPossibleObjectReferentLUT(self):
-        jsonStr = self.gateway.getPossibleObjectReferentLUTJSON()
-        data = json.loads(jsonStr)
-        return data
-
-    # As above, but dictionary is referenced by object type ID
-    def getPossibleObjectReferentTypesLUT(self):
-        jsonStr = self.gateway.getPossibleObjectReferentTypesLUTJSON()
-        data = json.loads(jsonStr)
-        return data
-
-    # Get a list of *valid* agent-object combinations
-    def getValidActionObjectCombinations(self):
-        return list(self.gateway.getValidActionObjectCombinations())
-
-    def getValidActionObjectCombinationsWithTemplates(self):
-        jsonStr = self.gateway.getValidActionObjectCombinationsJSON()
-        data = json.loads(jsonStr)
-        return data['validActions']
-
-    # Get a LUT of object_id to type_id
-    def getAllObjectTypesLUTJSON(self):
-        jsonStr = self.gateway.getAllObjectTypesLUTJSON()
-        data = json.loads(jsonStr)
-        return data
-
-    # Get a LUT of {object_id: {type_id, referent:[]} } tuples
-    def getAllObjectIdsTypesReferentsLUTJSON(self):
-        jsonStr = self.gateway.getAllObjectIdsTypesReferentsLUTJSON()
-        data = json.loads(jsonStr)
-        return data
-
-    # Get possible action/object combinations
-    def getPossibleActionObjectCombinations(self):
-        combinedJSON = self.gateway.getPossibleActionObjectCombinationsJSON()
-        data = json.loads(combinedJSON)
-        templates = data['templates']
-        lookUpTable = data['lookUpTable']
-
-        return (templates, lookUpTable)
-
-    # Get a list of object types and their IDs
-    def getObjectTypes(self):
-        jsonStr = self.gateway.getObjectTypesLUTJSON()
-        data = json.loads(jsonStr)
-        return data
-
-    # Get the vocabulary of the model (at the current state)
-    def getVocabulary(self):
-        vocab = set()
-
-        # Action vocabulary
-        for actionStr in self.getPossibleActions():
-            for word in actionStr.split(" "):
-                vocab.add(word)
-
-        # Object vocabulary (keep as compound nouns?)
-        vocabObjects = self.getPossibleObjects()
-        vocab = vocab.union( set(vocabObjects) )
-
-        return vocab
-
-
-    def getNumMoves(self):
-        return self.gateway.getNumMoves()
-
-    def getTaskDescription(self):
-        return self.gateway.getTaskDescription()
-
-    #
-    # History
-    #
-    def getRunHistory(self):
-        historyStr = self.gateway.getRunHistoryJSON()
-        #print("historyStr: " + str(historyStr))
-        jsonOut = json.loads(historyStr)
-        return jsonOut
-
-
-    # History saving (provides an API to do this, so it's consistent across agents)
-    def storeRunHistory(self, episodeIdxKey, notes):
-        packed = {
-            'episodeIdx': episodeIdxKey,
-            'notes': notes,
-            'history': self.getRunHistory()
-        }
-
-        self.runHistories[episodeIdxKey] = packed
-
-    def saveRunHistories(self, filenameOutPrefix):
-        # Save history
-
-        # Create verbose filename
-        filenameOut = filenameOutPrefix
-        keys = sorted(self.runHistories.keys())
-        if (len(keys) > 0):
-            keyFirst = keys[0]
-            keyLast = keys[-1]
-            filenameOut += "-" + str(keyFirst) + "-" + str(keyLast)
-
-        filenameOut += ".json"
-
-        print("* Saving run history (" + str(filenameOut) + ")...")
-
-        with open(filenameOut, 'w') as outfile:
-            #print(type(self.runHistories))
-            json.dump(self.runHistories, outfile, sort_keys=True, indent=4)
-
-    def getRunHistorySize(self):
-        return len(self.runHistories)
-
-    def clearRunHistories(self):
-        self.runHistories = {}
-
-    # A one-stop function to handle saving.
-    def saveRunHistoriesBufferIfFull(self, filenameOutPrefix, maxPerFile=1000, forceSave=False):
-        if ((self.getRunHistorySize() >= maxPerFile) or (forceSave == True)):
-            self.saveRunHistories(filenameOutPrefix)
-            self.clearRunHistories()
+    def getGameNames(self):
+        return list(self.gateway.getGameNames())
 
 
     #
     # Train/development/test sets
     #
-    def getVariationsTrain(self):
-        return list(self.gateway.getVariationsTrain())
+    def getValidSeedsTrain(self):
+        return list(self.gateway.getSeedsTrain())
 
-    def getVariationsDev(self):
-        return list(self.gateway.getVariationsDev())
+    def getValidSeedsDev(self):
+        return list(self.gateway.getSeedsDev())
 
-    def getVariationsTest(self):
-        return list(self.gateway.getVariationsTest())
+    def getValidSeedsTest(self):
+        return list(self.gateway.getSeedsTest())
 
-    def getRandomVariationTrain(self):
-        return self.gateway.getRandomVariationTrain()
+    def getRandomSeedTrain(self):
+        return self.gateway.getRandomSeedTrain()
 
-    def getRandomVariationDev(self):
-        return self.gateway.getRandomVariationDev()
+    def getRandomSeedDev(self):
+        return self.gateway.getRandomSeedDev()
 
-    def getRandomVariationTest(self):
-        return self.gateway.getRandomVariationTest()
+    def getRandomSeedTest(self):
+        return self.gateway.getRandomSeedTest()
 
+    #
     # Gold action sequence
+    #
     def getGoldActionSequence(self):
         if (self.goldPathGenerated == True):
             return list(self.gateway.getGoldActionSequence())
         else:
             return ["ERROR: Gold path was not generated.  Set `generateGoldPath` flag to true when calling load()."]
 
-    def getGoldActionSequenceExtended(self):
-        if (self.goldPathGenerated == True):
-            jsonOut = json.loads(self.gateway.getGoldActionSequenceJSON())
-            return jsonOut
-        else:
-            return ["ERROR: Gold path was not generated.  Set `generateGoldPath` flag to true when calling load()."]
-
-
+    # Parse JSON (Helper)
+    def parseJSONResponse(self):
+        self.parsedResponse = json.loads(self.responseStr)        
+    
+    #
     # Step
+    #
     def step(self, inputStr:str):
-        observation = self.gateway.step(inputStr)
-        score = int(round(100 * self.gateway.getScore()))        # Convert from 0-1 to 0-100
-        isCompleted = self.gateway.getCompleted()
-        numMoves = self.getNumMoves()
+        # Take a step in the environment
+        self.responseStr = self.gateway.step(inputStr)
+        self.parseJSONResponse()        
 
         # Calculate reward
+        score = self.parsedResponse['score']
         reward = score - self.lastStepScore         # Calculate reward (delta score) for this step
         self.lastStepScore = score                  # Store current score for reward calculation on the next step
 
 
         # If the number of moves exceeds the environment step limit, then set isCompleted to be true
-        if (numMoves > self.envStepLimit):
-            isCompleted = True
+        #if (numMoves > self.envStepLimit):
+        #    isCompleted = True
 
         # New: Handle this in the API rather than the agent -- if the score is less than zero, then set the isCompleted flag to true.
         if (score < 0):
             isCompleted = True
 
-        #print("> " + str(inputStr))
-        #print("score: " + str(score))
-        #print("moves: " + str(numMoves))
+        return self.parsedResponse
 
-        # Mirror of Jericho API
-        infos = {'moves': numMoves,
-                 'score': score,
-                 'reward': reward,
-                 'look': self.look(),
-                 'inv': self.inventory(),
-                 'taskDesc': self.taskdescription(),
-                 'valid': self.getValidActionObjectCombinations() }
-
-        return observation, reward, isCompleted, infos
-
-
-    # Special actions that are "free" (consume zero time)
-    def look(self):
-        observation = self.gateway.freeActionLook()
-        return observation
-
-    def inventory(self):
-        observation = self.gateway.freeActionInventory()
-        return observation
-
-    def taskdescription(self):
-        observation = self.gateway.freeActionTaskDesc()
-        return observation
-
-    # Goal progress
-    def getGoalProgressStr(self):
-        goalStr = self.gateway.getGoalProgressStr()
-        return goalStr
-
-
-class BufferedHistorySaver:
-
-    #
-    # Constructor
-    #
-    def __init__(self, filenameOutPrefix):
-        self.filenameOutPrefix = filenameOutPrefix
-
-        # Clear the run histories
-        self.clearRunHistories()
-
-    #
-    # Methods
-    #
-
-    # History saving (provides an API to do this, so it's consistent across agents)
-    def storeRunHistory(self, runHistory, episodeIdxKey, notes):
-        packed = {
-            'episodeIdx': episodeIdxKey,
-            'notes': notes,
-            'history': runHistory
-        }
-
-        self.runHistories[episodeIdxKey] = packed
-
-    def saveRunHistories(self):
-        # Save history
-
-        # Create verbose filename
-        filenameOut = self.filenameOutPrefix
-        keys = sorted(self.runHistories.keys())
-        if (len(keys) > 0):
-            keyFirst = keys[0]
-            keyLast = keys[-1]
-            filenameOut += "-" + str(keyFirst) + "-" + str(keyLast)
-
-        filenameOut += ".json"
-
-        print("* Saving run history ( " + str(filenameOut) + ")...")
-
-        with open(filenameOut, 'w') as outfile:
-            #print(type(self.runHistories))
-            json.dump(self.runHistories, outfile, sort_keys=True, indent=4)
-
-    def getRunHistorySize(self):
-        return len(self.runHistories)
-
-    def clearRunHistories(self):
-        self.runHistories = {}
-
-    # A one-stop function to handle saving.
-    def saveRunHistoriesBufferIfFull(self, maxPerFile=1000, forceSave=False):
-        if ((self.getRunHistorySize() >= maxPerFile) or (forceSave == True)):
-            self.saveRunHistories()
-            self.clearRunHistories()

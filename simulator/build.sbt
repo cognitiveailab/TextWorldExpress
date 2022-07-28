@@ -26,3 +26,9 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
+
+// PY4J (Java <-> Python Interoperability)
+libraryDependencies += "net.sf.py4j" % "py4j" % "0.10.3"
+
+// Set main class to be the Python Interface
+mainClass in Compile := Some("textworldexpress.runtime.PythonInterface")

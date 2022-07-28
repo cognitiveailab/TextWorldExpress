@@ -187,6 +187,7 @@ class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, inclu
  * Generic generator
  */
 object GameGenerator {
+  val VALID_GAME_NAMES = Array("kitchen", "twc", "coin")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -257,7 +258,6 @@ object GameGenerator {
    * Returns (success, GameGenerator)
    */
   def mkGameGenerator(gameName:String, properties:Map[String, Int] = Map[String, Int]()):(Boolean, GameGenerator) = {
-    val validGameNames = Array("kitchen", "twc", "coin")
 
     gameName.toLowerCase match {
       case "kitchen" => {
@@ -276,7 +276,7 @@ object GameGenerator {
       // Unknown case: Game not recognized.
       case _ => {
         val game = this.mkCoin( Map[String, Int]() )    // Placeholder game, with empty properties
-        game.errorStr += ("ERROR: Unknown game (" + gameName + ").  Valid game names: " + validGameNames.mkString(", ") + ". ")
+        game.errorStr += ("ERROR: Unknown game (" + gameName + ").  Valid game names: " + VALID_GAME_NAMES.mkString(", ") + ". ")
         return (false, game)
       }
     }

@@ -34,7 +34,7 @@ class PythonInterface() {
   /*
    * Load/reset/shutdown server
    */
-  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean = false):StepResult = {
+  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):StepResult = {
     // Clear variables
     this.game = null
     this.goldPath = Array.empty[String]
@@ -57,6 +57,13 @@ class PythonInterface() {
     // Step 3: Generate new game
     return this.generateNewGame(seed, gameFold, generateGoldPath)
   }
+
+  // Mirror with JSON output
+  def loadJSON(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):String = {
+    val stepResult = this.load(gameName, gameFold, seed, paramStr, generateGoldPath)
+    stepResult.toJSON()
+  }
+
 
   // Assumes that load() has already been called, and gameGenerator is valud.
   def generateNewGame(seed:Int, gameFold:String, generateGoldPath:Boolean):StepResult = {
@@ -84,6 +91,12 @@ class PythonInterface() {
     return this.curStepResult
   }
 
+  // Mirror with JSON output
+  def generateNewGameJSON(seed:Int, gameFold:String, generateGoldPath:Boolean):String = {
+    val stepResult = this.generateNewGame(seed, gameFold, generateGoldPath)
+    stepResult.toJSON()
+  }
+
 
   def resetWithRandomSeed(gameFold:String, generateGoldPath:Boolean):StepResult = {
     // Step 1: Create random seed according to fold
@@ -101,6 +114,13 @@ class PythonInterface() {
     // Step 2: Generate new game
     return this.generateNewGame(seed = randSeed, gameFold, generateGoldPath)
   }
+
+  // Mirror with JSON output
+  def resetWithRandomSeedJSON(gameFold:String, generateGoldPath:Boolean):String = {
+    val stepResult = this.resetWithRandomSeed(gameFold, generateGoldPath)
+    stepResult.toJSON()
+  }
+
 
   // Shutdown server
   def shutdown(): Unit = {
@@ -176,10 +196,18 @@ class PythonInterface() {
    * Take action steps and get observations/scores
    */
 
-  def getCompleted():Boolean = this.isComplete
+  def getCompleted():Boolean = {
+    if (this.curStepResult == null) return true
+    if (this.curStepResult.taskSuccess || this.curStepResult.taskFailure) return true
+
+    // Otherwise
+    return false
+  }
 
   // Normal
   def step(userInputString:String):StepResult = {
+    // TODO: Add 'reward' in addition to 'score'?
+
     // Error checking
     if (this.errorStr != "") return StepResult.mkErrorMessage(this.errorStr)
     if (this.game == null) return StepResult.mkErrorMessage(this.ERROR_MESSAGE_UNINITIALIZED)
@@ -199,6 +227,11 @@ class PythonInterface() {
     return this.curStepResult
   }
 
+  // Mirror with JSON output
+  def stepJSON(userInputString:String):String = {
+    val stepResult = this.step(userInputString)
+    stepResult.toJSON()
+  }
 
 }
 

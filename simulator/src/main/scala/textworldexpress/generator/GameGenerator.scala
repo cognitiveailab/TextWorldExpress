@@ -187,7 +187,7 @@ class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, inclu
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("kitchen", "twc", "coin")
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -260,7 +260,7 @@ object GameGenerator {
   def mkGameGenerator(gameName:String, properties:Map[String, Int] = Map[String, Int]()):(Boolean, GameGenerator) = {
 
     gameName.toLowerCase match {
-      case "kitchen" => {
+      case "cookingworld" => {
         val game = this.mkKitchen(properties)
         return (!game.isInvalid(), game)
       }

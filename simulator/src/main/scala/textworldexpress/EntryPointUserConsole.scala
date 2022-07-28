@@ -13,7 +13,7 @@ object EntryPointUserConsole {
 
   def consoleTWC(): Unit = {
     //val SF_GAME_NAME:String = "twc"
-    val SF_GAME_NAME:String = "kitchen"
+    val SF_GAME_NAME:String = "cookingworld"
     val seed = Random.nextInt(100)
     //val seed = 16
     val fold = "train"

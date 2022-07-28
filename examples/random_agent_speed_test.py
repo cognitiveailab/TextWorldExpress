@@ -9,7 +9,6 @@ totalSteps = 0
 
 def randomModel(args):
     global totalTime, totalSteps
-
     """ Example random agent -- randomly picks an action at each step. """
     exitCommands = ["quit", "exit"]
 
@@ -35,6 +34,8 @@ def randomModel(args):
 
     time.sleep(2)    
 
+    print("Starting to run " + str(numEpisodes) + " episodes...")
+
     # Start running episodes
     for episodeIdx in range(0, numEpisodes):
         startTime = time.process_time()
@@ -46,7 +47,6 @@ def randomModel(args):
 
         # Initialize a random task variation in this set        
         obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
-
 
         # Take action
         curIter = 0
@@ -77,11 +77,12 @@ def randomModel(args):
 
         #time.sleep(1)
 
+    print("Completed.")
 
     print("Shutting down server...")
     env.shutdown()
 
-    print("Completed.")
+    
 
 
 #
@@ -92,7 +93,7 @@ def parse_args():
     parser = argparse.ArgumentParser(desc)
     parser.add_argument("--jar_path", type=str,
                         help="Path to the ScienceWorld jar file. Default: use builtin.")
-    parser.add_argument("--game-name", type=str, choices=['cooking', 'coin', 'twc'], default='cooking',
+    parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc'], default='cookingworld',
                         help="Specify the game to play. Default: %(default)s")
     parser.add_argument("--game-fold", type=str, choices=['train', 'dev', 'test'], default='train',
                         help="Specify the game set to use (train, dev, test). Default: %(default)s")
@@ -124,11 +125,17 @@ def main():
     args = parse_args()
     random.seed(args["seed"])
     randomModel(args)
-
-    print("Total time: " + str(totalTime))
-    print("Total steps: " + str(totalSteps))
+    
     rate = totalSteps / totalTime
-    print("Rate: " + str(rate) + " steps per second")
+    
+    print("")
+    print("----------------------------------------------------")
+    print(" Performance Summary")
+    print("----------------------------------------------------")
+    print("Total episodes    : " + str(args['num_episodes']))
+    print("Total steps       : " + str(totalSteps))
+    print("Total time        : " + str(totalTime) + " seconds")    
+    print("Rate              : " + str(rate) + " steps per second")
 
 if __name__ == "__main__":
     main()

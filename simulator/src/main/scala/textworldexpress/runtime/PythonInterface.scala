@@ -163,21 +163,6 @@ class PythonInterface() {
     return this.goldPath.toList.asJava
   }
 
-  /*
-   * History
-   */
-
-  /*
-  def getActionHistory():java.util.List[String] = {
-    return this.currentHistory.historyActions.toList.asJava
-  }
-
-  // Get entire run history for this instance in JSON format
-  def getRunHistoryJSON():String = {
-    return this.currentHistory.toJSON()
-  }
-   */
-
 
   /*
    * Take action steps and get observations/scores

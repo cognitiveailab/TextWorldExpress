@@ -4,25 +4,12 @@ import py4j.GatewayServer
 import textworldexpress.generator.GameGenerator
 import textworldexpress.struct.{StepResult, TextGame}
 
-import util.Random
 import collection.JavaConverters._
-import scala.util.control.Breaks.{break, breakable}
 
-
-// Storage class
-class PythonInterfaceReturn(val observation:String, val score:Double, val isCompleted:Boolean) {
-
-}
 
 class PythonInterface() {
   val ERROR_MESSAGE_UNINITIALIZED = "ERROR: Interface is not initialized -- call reset() before beginning."
-
-  var score:Double = 0.0
-  var isComplete:Boolean = false
-
   var errorStr:String = ""
-
-  //var currentHistory = new RunHistory("", -1, -1)
 
   // Game and gold path
   var gameGenerator:GameGenerator = null
@@ -207,6 +194,7 @@ class PythonInterface() {
   // Normal
   def step(userInputString:String):StepResult = {
     // TODO: Add 'reward' in addition to 'score'?
+    println ("TODO: Add reward in addition to score")
 
     // Error checking
     if (this.errorStr != "") return StepResult.mkErrorMessage(this.errorStr)

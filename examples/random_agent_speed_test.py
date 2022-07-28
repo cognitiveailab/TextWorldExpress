@@ -29,7 +29,7 @@ def randomModel(args):
     gameFold = "train"
     gameSeed = 0
     gameParams = ""
-    generateGoldPath = True
+    generateGoldPath = args['gold_paths']
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath) 
     
 
@@ -39,24 +39,31 @@ def randomModel(args):
     for episodeIdx in range(0, numEpisodes):
         startTime = time.process_time()
 
+        if (args['verbose'] == True):
+            print("Episode " + str(episodeIdx))
+            if (generateGoldPath == True):
+                print("Gold path: " + str(env.getGoldActionSequence()))
+
         # Initialize a random task variation in this set        
         obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
 
-        if (generateGoldPath == True):
-            print("Gold path: " + str(env.getGoldActionSequence()))
 
         # Take action
         curIter = 0
 
         for stepIdx in range(0, args['max_steps']):
-            #print("Step " + str(stepIdx))
-            #print("Observation: " + str(obs))
 
             # Select a random action
             validActions = obs['validActions']
             randomAction = random.choice( validActions )
-            #print("Next random action: " + str(randomAction))
             
+            # Verbose output mode
+            if (args['verbose'] == True):
+                print("TEST")
+                print("Step " + str(stepIdx))
+                print("Observation: " + str(obs))
+                print("Next random action: " + str(randomAction))
+
             # Take action
             obs = env.step(randomAction)
 
@@ -95,6 +102,11 @@ def parse_args():
                         help="Number of episodes to play. Default: %(default)s")
     parser.add_argument("--seed", type=int,
                         help="Seed the random generator used for sampling random actions.")
+    parser.add_argument("--gold-paths", action='store_true', help="Generate gold paths for each game episode.")
+    parser.set_defaults(gold_paths=False)
+    parser.add_argument("--verbose", action='store_true', help="Verbose output.")
+    parser.set_defaults(verbose=False)
+
 #    parser.add_argument("--output-path-prefix", default="save-histories",
 #                        help="Path prefix to use for saving episode transcripts. Default: %(default)s")
 #    parser.add_argument("--max-episode-per-file", type=int, default=1000,

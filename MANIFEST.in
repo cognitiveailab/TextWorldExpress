@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+include requirements.txt
+
+include textworld_express/textworld-express-*.jar
+include textworld_express/cookingworld.json
+include textworld_express/twc_objects.json.folds.json

@@ -101,7 +101,7 @@ class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjec
 
 }
 
-class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0) extends TextGame {
+class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -133,7 +133,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
   def deepCopy():TextGame = {
     println ("TODO: Cloning not implemented -- creating shallow copy.")
 
-    return new KitchenGame(locations, recipe, taskObjects, this.limitInventorySize, seed=this.seed)
+    return new KitchenGame(locations, recipe, taskObjects, this.limitInventorySize, seed=this.seed, this.generationProperties)
     /*
     val clonedTaskObjects = new ArrayBuffer[FastObject]
 
@@ -217,6 +217,12 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     }
     throw new RuntimeException("getClonedLocationReference(): Location not found (this should never happen).  Location name (" + name + ").")
   }
+
+  /*
+   * Generation Properties
+   */
+
+  def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
    *  Action helpers
@@ -1118,9 +1124,19 @@ class KitchenGameGenerator {
 
 
   def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, numIngredients:Int = 3, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):KitchenGame = {
+    // Store properties in a form that are user accessible later on
+    val props = mutable.Map[String, Int]()
+    props("seed") = seed.toInt
+    props("numLocations") = numLocations
+    props("numDistractorItems") = numDistractorItems
+    props("numIngredients") = numIngredients
+    props("includeDoors") = if (includeDoors) { 1 } else { 0 }
+    props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
+
+    // Generate Game
     val r = new Random(seed)
     val (locations, recipe, taskObjects) = mkEnvironment(r, numLocations, numDistractorItems, numIngredients, includeDoors, fold)
-    val game = new KitchenGame( locations.toArray, recipe, taskObjects, limitInventorySize )
+    val game = new KitchenGame( locations.toArray, recipe, taskObjects, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }

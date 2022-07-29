@@ -233,7 +233,7 @@ object GameGenerator {
 
   // Make the coin game
   private def mkCoin(properties:Map[String, Int]):GameGenerator = {
-    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "numIngredients", "includeDoors", "limitInventorySize")
+    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize")
     // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
 
     val numLocations:Int            = properties.getOrElse("numLocations", 11)

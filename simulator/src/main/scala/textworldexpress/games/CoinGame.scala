@@ -50,7 +50,7 @@ class CoinGameScoring(val taskObjects:ArrayBuffer[FastObject]) extends Scorer {
 
 
 
-class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0) extends TextGame {
+class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -94,7 +94,7 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
     this.connectClonedMap(locationsClone)
 
     // Step 3: Create new game
-    val game = new CoinGame(locationsClone, clonedTaskObjects, this.limitInventorySize, seed = this.seed)
+    val game = new CoinGame(locationsClone, clonedTaskObjects, this.limitInventorySize, seed = this.seed, this.generationProperties)
 
     // Also clone the agent inventory
     game.agentInventory = this.agentInventory.deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
@@ -162,6 +162,12 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
     }
     throw new RuntimeException("getClonedLocationReference(): Location not found (this should never happen).  Location name (" + name + ").")
   }
+
+  /*
+   * Generation Properties
+   */
+
+  def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
    *  Action helpers
@@ -839,9 +845,18 @@ class CoinGameGenerator {
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
   def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):CoinGame = {
+    // Store properties in a form that are user accessible later on
+    val props = mutable.Map[String, Int]()
+    props("seed") = seed.toInt
+    props("numLocations") = numLocations
+    props("numDistractorItems") = numDistractorItems
+    props("includeDoors") = if (includeDoors) { 1 } else { 0 }
+    props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
+
+    // Generate Game
     val r = new Random(seed)
     val (locations, taskObjects) = mkEnvironment(r, numLocations, numDistractorItems, includeDoors, fold)
-    val game = new CoinGame( locations.toArray, taskObjects, limitInventorySize )
+    val game = new CoinGame( locations.toArray, taskObjects, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }

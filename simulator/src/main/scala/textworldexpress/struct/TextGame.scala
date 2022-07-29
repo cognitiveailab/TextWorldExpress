@@ -13,6 +13,12 @@ abstract class TextGame {
   def deepCopy():TextGame
 
   /*
+   * Properties
+   */
+
+  def getGenerationProperties():Map[String, Int]
+
+  /*
    * History
    */
   def getHistory():ArrayBuffer[ActionHistory]

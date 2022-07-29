@@ -30,10 +30,9 @@ pip install textworld-express[webserver]
 ```
 
 Run the web server:
-> python examples/textworldexpress-web-server-example.py
+> python examples/textworldexpress-web-server.py
 
-Point your web browser to:
-`localhost:8080`
+Point your web browser to [localhost:8080](https://localhost:8080).
 
 
 # TextWorldExpress Design

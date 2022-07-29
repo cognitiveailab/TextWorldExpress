@@ -94,8 +94,8 @@ class TextWorldExpressEnv:
 #        return self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
 
     # Ask the simulator to reset an environment back to it's initial state
-    def resetWithSeed(self, gameFold, seed, generateGoldPath=False):
-        self.responseStr = self.gateway.generateNewGameJSON(gameFold, seed, generateGoldPath)
+    def resetWithSeed(self, seed, gameFold, generateGoldPath=False):
+        self.responseStr = self.gateway.generateNewGameJSON(seed, gameFold, generateGoldPath)
         self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)

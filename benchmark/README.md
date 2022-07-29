@@ -33,3 +33,17 @@ python benchmark_jericho.py ./roms/* --get-valid
 
 ## With valid actions and steps limit
 python benchmark_jericho.py ./roms/* --get-valid --limit 10
+
+
+# ScienceWorld (TODO)
+pip install scienceworld
+
+## With valid actions
+python benchmark_scienceworld.py
+
+
+# TextWorldExpress (TODO)
+pip install textworld-express
+
+## With valid actions
+python benchmark_textworld_express.py

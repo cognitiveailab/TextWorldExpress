@@ -4,6 +4,7 @@ import argparse
 
 from textworld_express import TextWorldExpressEnv
 
+
 totalTime = 0
 totalSteps = 0
 

@@ -30,12 +30,13 @@ class PythonInterface() {
     this.curStepResult = null
     this.gameGenerator = null
 
-    // Step 1: Convert properties from string
-    // TODO: Convert paramStr to properties
-    //println ("TODO: PARSE PROPERTIES STRING")
+    // Step 1: Parse any properties passed in through the string
+    val (_props, propErrorStr) = this.parseParamStr(paramStr)
+    if (propErrorStr.length > 0) return StepResult.mkErrorMessage(errorStr)
+    this.properties = _props
 
     // Step 2: Create the Game Generator
-    val (success, gameGenerator) = GameGenerator.mkGameGenerator(gameName, properties)
+    val (success, gameGenerator) = GameGenerator.mkGameGenerator(gameName, this.properties)
     if (!success) {
       println ("ERROR creating Game Generator: ")
       println (gameGenerator.errorStr)

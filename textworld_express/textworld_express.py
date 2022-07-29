@@ -124,6 +124,9 @@ class TextWorldExpressEnv:
     def getGameNames(self):
         return list(self.gateway.getGameNames())
 
+    # Get the current game's generation properties
+    def getGenerationProperties(self):        
+        return orjson.loads(self.gateway.getGenerationPropertiesJSON())
 
     #
     # Train/development/test sets

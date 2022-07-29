@@ -42,7 +42,9 @@ def randomModel(args):
         startTime = time.process_time()
 
         if (args['verbose'] == True):
+            print("")
             print("Episode " + str(episodeIdx))
+            print("Generation properties: " + str(env.getGenerationProperties()) )
             if (generateGoldPath == True):
                 print("Gold path: " + str(env.getGoldActionSequence()))
 
@@ -59,8 +61,7 @@ def randomModel(args):
             randomAction = random.choice( validActions )
 
             # Verbose output mode
-            if (args['verbose'] == True):
-                print("TEST")
+            if (args['verbose'] == True):                
                 print("Step " + str(stepIdx))
                 print("Observation: " + str(obs))
                 print("Next random action: " + str(randomAction))

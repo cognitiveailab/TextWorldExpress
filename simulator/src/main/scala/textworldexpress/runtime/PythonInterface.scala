@@ -6,6 +6,7 @@ import textworldexpress.struct.{StepResult, TextGame}
 
 import collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 
 class PythonInterface() {
@@ -126,7 +127,21 @@ class PythonInterface() {
     GameGenerator.VALID_GAME_NAMES.toList.asJava
   }
 
-  // TODO: Function to get current game properties?
+  /*
+   * Get generation properties
+   */
+  def getGenerationPropertiesJSON():String = {
+    if (this.game == null) return "{}"
+
+    val props = this.game.getGenerationProperties()
+
+    val propStrs = new ArrayBuffer[String]
+    for (propName <- props.keySet) {
+      propStrs.append("\"" + propName + "\": " + props(propName))
+    }
+
+    return "{" + propStrs.mkString(", ") + "}"
+  }
 
   /*
    * Train/development/test sets

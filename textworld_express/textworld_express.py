@@ -1,20 +1,12 @@
-# scienceworld.py
-#
-#   conda create --name scienceworld python=3.8
-#   conda activate scienceworld
-#   pip install py4j                                (for scala-python interface)
-#   pip install -U pywebio                          (for web server)
-
-from cgitb import reset
 from py4j.java_gateway import JavaGateway, GatewayParameters
 import subprocess
 
 import os
 import time
-import json
-import orjson       # pip install orjson (for faster json serialization)
+import orjson  # faster json serialization
 
 import textworld_express
+
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
 JAR_FILE = 'textworld-express-{version}.jar'.format(version=textworld_express.__version__)
 JAR_PATH = os.path.join(BASEPATH, JAR_FILE)
@@ -25,7 +17,7 @@ class TextWorldExpressEnv:
     #
     # Constructor
     #
-    def __init__(self, serverPath=None, envStepLimit=100, threadNum=0, launchServer=True):        
+    def __init__(self, serverPath=None, envStepLimit=100, threadNum=0, launchServer=True):
         serverPath = serverPath or JAR_PATH  # Use the builtin jar.
 
         # Define the port number
@@ -81,11 +73,11 @@ class TextWorldExpressEnv:
         time.sleep(5)
 
     # Ask the simulator to load an environment from a script
-    def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):        
+    def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
         #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
 
         self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
-        self.parseJSONResponse()        
+        self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
@@ -96,29 +88,29 @@ class TextWorldExpressEnv:
         return self.parsedResponse
 
 #    # Test to see if the storage class can be directly loaded
-#    def loadTEST(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):        
+#    def loadTEST(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
 #        #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
 #
 #        return self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
 
     # Ask the simulator to reset an environment back to it's initial state
-    def resetWithSeed(self, gameFold, seed, generateGoldPath=False):
-        self.responseStr = self.gateway.generateNewGameJSON(gameFold, seed, generateGoldPath)
-        self.parseJSONResponse()        
+    def resetWithSeed(self, seed, gameFold, generateGoldPath=False):
+        self.responseStr = self.gateway.generateNewGameJSON(seed, gameFold, generateGoldPath)
+        self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
-        
+
         return self.parsedResponse
 
     # Ask the simulator to reset an environment back to it's initial state
     def resetWithRandomSeed(self, gameFold, generateGoldPath=False):
         self.responseStr = self.gateway.resetWithRandomSeedJSON(gameFold, generateGoldPath)
-        self.parseJSONResponse()        
+        self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
-        
+
         return self.parsedResponse
 
 
@@ -166,18 +158,18 @@ class TextWorldExpressEnv:
     # Parse JSON (Helper)
     def parseJSONResponse(self):
         # Python built-in JSON parsing (slower)
-        #self.parsedResponse = json.loads(self.responseStr)        
+        #self.parsedResponse = json.loads(self.responseStr)
         # External JSON parser (faster)
         self.parsedResponse = orjson.loads(self.responseStr)
-    
-    
+
+
     #
     # Step
     #
     def step(self, inputStr:str):
         # Take a step in the environment
         self.responseStr = self.gateway.stepJSON(inputStr)
-        self.parseJSONResponse()        
+        self.parseJSONResponse()
 
         # Calculate reward
         score = self.parsedResponse['score']

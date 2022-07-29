@@ -2,7 +2,8 @@ import time
 import random
 import argparse
 
-from textworld_express import TextWorldExpressEnv as twx
+from textworld_express import TextWorldExpressEnv
+
 
 totalTime = 0
 totalSteps = 0
@@ -12,7 +13,7 @@ def randomModel(args):
     """ Example random agent -- randomly picks an action at each step. """
     exitCommands = ["quit", "exit"]
 
-    gameName = args['game_name']    
+    gameName = args['game_name']
     numEpisodes = args['num_episodes']
 
     # Keep track of the agent's final scores
@@ -20,7 +21,7 @@ def randomModel(args):
 
 
     # Initialize environment
-    env = twx(args['jar_path'], envStepLimit = args['max_steps'] , threadNum = 0)
+    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
     gameNames = env.getGameNames()
     print("Supported Game Names: " + str(gameNames))
 
@@ -29,10 +30,10 @@ def randomModel(args):
     gameSeed = 0
     gameParams = ""
     generateGoldPath = args['gold_paths']
-    env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath) 
-    
+    env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 
-    time.sleep(2)    
+
+    time.sleep(2)
 
     print("Starting to run " + str(numEpisodes) + " episodes...")
 
@@ -45,7 +46,7 @@ def randomModel(args):
             if (generateGoldPath == True):
                 print("Gold path: " + str(env.getGoldActionSequence()))
 
-        # Initialize a random task variation in this set        
+        # Initialize a random task variation in this set
         obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
 
         # Take action
@@ -56,7 +57,7 @@ def randomModel(args):
             # Select a random action
             validActions = obs['validActions']
             randomAction = random.choice( validActions )
-            
+
             # Verbose output mode
             if (args['verbose'] == True):
                 print("TEST")
@@ -68,7 +69,7 @@ def randomModel(args):
             obs = env.step(randomAction)
 
             curIter += 1
-        
+
 
         # Keep track of timing
         deltaTime = time.process_time() - startTime
@@ -82,7 +83,7 @@ def randomModel(args):
     print("Shutting down server...")
     env.shutdown()
 
-    
+
 
 
 #
@@ -125,16 +126,16 @@ def main():
     args = parse_args()
     random.seed(args["seed"])
     randomModel(args)
-    
+
     rate = totalSteps / totalTime
-    
+
     print("")
     print("----------------------------------------------------")
     print(" Performance Summary")
     print("----------------------------------------------------")
     print("Total episodes    : " + str(args['num_episodes']))
     print("Total steps       : " + str(totalSteps))
-    print("Total time        : " + str(totalTime) + " seconds")    
+    print("Total time        : " + str(totalTime) + " seconds")
     print("Rate              : " + str(rate) + " steps per second")
 
 if __name__ == "__main__":

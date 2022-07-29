@@ -3,5 +3,5 @@ include README.md
 include requirements.txt
 
 include textworld_express/textworld-express-*.jar
-include textworld_express/cookingworld.json
-include textworld_express/twc_objects.json.folds.json
+include textworld_express/cooking_world.json
+include textworld_express/twc_objects.folds.json

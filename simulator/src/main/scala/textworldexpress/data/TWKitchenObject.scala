@@ -270,6 +270,7 @@ object LoadTWKitchenDataJSON {
 
   def main(args:Array[String]): Unit = {
     val d = new LoadTWKitchenDataJSON()
+    println ("Loaded " + d.allObjs.length + " objects")
   }
 
 }

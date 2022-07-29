@@ -126,6 +126,8 @@ object LoadTWCDataJSON {
 
   def main(args:Array[String]): Unit = {
     val d = new LoadTWCDataJSON()
+    val allObjs = d.allObjsTrain ++ d.allObjsDev ++ d.allObjsTest
+    println ("Loaded " + allObjs.length + " objects")
   }
 
 }

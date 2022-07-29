@@ -176,6 +176,7 @@ object EntryPoint {
     actionsPerStep = actionsPerStep / (numEnvs.toDouble * numStepsPerEnv.toDouble)
 
     val deltaTime = System.currentTimeMillis() - startTime
+    println ("Environment: " + gameName)
     println ("Tested with: " + numEnvs + " generated environments, with " + numStepsPerEnv + " randomly chosen steps per environment.")
     println ("Delta time: " + deltaTime + " msec")
     println ("On average, each step has " + actionsPerStep.formatted("%3.3f") + " valid actions. ")

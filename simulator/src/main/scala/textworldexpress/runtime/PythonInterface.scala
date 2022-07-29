@@ -5,6 +5,7 @@ import textworldexpress.generator.GameGenerator
 import textworldexpress.struct.{StepResult, TextGame}
 
 import collection.JavaConverters._
+import scala.collection.mutable
 
 
 class PythonInterface() {
@@ -204,6 +205,40 @@ class PythonInterface() {
   def stepJSON(userInputString:String):String = {
     val stepResult = this.step(userInputString)
     stepResult.toJSON()
+  }
+
+
+  /*
+   * Helper functions
+   */
+  // Parse a string of comma-delimited parameters into a Map.
+  // Returns (output, errorStr).
+  def parseParamStr(strIn:String):(Map[String, Int], String) = {
+    val out = mutable.Map[String, Int]()
+
+    // Step 1: Split on deliminter (",")
+    val params = strIn.split(",").map(_.trim())
+    for (paramStr <- params) {
+      if (paramStr.length > 0) {
+        val fields = paramStr.split("=").map(_.trim)
+        if (fields.length == 0) return (out.toMap, "ERROR: Unable to parse field.")
+        if (fields.length == 1) return (out.toMap, "ERROR: Unable to find value for parameter (" + fields(0) + ").")
+        if (fields.length > 2)  return (out.toMap, "ERROR: Too many fields found (" + fields.mkString(" ") + ").  A comma is likely missing between fields, or there is an extra equals sign.")
+        val paramName = fields(0)
+        val paramValue = fields(1)
+        var paramValueInt:Int = -1
+        try {
+          paramValueInt = paramValue.toInt
+        } catch {
+          case _:Throwable => { return (out.toMap, "ERROR: Unable to parse parameter (" + paramName + ") value (" + paramValue + ") into an integer.")}
+        }
+
+        // Store
+        out(paramName) = paramValueInt
+      }
+    }
+
+    return (out.toMap, "")
   }
 
 }

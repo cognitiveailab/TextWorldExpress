@@ -8,7 +8,7 @@ Install with pip:
 ```bash
 conda create --name textworld-express python=3.8
 conda activate textworld-express
-pip install textworld-express
+pip install textworld-express orjson
 ```
 
 Run an example random agent, on TODO...:
@@ -26,7 +26,7 @@ To run the web server demo:
 ```bash
 conda create --name textworld-express python=3.8
 conda activate textworld-express
-pip install textworld-express[webserver]
+pip install textworld-express[webserver] orjson
 ```
 
 Run the web server:

@@ -28,7 +28,7 @@ def randomModel(args):
     # Load the task
     gameFold = "train"
     gameSeed = 0
-    gameParams = ""
+    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = args['gold_paths']
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 
@@ -105,6 +105,8 @@ def parse_args():
                         help="Number of episodes to play. Default: %(default)s")
     parser.add_argument("--seed", type=int,
                         help="Seed the random generator used for sampling random actions.")
+    #parser.add_argument("--game-params", type=str, default="",
+    #                    help="Specify game parameters in a comma-delmited list, e.g. 'numLocations=5, includeDoors=1'.")
     parser.add_argument("--gold-paths", action='store_true', help="Generate gold paths for each game episode.")
     parser.set_defaults(gold_paths=False)
     parser.add_argument("--verbose", action='store_true', help="Verbose output.")

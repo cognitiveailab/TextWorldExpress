@@ -5,7 +5,7 @@ import textworldexpress.struct.StepResult
 import scala.collection.mutable.ArrayBuffer
 
 // Note: Storage class names are shortened, to reduce JSON size when serializing
-class StepResultHashed(val obs:Int, val look:Int, val inv:Int, val acts:Array[Int], val score:Double, val scoreNorm:Double, val succ:Boolean, val fail:Boolean, val valid:Boolean) {
+case class StepResultHashed(val obs:Int, val look:Int, val inv:Int, val acts:Array[Int], val score:Double, val scoreNorm:Double, val succ:Boolean, val fail:Boolean, val valid:Boolean) {
 
   // Convert to StepResult
   //def toStepResult(stringLUT:ArrayBuffer[String]): StepResult = {

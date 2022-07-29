@@ -124,6 +124,7 @@ class PythonInterface() {
     GameGenerator.VALID_GAME_NAMES.toList.asJava
   }
 
+  // TODO: Function to get current game properties?
 
   /*
    * Train/development/test sets

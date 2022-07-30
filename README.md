@@ -158,8 +158,10 @@ For online generation mode:
 python examples/random_agent_speed_test.py --game-name=cookingworld --max-steps=50 --num-episodes=10000
 ```
 For precrawled path mode:
+NOTE: This demo uses precrawled paths provided for benchmarking in the repository.
 ```
-TODO
+# From the root directory of the TextWorldExpress github repository
+python examples/precrawledPathReader.py
 ```
 
 ### Scala Benchmarks
@@ -175,9 +177,10 @@ NOTE: This demo uses precrawled paths provided for benchmarking in the repositor
 java -Xmx4g -cp textworld_express/textworld-express-1.0.0.jar textworldexpress.benchmark.BenchmarkPrecrawledPath
 ```
 
-For extra speed, a threaded precrawled path benchmark:
+For extra speed, a threaded precrawled path benchmark (where here, change `32` to the desired number of threads):
 ```
-
+# From the root directory of the TextWorldExpress github repository
+java -Xmx4g -cp textworld_express/textworld-express-1.0.0.jar textworldexpress.benchmark.BenchmarkPrecrawledPathThreaded 32
 ```
 
 

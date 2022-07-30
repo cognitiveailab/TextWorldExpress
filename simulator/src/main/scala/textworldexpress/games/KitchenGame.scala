@@ -1132,6 +1132,7 @@ class KitchenGameGenerator {
     props("numIngredients") = numIngredients
     props("includeDoors") = if (includeDoors) { 1 } else { 0 }
     props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
+    props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
     val r = new Random(seed)

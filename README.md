@@ -155,7 +155,7 @@ TODO  (add command line arguments to this Scala code)
 ### Python Benchmarks
 For online generation mode:
 ```
-TODO
+python examples/random_agent_speed_test.py --game-name=cookingworld --max-steps=50 --num-episodes=10000
 ```
 For precrawled path mode:
 ```
@@ -168,9 +168,16 @@ For online generation mode:
 TODO
 ```
 
-For precrawled path mode:
+For precrawled path mode (single-threaded):
+NOTE: This demo uses precrawled paths provided for benchmarking in the repository.
 ```
-TODO
+# From the root directory of the TextWorldExpress github repository
+java -Xmx4g -cp textworld_express/textworld-express-1.0.0.jar textworldexpress.benchmark.BenchmarkPrecrawledPath
+```
+
+For extra speed, a threaded precrawled path benchmark:
+```
+
 ```
 
 

@@ -181,6 +181,9 @@ A: This partially due to the `py4j` binders, that allow interfacing Python to Ja
 **Q: Will there be more benchmark games added/I want to add my own benchmark game to TextWorldExpress**
 A: One of the main ways that TextWorldExpress gets its speed is through essentially hardcoding the games, mechanics, and (particularly) the valid action generation.  To implement your own games, please use the existing games as templates, and open a github issue if you run into any issues.  If you would like to recommend a new game to add to TextWorldExpress, please make a feature request in the github issues.
 
+**Q: What is the fastest TextWorldExpress can run?**
+A: The fastest we have clocked `TextWorldExpress` using the random agent benchmark is 4-5 million steps/sec per thread using precrawled games and the Scala native API, with multi-threaded performance at approximately 34 million steps/sec using an AMD 3950X 16-core CPU with 32 threads.  This is equivalent to about 2 billion steps per minute.  2 billion steps would take a single thread of the original TextWorld about 77 days to run. 
+
 
 # Citation
 If you use `TextWorldExpress`, please provide the following citation:

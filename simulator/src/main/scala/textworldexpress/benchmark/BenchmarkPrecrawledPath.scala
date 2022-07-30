@@ -69,9 +69,10 @@ object BenchmarkPrecrawledPath {
     val numPerFold = 5
     val precrawledPaths = new ArrayBuffer[PrecrawledPath]
     for (i <- 0 until numPerFold) {
-      val path = "/home/peter/github/sciworld-synth/"
+      //val path = "/home/peter/github/sciworld-synth/"
       //val filename = path + "savetest-gametwc-var" + i + "-foldtrain-maxDepth6-includeDoors0-numItemsToPutAway1-numLocations1.json"
-      val filename = path + "savetest-gamecoin-var" + i + "-foldtrain-maxDepth10-includeDoors0-limitInventorySize0-numDistractorItems0-numLocations4.json"
+      val path = ""
+      val filename = path + "precrawled-gamecoin-var" + i + "-foldtrain-maxDepth10-includeDoors0-limitInventorySize0-numDistractorItems0-numLocations4.json"
       val precrawledPath = PrecrawledPath.loadFromJSON(filename).get
       precrawledPaths.append(precrawledPath)
     }

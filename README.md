@@ -54,3 +54,47 @@ Text game agents frequently learn the dynamics of environment -- such as the nee
 
 ### Coin Collector ("coin")
 Agents frequently find tasks such as object search, environment navigation, or pick-and-place tasks challenging. The [Coin Collector](https://github.com/xingdi-eric-yuan/TextWorld-Coin-Collector) distills these into a single benchmark where an agent must explore a series of rooms to locate and pick up a single coin. In the original implementation, the game map typically takes the form of a connected loop or chain, such that continually moving to new locations means the agent will eventually discover the coin -- while including medium and hard modes that add in one or more "dead-end" paths.  To control for environment difficulty across games, the TextWorldExpress reimplementation uses the same map generator across environments, and generates arbitrary home environments rather than connected loops. The user maintains control of other measures of difficulty, including the total number of rooms, and the number of distractor objects placed in the environment.
+
+# Usage
+
+## Typical Usage
+Typical usage involves first initializing a game generator, then repeatedly generating and stepping through games.  Examples are provided in the /examples/ folder, with an example agent that chooses a random action at each step described below: 
+
+```
+from textworld_express import TextWorldExpressEnv
+
+# Initialize game generator
+env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
+
+# Set the game generator to generate a particular game (cookingworld, twc, or coin)
+env.load(gameName = "twc", gameFold = "train", gameSeed = 0, gameParams = "numLocations=5,includeDoors=1", generateGoldPath=True)
+
+# Then, randomly generate and play 10 games within the defined parameters
+for i in range(0, 10):
+  # First step
+  obs = env.resetWithRandomSeed(gameFold = "train", generateGoldPath=True)
+  
+  for stepNum in range(0, 50):
+    # Display the observations from the environment (stored as a dictionary)
+    print(obs)
+    
+    # Select a random valid action
+    validActions = obs['validActions']
+    randomAction = random.choice(validActions)
+    
+    # Take that action
+    obs = env.step(randomAction)   
+```
+
+## Setting Game Parameters
+Environments initialize with default parameters.  To change the parameters, supply a comma-delimited string into `gameParams` when calling `env.load()`.  Valid parameters are different for each environment, and include:
+
+CookingWorld:
+
+
+TextWorld Common Sense:
+
+
+Coin Collector:
+
+

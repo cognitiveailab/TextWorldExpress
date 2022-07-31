@@ -157,21 +157,20 @@ For online generation mode:
 ```
 python examples/random_agent_speed_test.py --game-name=cookingworld --max-steps=50 --num-episodes=10000
 ```
-For precrawled path mode:
-NOTE: This demo uses precrawled paths provided for benchmarking in the repository.
+For precrawled path mode (note this demo uses precrawled paths provided for benchmarking in the repository):
 ```
 # From the root directory of the TextWorldExpress github repository
 python examples/precrawledPathReader.py
 ```
 
 ### Scala Benchmarks
-For online generation mode:
+For online generation mode (argument should be one of cookingworld, twc, or coin):
 ```
-TODO
+cd textworld_express
+java -Xmx4g -cp textworld-express-1.0.0.jar textworldexpress.benchmark.BenchmarkOnline coin
 ```
 
-For precrawled path mode (single-threaded):
-NOTE: This demo uses precrawled paths provided for benchmarking in the repository.
+For precrawled path mode (single-threaded, note thishis demo uses precrawled paths provided for benchmarking in the repository.
 ```
 # From the root directory of the TextWorldExpress github repository
 java -Xmx4g -cp textworld_express/textworld-express-1.0.0.jar textworldexpress.benchmark.BenchmarkPrecrawledPath

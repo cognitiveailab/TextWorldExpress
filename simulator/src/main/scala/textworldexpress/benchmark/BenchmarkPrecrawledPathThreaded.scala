@@ -107,10 +107,33 @@ class RandomAgentThreadRunner(id:Int, precrawledPaths:Array[PrecrawledPath], num
 
 object BenchmarkPrecrawledPathThreaded {
 
-
+  def printUsage(): Unit = {
+    println ("Usage: BenchmarkPrecrawledPathThreaded <numThreads>")
+  }
 
   def main(args:Array[String]): Unit = {
     val verboseOutput:Boolean = false
+    var numThreads:Int = 32
+    val numEpsiodesToRun:Int = 1000000
+
+    if (args.length == 0) {
+      this.printUsage()
+      println ("Missing argument defining number of threads to run.  Defaulting to 32.")
+
+    } else if (args.length == 1) {
+      try {
+        numThreads = args(0).toInt
+      } catch {
+        case _:Throwable => {
+          println("Unable to parse (" + args(0) + ") into <numThreads> argument.  Expected integer. ")
+          this.printUsage()
+        }
+      }
+
+    } else {
+      this.printUsage()
+      sys.exit(1)
+    }
 
     // Step 1: Load precrawled paths
     val numPerFold = 5
@@ -129,9 +152,6 @@ object BenchmarkPrecrawledPathThreaded {
 
     var totalSteps:Long = 0
     var totalEpisodes:Int = 0
-
-    val numThreads:Int = 32
-    val numEpsiodesToRun:Int = 1000000
 
     // Create array of thread runners
     val runners = new Array[RandomAgentThreadRunner](numThreads)

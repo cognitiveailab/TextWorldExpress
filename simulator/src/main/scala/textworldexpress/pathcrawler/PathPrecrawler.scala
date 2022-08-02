@@ -149,8 +149,14 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
           }
         }
 
-        Thread.sleep(250)
-        println("Threads still running: " + stillRunning.mkString(" "))
+        // Debug output (for main thread)
+        if (pathSoFar.length == 0) {
+          Thread.sleep(1000)
+          println("Threads still running: " + stillRunning.mkString(" "))
+        } else {
+          // Or, if not main thread, just pause briefly before rechecking if work is done
+          Thread.sleep(10)
+        }
       }
 
     }
@@ -221,7 +227,7 @@ object PathPrecrawler {
     }
 
     val filenameOut = filenameOutPrefix + "-game" + gameName + "-seed" + seed + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
-    println ("Saving..." )
+    println ("Saving output (" + filenameOut + ")..." )
     precrawled.saveToJSON(filenameOut)
 
   }

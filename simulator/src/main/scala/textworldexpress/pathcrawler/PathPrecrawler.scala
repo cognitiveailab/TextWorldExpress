@@ -1,6 +1,7 @@
 package textworldexpress.pathcrawler
 
 import textworldexpress.generator.GameGenerator
+import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.{StepResult, TextGame}
 
 import scala.collection.mutable
@@ -164,9 +165,9 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
 
 object PathPrecrawler {
 
-  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, filenameOutPrefix:String) = {
+  def crawlPath(gameName:String, gameProps:Map[String, Int], seed:Int, gameFold:String, maxDepth:Int, filenameOutPrefix:String) = {
     // Create crawler
-    val crawler = new PathCrawler(gameName, gameProps.toMap, variationIdx, gameFold)
+    val crawler = new PathCrawler(gameName, gameProps.toMap, seed, gameFold)
 
     println ("Starting crawling...")
     val startTime = System.currentTimeMillis()
@@ -216,13 +217,13 @@ object PathPrecrawler {
       propsStr += "-" + key + gameProps(key)
     }
 
-    val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
+    val filenameOut = filenameOutPrefix + "-game" + gameName + "-seed" + seed + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
     println ("Saving..." )
     precrawled.saveToJSON(filenameOut)
 
   }
 
-
+/*
   def crawlTWC(numGamesToCrawl:Int=1): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
@@ -273,15 +274,117 @@ object PathPrecrawler {
     }
 
   }
+*/
 
 
+  def printUsage(): Unit = {
+    println ("Usage: PathPrecrawler <gameName:Str> <gameFold:Str> <gameSeed:Int> <gameProperties:Str>")
+    println ("Where:")
+    println ("  gameName is one of: " + GameGenerator.VALID_GAME_NAMES.sorted.mkString(", "))
+    println ("  gameFold is one of: train, dev, test")
+    println ("  gameSeed is a positive integer (e.g. 1, 2, 3). ")
+    println ("  maxDepth is the maximum depth to crawl in the game state tree (maximum of 12 recommended).")
+    println ("  gameProperties is an optional comma-delimited list of game properties to set, without spaces (e.g. numLocations=4,includeDoors=1,numDistractorItems=1,limitInventorySize=0)")
+    println ("")
+    println ("Example:")
+    println ("  PathCrawler twc train 0 6 numLocations=1,includeDoors=0,numItemsToPutAway=2")
+  }
 
   def main(args:Array[String]): Unit = {
 
-    crawlTWC(numGamesToCrawl = 1)
+    // Step 1: Parse command line arguments
+    if ((args.length < 4) || (args.length > 5)) {
+      println ("ERROR: Expected 3 or 4 arguments (found " + args.length + ").")
+      println ("")
+      this.printUsage()
+      sys.exit(1)
+    }
 
-    //crawlCoin(numGamesToCrawl = 20)
+    // Parse game name
+    val gameName = args(0).toLowerCase.trim()
+    if (!GameGenerator.VALID_GAME_NAMES.contains(gameName)) {
+      println ("ERROR: Unknown game name (" + gameName + ").  Valid names: " + GameGenerator.VALID_GAME_NAMES.mkString(", "))
+      println ("")
+      this.printUsage()
+      sys.exit(1)
+    }
 
+    // Parse game fold
+    val gameFold = args(1).toLowerCase.trim()
+    if (!Array("train", "dev", "test").contains(gameFold)) {
+      println ("ERROR: Unknown game fold (" + gameFold + ").  Valid folds: train, dev, test")
+      println ("")
+      this.printUsage()
+      sys.exit(1)
+    }
+
+    // Parse game seed
+    var gameSeed:Int = -1
+    try {
+      gameSeed = args(2).toInt
+    } catch {
+      case _:Throwable => {
+        println ("ERROR: Can not convert game seed (" + args(2) + ") to integer.")
+        println ("")
+        this.printUsage()
+        sys.exit(1)
+      }
+    }
+    if (gameSeed < 0) {
+      println ("ERROR: Game seed (" + gameSeed + ") must be positive.")
+      println ("")
+      this.printUsage()
+      sys.exit(1)
+    }
+
+    // TODO: Check for cannonical game seed for the set.
+
+    // Parse game seed
+    var maxDepth:Int = -1
+    try {
+      gameSeed = args(3).toInt
+    } catch {
+      case _:Throwable => {
+        println ("ERROR: Can not convert max depth (" + args(3) + ") to integer.")
+        println ("")
+        this.printUsage()
+        sys.exit(1)
+      }
+    }
+    if (gameSeed < 1) {
+      println ("ERROR: maximum crawl depth (" + maxDepth + ") must be positive.")
+      println ("")
+      this.printUsage()
+      sys.exit(1)
+    }
+    if (gameSeed > 12) {
+      println ("WARNING: maximum crawl depth ( " + maxDepth + ") exceeds maximum recommended depth of 12.  This may take some time to crawl.")
+      Thread.sleep(2000)
+    }
+
+
+    // Parse game properties string.
+    var gamePropsStr = ""
+    var gameProps = Map[String, Int]()
+    if (args.length == 5) {
+      gamePropsStr = args(4)
+      val (_props, propErrorStr) = PythonInterface.parseParamStr(gamePropsStr)
+      if (propErrorStr.length > 0) {
+        println ("ERROR: Error encountered when parsing parameters string (" + gamePropsStr + "):")
+        println (propErrorStr)
+        println ("")
+        this.printUsage()
+        sys.exit(1)
+      }
+      gameProps = _props
+    } else {
+      println ("No game properties found.   Using default properties.")
+    }
+
+
+
+    // Step 2: Do crawling
+    this.crawlPath(gameName, gameProps, seed = gameSeed, gameFold, maxDepth, filenameOutPrefix = "precrawledpath")
 
   }
 

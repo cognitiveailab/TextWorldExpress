@@ -32,7 +32,7 @@ class PythonInterface() {
     this.gameGenerator = null
 
     // Step 1: Parse any properties passed in through the string
-    val (_props, propErrorStr) = this.parseParamStr(paramStr)
+    val (_props, propErrorStr) = PythonInterface.parseParamStr(paramStr)
     if (propErrorStr.length > 0) return StepResult.mkErrorMessage(errorStr)
     this.properties = _props
 
@@ -224,6 +224,12 @@ class PythonInterface() {
   }
 
 
+
+
+}
+
+object PythonInterface {
+
   /*
    * Helper functions
    */
@@ -256,10 +262,6 @@ class PythonInterface() {
 
     return (out.toMap, "")
   }
-
-}
-
-object PythonInterface {
 
   def printUsage(): Unit = {
     println("Usage: PythonInterface <portNumber>")

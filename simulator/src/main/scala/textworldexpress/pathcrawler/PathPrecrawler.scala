@@ -6,10 +6,9 @@ import textworldexpress.struct.{StepResult, TextGame}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import collection.JavaConverters._
 
 
-
-//class CrawlerRunner(id:Int, SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], initialPath:Array[String], startSeed:Int=0, gameFold:String="train", maxDepth:Int=5) extends Thread {
 class CrawlerRunner1(id:Int, crawler:PathCrawler, initialPath:Array[String], maxDepth:Int=5) extends Thread {
   private var isRunning:Boolean = false
   private var isWinning:Boolean = false
@@ -19,8 +18,6 @@ class CrawlerRunner1(id:Int, crawler:PathCrawler, initialPath:Array[String], max
 
   // Set thread ID
   //this.setName(id.toString)
-
-  //val crawler = new EntryPointPathCrawler(SF_GAME_NAME, gameProps, startSeed, gameFold)
 
   var results:Option[PrecrawledPathNode] = None
 
@@ -48,10 +45,11 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
   val (success, generator) = GameGenerator.mkGameGenerator(gameName = SF_GAME_NAME, gameProps)
   if (!success) throw new RuntimeException("ERROR creating text game(): " + generator.errorStr)
 
-  //val precachedGame = this.mkCachedVariations(numVariationsToMake = 1, startSeed, gameFold)(0)
-
   // Clear the string LUT
   StepResultHashed.resetLUT()
+
+  // Store the generated game's full properties, for creating a verbose filename later on
+  var generatedGameProps = Map[String, Int]()
 
   /*
    * Game crawling
@@ -68,13 +66,16 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
     val curDepth = pathSoFar.length
     if (curDepth >= maxDepth) return None
 
+    val startTime = System.currentTimeMillis()
+
     // Create a fresh game
     //val game = precachedGame.deepCopy()
     //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = 1, "train")
     //val game = _game
     val game = this.generator.mkGame(seed = seed, gameFold)
     if (pathSoFar.length == 0) {
-      println("Game Generation Propreties: " + game.getGenerationProperties().toString() + ")")
+      this.generatedGameProps = game.getGenerationProperties()
+      println("Game Generation Propreties: " + this.generatedGameProps.toString() + ")")
     }
 
     // Step 1: Do actions so far
@@ -152,7 +153,12 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
         // Debug output (for main thread)
         if (pathSoFar.length == 0) {
           Thread.sleep(1000)
-          println("Threads still running: " + stillRunning.mkString(" "))
+          val deltaTime = (System.currentTimeMillis() - startTime).toDouble / 1000.0
+          val deltaTimeInt = math.round(deltaTime).toInt
+
+          if (deltaTimeInt % 5 == 0) {
+            println("(" + deltaTimeInt + " sec) Threads still running: " + stillRunning.mkString(" "))
+          }
         } else {
           // Or, if not main thread, just pause briefly before rechecking if work is done
           Thread.sleep(10)
@@ -195,25 +201,6 @@ object PathPrecrawler {
     println("")
 
 
-    // Run the path
-    //val path = precrawledGameTree.get.runPath(winningPath)
-
-    /*
-    val path = precrawledGameTree.get.runPath(goldPath)
-
-    for (i <- 0 until path.length) {
-      val node = path(i).toStepResult(StepResultHashed.stringLUT.toArray)
-
-      println("Path step " + i)
-      println ("> " + goldPath(i) )
-      println (node.observationStr)
-      println (node.scoreNormalized)
-
-      println("")
-    }
-     */
-
-
     // Convert
     val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT)
     //## println( precrawled.StringLUTToString() )
@@ -222,8 +209,10 @@ object PathPrecrawler {
 
     // Create verbose filename
     var propsStr:String = ""
-    for (key <- gameProps.keySet.toList.sorted) {
-      propsStr += "-" + key + gameProps(key)
+    for (key <- crawler.generatedGameProps.keySet.toList.sorted) {
+      if ((key != "seed") && (key != "gameSet")) {
+        propsStr += "-" + key + crawler.generatedGameProps(key)
+      }
     }
 
     val filenameOut = filenameOutPrefix + "-game" + gameName + "-seed" + seed + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
@@ -232,58 +221,6 @@ object PathPrecrawler {
 
   }
 
-  /*
-    def crawlTWC(numGamesToCrawl:Int=1): Unit = {
-      val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
-      gameProps("includeDoors") = 0                   // Disable doors
-      gameProps("numLocations") = 1                   // Number of locations
-      gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
-      //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
-
-      val gameName = "twc"
-      val maxDepth = 6
-
-
-      for (i <- 0 until numGamesToCrawl) {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest1")
-      }
-
-      for (i <- 0 until numGamesToCrawl) {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
-      }
-
-    }
-
-
-    def crawlCoin(numGamesToCrawl:Int=1): Unit = {
-      val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
-      gameProps("includeDoors") = 0                   // Disable doors
-      gameProps("numLocations") = 4                   // Number of locations
-      gameProps("numDistractorItems") = 1             // Number of distractor items
-      gameProps("limitInventorySize") = 0             // Number of distractor items
-
-      val gameName = "coin"
-      val maxDepth = 13
-
-
-      for (i <- 0 until numGamesToCrawl) {
-        try {
-          this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest1")
-        } catch {
-          case e:Throwable => { println ("ERROR: " + e.toString) }
-        }
-      }
-
-      for (i <- 0 until numGamesToCrawl) {
-        try {
-          this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
-        } catch {
-          case e:Throwable => { println ("ERROR: " + e.toString) }
-        }
-      }
-
-    }
-  */
 
 
   def printUsage(): Unit = {
@@ -299,6 +236,7 @@ object PathPrecrawler {
     println ("  PathCrawler twc train 0 6 numLocations=1,includeDoors=0,numItemsToPutAway=2")
   }
 
+  // Main Entry Point
   def main(args:Array[String]): Unit = {
 
     // Step 1: Parse command line arguments
@@ -346,7 +284,28 @@ object PathPrecrawler {
       sys.exit(1)
     }
 
-    // TODO: Check for cannonical game seed for the set.
+    // Check: Check that this seed is a cannonical seed for this game fold, and throw a warning if not.
+    val interface = new PythonInterface()
+    if (gameFold == "train") {
+      val validSeeds = interface.getSeedsTrain().asScala
+      if (!validSeeds.contains(gameSeed)) {
+        println ("WARNING: Seed (" + gameSeed + ") is not typical for game fold (" + gameFold + ").  Typical values for (" + gameFold + ") are between " + validSeeds.min + " and " + validSeeds.max + ".")
+        Thread.sleep(5000)
+      }
+    } else if (gameFold == "dev") {
+      val validSeeds = interface.getSeedsDev().asScala
+      if (!validSeeds.contains(gameSeed)) {
+        println ("WARNING: Seed (" + gameSeed + ") is not typical for game fold (" + gameFold + ").  Typical values for (" + gameFold + ") are between " + validSeeds.min + " and " + validSeeds.max + ".")
+        Thread.sleep(5000)
+      }
+    } else if (gameFold == "test") {
+      val validSeeds = interface.getSeedsTest().asScala
+      if (!validSeeds.contains(gameSeed)) {
+        println ("WARNING: Seed (" + gameSeed + ") is not typical for game fold (" + gameFold + ").  Typical values for (" + gameFold + ") are between " + validSeeds.min + " and " + validSeeds.max + ".")
+        Thread.sleep(5000)
+      }
+    }
+
 
     // Parse game seed
     var maxDepth:Int = -1
@@ -368,7 +327,7 @@ object PathPrecrawler {
     }
     if (maxDepth > 12) {
       println ("WARNING: maximum crawl depth ( " + maxDepth + ") exceeds maximum recommended depth of 12.  This may take some time to crawl.")
-      Thread.sleep(2000)
+      Thread.sleep(5000)
     }
 
 

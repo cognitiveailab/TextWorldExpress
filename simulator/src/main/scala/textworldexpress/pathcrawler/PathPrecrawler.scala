@@ -73,6 +73,9 @@ class PathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], seed
     //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = 1, "train")
     //val game = _game
     val game = this.generator.mkGame(seed = seed, gameFold)
+    if (pathSoFar.length == 0) {
+      println("Game Generation Propreties: " + game.getGenerationProperties().toString() + ")")
+    }
 
     // Step 1: Do actions so far
     var stepResult:StepResult = game.initalStep()
@@ -223,58 +226,58 @@ object PathPrecrawler {
 
   }
 
-/*
-  def crawlTWC(numGamesToCrawl:Int=1): Unit = {
-    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
-    gameProps("includeDoors") = 0                   // Disable doors
-    gameProps("numLocations") = 1                   // Number of locations
-    gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
-    //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
+  /*
+    def crawlTWC(numGamesToCrawl:Int=1): Unit = {
+      val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+      gameProps("includeDoors") = 0                   // Disable doors
+      gameProps("numLocations") = 1                   // Number of locations
+      gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
+      //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
-    val gameName = "twc"
-    val maxDepth = 6
-
-
-    for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest1")
-    }
-
-    for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
-    }
-
-  }
+      val gameName = "twc"
+      val maxDepth = 6
 
 
-  def crawlCoin(numGamesToCrawl:Int=1): Unit = {
-    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
-    gameProps("includeDoors") = 0                   // Disable doors
-    gameProps("numLocations") = 4                   // Number of locations
-    gameProps("numDistractorItems") = 1             // Number of distractor items
-    gameProps("limitInventorySize") = 0             // Number of distractor items
-
-    val gameName = "coin"
-    val maxDepth = 13
-
-
-    for (i <- 0 until numGamesToCrawl) {
-      try {
+      for (i <- 0 until numGamesToCrawl) {
         this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest1")
-      } catch {
-        case e:Throwable => { println ("ERROR: " + e.toString) }
       }
+
+      for (i <- 0 until numGamesToCrawl) {
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
+      }
+
     }
 
-    for (i <- 0 until numGamesToCrawl) {
-      try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
-      } catch {
-        case e:Throwable => { println ("ERROR: " + e.toString) }
-      }
-    }
 
-  }
-*/
+    def crawlCoin(numGamesToCrawl:Int=1): Unit = {
+      val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+      gameProps("includeDoors") = 0                   // Disable doors
+      gameProps("numLocations") = 4                   // Number of locations
+      gameProps("numDistractorItems") = 1             // Number of distractor items
+      gameProps("limitInventorySize") = 0             // Number of distractor items
+
+      val gameName = "coin"
+      val maxDepth = 13
+
+
+      for (i <- 0 until numGamesToCrawl) {
+        try {
+          this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest1")
+        } catch {
+          case e:Throwable => { println ("ERROR: " + e.toString) }
+        }
+      }
+
+      for (i <- 0 until numGamesToCrawl) {
+        try {
+          this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest1")
+        } catch {
+          case e:Throwable => { println ("ERROR: " + e.toString) }
+        }
+      }
+
+    }
+  */
 
 
   def printUsage(): Unit = {
@@ -342,7 +345,7 @@ object PathPrecrawler {
     // Parse game seed
     var maxDepth:Int = -1
     try {
-      gameSeed = args(3).toInt
+      maxDepth = args(3).toInt
     } catch {
       case _:Throwable => {
         println ("ERROR: Can not convert max depth (" + args(3) + ") to integer.")
@@ -351,13 +354,13 @@ object PathPrecrawler {
         sys.exit(1)
       }
     }
-    if (gameSeed < 1) {
+    if (maxDepth < 1) {
       println ("ERROR: maximum crawl depth (" + maxDepth + ") must be positive.")
       println ("")
       this.printUsage()
       sys.exit(1)
     }
-    if (gameSeed > 12) {
+    if (maxDepth > 12) {
       println ("WARNING: maximum crawl depth ( " + maxDepth + ") exceeds maximum recommended depth of 12.  This may take some time to crawl.")
       Thread.sleep(2000)
     }
@@ -381,6 +384,11 @@ object PathPrecrawler {
       println ("No game properties found.   Using default properties.")
     }
 
+    println ("Game Name: " + gameName)
+    println ("Game Fold: " + gameFold)
+    println ("Game Seed: " + gameSeed)
+    println ("Max Depth: " + maxDepth)
+    println ("Properties: " + gameProps.toString())
 
 
     // Step 2: Do crawling

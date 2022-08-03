@@ -1,5 +1,5 @@
 # TextWorldExpress
-A highly optimized reimplementation of three text game benchmarks focusing on instruction following, commonsense reasoning, and object identification.
+TextWorldExpress is a highly optimized reimplementation of three text game benchmarks focusing on instruction following, commonsense reasoning, and object identification.  TextWorldExpress is intended for natural language processing research, and a system description is described in the Arxiv preprint [TextWorldExpress: Simulating Text Games at One Million Steps Per Second](https://arxiv.org/abs/2208.01174).
 
 # Quickstart
 **Before running:** You will have to have `Java 1.8+` installed on your system (shipped with most linux distributions).
@@ -207,5 +207,11 @@ A: The fastest we have clocked `TextWorldExpress` using the random agent benchma
 # Citation
 If you use `TextWorldExpress`, please provide the following citation:
 ```
-TODO
+@article{jansen2022textworldexpress,
+  url = {https://arxiv.org/abs/2208.01174},
+  author = {Jansen, Peter A. and Côté, Marc-Alexandre},
+  title = {TextWorldExpress: Simulating Text Games at One Million Steps Per Second},
+  journal = {arXiv},
+  year = {2022},
+}
 ```

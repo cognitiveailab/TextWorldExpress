@@ -16,7 +16,6 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % 
 libraryDependencies += "com.lihaoyi" %% "upickle" % "2.0.0"
 libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.8.0"
 
-
 // JSON Serialization
 val circeVersion = "0.14.1"
 
@@ -32,3 +31,12 @@ libraryDependencies += "net.sf.py4j" % "py4j" % "0.10.3"
 
 // Set main class to be the Python Interface
 mainClass in Compile := Some("textworldexpress.runtime.PythonInterface")
+
+//
+// Proguard
+//
+
+enablePlugins(SbtProguard)
+proguardOptions in Proguard ++= Seq("-dontoptimize", "-dontobfuscate", "-dontnote", "-dontwarn", "-ignorewarnings")
+proguardOptions in Proguard += "-keepclasseswithmembers class textworldexpress.runtime.PythonInterface {*;}"
+javaOptions in (Proguard, proguard) := Seq("-Xmx1G")

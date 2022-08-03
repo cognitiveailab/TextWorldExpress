@@ -1,2 +1,3 @@
 py4j
 orjson
+prompt_toolkit

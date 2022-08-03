@@ -1,15 +1,36 @@
-import time
+import sys
 import random
 import argparse
 
 from textworld_express import TextWorldExpressEnv
 
+prompt_toolkit_available = False
+try:
+    # For command line history and autocompletion.
+    from prompt_toolkit import prompt
+    from prompt_toolkit.completion import WordCompleter
+    from prompt_toolkit.history import InMemoryHistory
+    prompt_toolkit_available = sys.stdout.isatty()
+except ImportError:
+    pass
+
+try:
+    # For command line history when prompt_toolkit is not available.
+    import readline  # noqa: F401
+except ImportError:
+    pass
+
+
 
 def userConsole(args):
     """ Example user input console, to play through a game. """
+    history = None
+    if prompt_toolkit_available:
+        history = InMemoryHistory()
+
     exitCommands = ["quit", "exit"]
 
-    gameName = args['game_name']    
+    gameName = args['game_name']
 
     # Initialize environment
     env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
@@ -19,35 +40,35 @@ def userConsole(args):
     # Load the task
     gameFold = "train"
     gameSeed = args['seed']
-    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"    
+    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = True
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
-    
+
     print("Selected Game: " + str(gameName))
-    print("Generation properties: " + str(env.getGenerationProperties()) )    
+    print("Generation properties: " + str(env.getGenerationProperties()) )
 
     if (generateGoldPath == True):
         print("Gold path: " + str(env.getGoldActionSequence()))
-            
+
     # Initialize a random task variation in this set
     obs = env.resetWithSeed(gameSeed, gameFold, generateGoldPath)
 
     # Take action
     curIter = 0
-    
+
     userInputStr = ""
     print("\nType 'exit' to quit.\n")
     while (userInputStr not in exitCommands):
 
         # Select a random action
-        validActions = obs['validActions']        
+        validActions = obs['validActions']
 
         # Verbose output mode
         print("")
         print("Step " + str(curIter))
         print(str(obs['observation']))
         print("Score: " + str(obs['scoreRaw']) + " (raw)    " + str(obs['score']) + " (normalized)")
-        print("Valid Actions: " + str(validActions))            
+        #print("Valid Actions: " + str(validActions))
 
         if (obs['tasksuccess'] == True):
             print("Task Success!")
@@ -55,7 +76,14 @@ def userConsole(args):
             print("Task Failure!")
 
         # Get user input
-        userInputStr = input('> ')
+        if prompt_toolkit_available:
+            actions_completer = WordCompleter(validActions, ignore_case=True, sentence=True)
+            userInputStr = prompt('> ', completer=actions_completer,
+                                  history=history, enable_history_search=True)
+        else:
+            print("Valid Actions: " + str(validActions))
+            userInputStr = input('> ')
+
         # Sanitize input
         userInputStr = userInputStr.lower().strip()
 

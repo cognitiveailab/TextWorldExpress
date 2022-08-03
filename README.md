@@ -144,11 +144,21 @@ One of the unique features of `TextWorldExpress` is that its performance is so f
 
 Generally, if you are using less than a few dozen game variations during training, and you are using games that can be solved in under 10-12 steps, then path precrawling might be a way to gain dramatic benefits in performance. 
 
-To precrawl paths, use the path precrawling tool: 
+To precrawl paths, use the path precrawling tool, `PathCrawler`:
 ```
-TODO  (add command line arguments to this Scala code)
+cd textworld_express
+java -Xmx8g -cp textworld-express-1.0.0.jar textworldexpress.pathcrawler.PathPrecrawler twc train 0 8 numLocations=1,includeDoors=0,numItemsToPutAway=2
 ```
+(Note that you may need to supply more than `8g` of memory, depending on the size of the path being crawled.)
 
+The arguments (in order) are the `gameName`, `gameFold`, `seed`, `maximum depth to crawl the game state tree`, and `game generation properties string`.  The path crawler will export a large JSON file as output.  To load these precrawled paths in Python, please check the `precrawledPathReader.py` example.  For Java/Scala, please see `textworldexpress.benchmark.BenchmarkPrecrawledPath` as an end-to-end example, where `textworldexpress.pathcrawler.PrecrawledPath` provides a storage class for loading/saving precrawled paths (as well as quickly finding winning paths).  Path nodes are stored internally as string-hashed storage classes (`PrecrawledNode` and `StepResultHashed`) for speed/storage efficiency, where `StepResultHashed` can be quickly converted into the normal, human-readable, unhashed version using the `StepResultHashed.toStepResult()` method.  Several example precrawled paths (which are used for the benchmarking scripts) are provided in `/precrawledpaths/`. 
+
+Path crawling can generate large files.  Before path crawling, you'll likely want to make sure that the game is sized appropriately so that it can be solved within the number of steps given.  Usually, this means limiting the number of locations, number of task items, etc.  Below are example times and crawl sizes for a Text World Common Sense game generated with the following parameters (`numItemsToPutAway=2, numLocations=3, includeDoors=0, limitInventorySize=0`) on a 16-core machine: 
+| Depth      | Crawl Time | Number of Nodes |
+| ----------- | ----------- |  ----------- |
+7 | 2 sec | 198k |
+8 | 23 sec | 1.6M |
+9 | 209 sec | 13.5M |
 
 # Benchmarks
 

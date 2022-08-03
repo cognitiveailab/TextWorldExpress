@@ -8,7 +8,6 @@ import scala.collection.mutable.ArrayBuffer
 case class StepResultHashed(val obs:Int, val look:Int, val inv:Int, val acts:Array[Int], val score:Double, val scoreNorm:Double, val succ:Boolean, val fail:Boolean, val valid:Boolean) {
 
   // Convert to StepResult
-  //def toStepResult(stringLUT:ArrayBuffer[String]): StepResult = {
   def toStepResult(stringLUT:Array[String], randActionShuffleSeed:Int = -1): StepResult = {
     val validActionsStr = new Array[String](this.acts.length)
     for (i <- 0 until acts.length) {

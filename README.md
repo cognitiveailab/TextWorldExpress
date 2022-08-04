@@ -1,9 +1,9 @@
 # TextWorldExpress
 TextWorldExpress is a highly optimized reimplementation of three text game benchmarks focusing on instruction following, commonsense reasoning, and object identification.  TextWorldExpress is intended for natural language processing research, and a system description can be found in the Arxiv preprint [TextWorldExpress: Simulating Text Games at One Million Steps Per Second (PDF)](https://arxiv.org/abs/2208.01174).
 
-[![Watch the video](https://img.youtube.com/vi/MG6Ac4Xo6Ds/hqdefault.jpg)](https://youtu.be/MG6Ac4Xo6Ds)
+#### Watch the system demonstration video on Youtube
+[![Watch the video](https://user-images.githubusercontent.com/660004/182846595-f5379a83-0749-4bbc-91c9-a406ed1a2043.png)](https://youtu.be/MG6Ac4Xo6Ds)
 
-[Watch the system demonstration video on Youtube](https://youtu.be/MG6Ac4Xo6Ds)
 
 # Quickstart
 **Before running:** You will have to have `Java 1.8+` installed on your system (shipped with most linux distributions).
@@ -122,7 +122,7 @@ Environments initialize with default parameters.  To change the parameters, supp
 
 **Querying current game parameters:** Sometimes you may want to know what parameters the current game is generated with.  These can be queried using the `getGenerationProperties()` method:
 ```python
-print("Generation properties: " + str(env.getGenerationProperties()) )
+print("Generation properties: " + str(env.getGenerationProperties()))
 ```
 
 

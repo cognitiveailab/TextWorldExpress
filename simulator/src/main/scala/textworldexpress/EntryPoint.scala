@@ -43,7 +43,7 @@ object EntryPoint {
 
     val gameFold:String = "train"
     //val properties = Map("numLocations" -> 11)
-    val properties = Map("numLocations" -> 11, "maxDistanceApart" -> 3, "includeDoors" -> 1)
+    val properties = Map("numLocations" -> 11, "maxDistanceApart" -> 3, "includeDoors" -> 1, "numDistractorItems" -> 10)
 
     //val properties = Map("numLocations" -> 3)
 

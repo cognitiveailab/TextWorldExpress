@@ -625,7 +625,7 @@ class MapReaderGameGenerator {
     startLocation.addObject(box)
 
     // Add distractor items
-    val addedDistractorNames = this.addDistractorItems(r, locations, numToAdd = numDistractorItems, ArrayBuffer.empty[FastObject], fold)
+    val addedDistractorNames = this.addTWCItems(r, locations, numToAdd = numDistractorItems, fold)
 
     // Create environment map (to be added to the agent inventory later)
     val mapbook = this.mkMap(r, locations, segmentMode = SEGMENT_MODE_GROUPED)
@@ -789,29 +789,46 @@ class MapReaderGameGenerator {
   }
 
   // Randomly add some number of distractor items to the environment, in their canonical locations, using the TWC database.
-  def addDistractorItems(r:Random, locations:ArrayBuffer[Room], numToAdd:Int, taskObjects:ArrayBuffer[FastObject], fold:String): ArrayBuffer[String] = {
-    val objectNamesAdded = new ArrayBuffer[String]()
-    for (taskObject <- taskObjects) objectNamesAdded.append(taskObject.name)
+  def addTWCItems(r:Random, locations:ArrayBuffer[Room], numToAdd:Int, fold:String): ArrayBuffer[FastObject] = {
+    val objectsAdded = new ArrayBuffer[FastObject]
+    val objectNamesAdded = new ArrayBuffer[String]
 
     var attempts:Int = 0
-    while ((objectNamesAdded.length < numToAdd+taskObjects.length) && (attempts < 100)) {
+    while ((objectsAdded.length < numToAdd) && (attempts < 100)) {
       // Step 1: Pick a random location
       val randLocIdx:Int = r.nextInt(locations.length)
       val location = locations(randLocIdx)
-      val objects = location.contents.toArray
+      val objects = location.contents.toArray.sortBy(_.name)      // TODO: NOTE: EXPENSIVE!!!!  (Currently required for determinism)
       if (objects.length > 0) {
         val randObjIdx = r.nextInt(objects.length)
         val container = objects(randObjIdx)
 
         //println("location: " + location.name)
 
-        val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
-        if (distractorItem.isDefined) {
-          if (!objectNamesAdded.contains(distractorItem.get.name)) {
-            container.addObject(distractorItem.get)
-            objectNamesAdded.append(distractorItem.get.name)
-            //println ("Added " + distractorItem.get.name + " to " + container.name + " in " + location.name)
+        if (item.isDefined) {
+          //println ("Item: " + item.get.name)
+
+          if (!objectNamesAdded.contains(item.get.name)) {
+            // NOTE: For TWC, instead of adding to the container, we add to the room that the container is in.
+            val containerRoom = container.currentContainer
+
+            containerRoom match {
+              case x:Room => {
+                // Add to room that container is in (rather than the container itself) -- i.e. the object should be "on the floor", needing to be put away.
+                x.addObject(item.get)
+                // Keep track of the items we add
+                objectNamesAdded.append(item.get.name)
+                objectsAdded.append(item.get)
+
+                //println ("Added " + item.get.name + " to room " + x.name + " that contains container " + container.name)
+              }
+              case _ => {
+                // do nothing
+              }
+            }
+            //
           }
         } else {
           //println ("distractor not defined")
@@ -822,9 +839,8 @@ class MapReaderGameGenerator {
       //println ("Attempts: " + attempts)
     }
 
-    return objectNamesAdded
+    return objectsAdded
   }
-
 
   // Connects rooms (adds pointers to other locations in the Room storage classes) based on a given connection map
   def connectRoomsFromMap(r:Random, map:Array[Array[Room]], includeDoors:Boolean): Unit = {

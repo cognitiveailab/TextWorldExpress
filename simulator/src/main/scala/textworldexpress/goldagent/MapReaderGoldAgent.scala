@@ -197,6 +197,7 @@ class MapReaderGoldAgent(game:MapReaderGame) {
 }
 
 
+// Storage class for the map pathfinding algorithm for the gold agent
 class TreeNode(val location:Room, val parent:Option[TreeNode] = None, val children:ArrayBuffer[TreeNode] = new ArrayBuffer[TreeNode]) {
   def addChild(node:TreeNode): Unit = {
     this.children.append(node)

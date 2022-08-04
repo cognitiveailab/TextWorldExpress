@@ -58,7 +58,7 @@ class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject], box:Box) ext
 
 
 
-class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], mapbook:Mapbook, box:Box, startLocation:Room, endLocation:Room, actualDistanceApart:Int, limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], val mapbook:Mapbook, val box:Box, val startLocation:Room, val endLocation:Room, val actualDistanceApart:Int, val limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -1070,8 +1070,8 @@ class MapReaderGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(MapReaderGame, Array[String]) = {
-    val MAX_ATTEMPTS:Int = 50
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
+    val MAX_ATTEMPTS:Int = 1
     val rg = new Random()
 
     var attempts: Int = 0

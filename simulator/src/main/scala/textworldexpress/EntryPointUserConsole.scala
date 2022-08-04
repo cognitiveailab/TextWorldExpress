@@ -38,6 +38,7 @@ object EntryPointUserConsole {
     println ("Seed: " + seed)
     println ("Gold path: " + goldPath.mkString(", "))
     println ("Game Properties: " + gameProps.toString())
+    println ("Game Properties (from game): " + game.getGenerationProperties().toString())
     println ("-----------------------------------------------------------")
     println ("")
 

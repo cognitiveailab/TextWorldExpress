@@ -19,12 +19,12 @@ object EntryPoint {
   def main(args:Array[String]): Unit = {
     val startTime = System.currentTimeMillis()
 
-    val numEnvs:Int = 100000
-    //val numEnvs:Int = 100
+    //val numEnvs:Int = 100000
+    val numEnvs:Int = 10000
     var numStepsPerEnv:Int = 50
 
-    val goldPathGeneration:Boolean = false
-    val verifyGoldPaths:Boolean = false
+    val goldPathGeneration:Boolean = true
+    val verifyGoldPaths:Boolean = true
 
     //val goldPathGeneration:Boolean = true
     //val verifyGoldPaths:Boolean = true
@@ -43,7 +43,7 @@ object EntryPoint {
 
     val gameFold:String = "train"
     //val properties = Map("numLocations" -> 11)
-    val properties = Map("numLocations" -> 11, "maxDistanceApart" -> 3)
+    val properties = Map("numLocations" -> 11, "maxDistanceApart" -> 3, "includeDoors" -> 1)
 
     //val properties = Map("numLocations" -> 3)
 
@@ -98,16 +98,6 @@ object EntryPoint {
       }
 
 
-      //## clone test
-      game match {
-        case x:CoinGame => {
-          //println ("Deep Copy")
-          val clone = x.deepCopy()
-        }
-        case _ => {
-          // Do nothing
-        }
-      }
 
 
 

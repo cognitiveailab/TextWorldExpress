@@ -605,6 +605,112 @@ class MapReaderGameGenerator {
     return (locations, taskObjects, mapbook)
   }
 
+  // Find two locations that are N units apart
+  def findStartEndLocations(r:Random, locations:ArrayBuffer[Room], distance:Int = 1):Option[(Room, Room)] = {
+    val MAX_ATTEMPTS = 10
+    var attempts:Int = 0
+
+    while (attempts < MAX_ATTEMPTS) {
+      // Step 1: Randomly pick a location
+      val randomLocationIdx = r.nextInt(locations.length)
+      val startLocation = locations(randomLocationIdx)
+
+      // Step 2: Check if there are locations that are 'distance' away from it
+      val locationsAtDistance = getRoomsAtDistance(locations, startLocation, distance)
+      if (locationsAtDistance.length > 0) {
+        val shuffled = r.shuffle(locationsAtDistance)
+        val endLocation = shuffled(0)
+
+        return Some((startLocation, endLocation))
+      }
+
+      // If we reach here, we failed to find any locations at distance 'distance' from the randomly selected location.  Start the process over again.
+      attempts += 1
+    }
+
+    // If we reach here, we were not able to find any valid paris, even after MAX_ATTEMPTS.
+    return None
+  }
+
+  // Helper: Gets all rooms that are distance X away from a given start location.
+  private def getRoomsAtDistance(locations:ArrayBuffer[Room], startLocation:Room, distance:Int = 1): ArrayBuffer[Room] = {
+    val distances = new Array[Int](locations.length)
+
+    var locationsToCheck = new ArrayBuffer[Room]
+    // Step 1: Initialize distances array
+    for (i <- 0 until locations.length) {
+      if (locations(i).name == startLocation.name) {
+        distances(i) = 0
+        locationsToCheck.append(startLocation)
+      } else {
+        distances(i) = -1
+      }
+    }
+
+    // Step 2: Iterate, determining the distances of each location from the start location
+    while (locationsToCheck.length > 0) {
+      val nextLocations = new ArrayBuffer[Room]
+
+      for (location <- locationsToCheck) {
+        // Get the current distance of this location
+        val curDist = distances(locations.indexOf(location))
+
+        // Check neighbours to see if their distance is still unpopulated
+        // North
+        if (location.locationNorth != null) {
+          val idx = locations.indexOf(location.locationNorth)
+          if (distances(idx) < 0) {
+            distances(idx) = curDist + 1
+            nextLocations.append(location.locationNorth)
+          }
+        }
+
+        // South
+        if (location.locationSouth != null) {
+          val idx = locations.indexOf(location.locationSouth)
+          if (distances(idx) < 0) {
+            distances(idx) = curDist + 1
+            nextLocations.append(location.locationSouth)
+          }
+        }
+
+        // East
+        if (location.locationEast != null) {
+          val idx = locations.indexOf(location.locationEast)
+          if (distances(idx) < 0) {
+            distances(idx) = curDist + 1
+            nextLocations.append(location.locationEast)
+          }
+        }
+
+        // West
+        if (location.locationWest != null) {
+          val idx = locations.indexOf(location.locationWest)
+          if (distances(idx) < 0) {
+            distances(idx) = curDist + 1
+            nextLocations.append(location.locationWest)
+          }
+        }
+      }
+
+      locationsToCheck = nextLocations
+    }
+
+    // Step 3: Collect a list of the locations that are the appropriate distance away
+    val out = new ArrayBuffer[Room]
+    for (i <- 0 until locations.length) {
+      if (distances(i) == distance) {
+        out.append(locations(i))
+      }
+    }
+
+    // Return
+    out
+  }
+
+
+
+
   val SEGMENT_MODE_INDIVIDUAL = 0
   val SEGMENT_MODE_GROUPED    = 1
   def mkMap(r:Random, locations:ArrayBuffer[Room], segmentMode:Int = SEGMENT_MODE_GROUPED):Mapbook = {

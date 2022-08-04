@@ -667,6 +667,29 @@ class Mapbook() extends FastObject(name = "map") {
 }
 
 /*
+ * Answer box
+ */
+class Box() extends FastObject("box") {
+  this.isContainer = true
+  this.isOpen = true
+  this.isOpenable = false
+  this.isMovable = false
+
+  override def getDescription():String = {
+    if (this.contents.isEmpty) {
+      return "a box, that is empty"
+    }
+
+    val os = new StringBuilder()
+    os.append("A box, that contains ")
+    os.append(this.getContentsListStr())
+
+    return os.toString()
+  }
+
+}
+
+/*
  * Generic furniture objects
  */
 // Generic for anything type of openable furniture

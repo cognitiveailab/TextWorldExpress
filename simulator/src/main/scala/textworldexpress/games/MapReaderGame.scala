@@ -2,7 +2,7 @@ package textworldexpress.games
 
 import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
 import textworldexpress.goldagent.{CoinGoldAgent, MapReaderGoldAgent}
-import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Street, Supermarket}
+import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
 import scala.collection.mutable
@@ -51,7 +51,7 @@ class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject]) extends Scor
 
 
 
-class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], mapbook:Mapbook, limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], mapbook:Mapbook, box:Box, startLocation:Room, endLocation:Room, actualDistanceApart:Int, limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -59,7 +59,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   agentInventory.addObject(mapbook)
 
   // Initial location
-  var agentLocation:Room = locations(0)
+  var agentLocation:Room = startLocation
 
   // Objects that have been deleted from the environment, but whose status should still be tracked
   val deletedObjects = new ArrayBuffer[FastObject]()
@@ -79,6 +79,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   // Internal game random number generator -- primarily for randomizing valid action list.
   val random = new Random(seed)
 
+  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the starting location."
 
 
   /*
@@ -373,6 +374,11 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
     }
   }
 
+  def actionTaskDescription(params:Array[FastObject]):String = this.actionTaskDescription()
+  def actionTaskDescription():String = {
+    return this.taskDesc
+  }
+
 
   val ACTION_TAKE         = 1
   val ACTION_PUTIN        = 2
@@ -391,6 +397,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   val ACTION_EXAMINE      = 15
   val ACTION_OPENDOOR     = 16
   val ACTION_CLOSEDOOR    = 17
+  val ACTION_TASKDESC     = 18
 
   val ACTION_INVALID      = 0
 
@@ -402,7 +409,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
 
     actionIdx match {
       case ACTION_TAKE => return this.actionTake(params)
-      //case ACTION_PUTIN => return this.actionPutIn(params)
+      case ACTION_PUTIN => return this.actionPutIn(params)
       //case ACTION_OPEN => return this.actionOpenContainer(params)
       //case ACTION_CLOSE => return this.actionCloseContainer(params)
       //case ACTION_EAT => return this.actionEat(params)
@@ -418,6 +425,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
       //case ACTION_EXAMINE => return this.actionExamine(params)
       case ACTION_OPENDOOR => return this.actionOpenDoor(params)
       case ACTION_CLOSEDOOR => return this.actionCloseDoor(params)
+      case ACTION_TASKDESC => return this.actionTaskDescription(params)
 
       case _ => return "That is not a command that I recognize."
     }
@@ -433,6 +441,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
     // Generic action
     actionsOut.append( ("look around", ACTION_LOOKAROUND, Array.empty[FastObject]) )
     actionsOut.append( ("inventory", ACTION_INVENTORY, Array.empty[FastObject]) )
+    actionsOut.append( ("task", ACTION_TASKDESC, Array.empty[FastObject]))
 
     // Move actions, based on current location
     if (this.agentLocation.locationNorth != null) actionsOut.append( ("move north", ACTION_MOVE, Array(this.agentLocation.doorNorth, this.agentLocation.locationNorth)) )
@@ -556,7 +565,7 @@ class MapReaderGameGenerator {
   val doorMaker = new DoorMaker()
 
 
-  def mkEnvironment(r:Random, numLocations:Int, numDistractorItems:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[FastObject], Mapbook) = {
+  def mkEnvironment(r:Random, numLocations:Int, maxDistanceApart:Int, numDistractorItems:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[FastObject], Mapbook, Box, Room, Room, Int) = {
     val locations = new ArrayBuffer[Room]()
 
     val kitchen = new Kitchen(r, addKnife = false)
@@ -587,14 +596,26 @@ class MapReaderGameGenerator {
     // Connect rooms/add doors
     this.connectRoomsFromMap(r, map.get, includeDoors)
 
-    // Randomly select one location to put the coin in
-    val randomLocationIdx = r.nextInt(locations.length)
-    val coin = new Coin()
-    locations(randomLocationIdx).addObject(coin)
+    // Find start/end locations
+    val distanceApart = r.nextInt(maxDistanceApart)+1
+    val startEndLocations = this.findStartEndLocations(r, locations, distance = distanceApart)
+    if (startEndLocations.isEmpty) {
+      // TODO: Error message about no locations found that distance apart
+      // TODO: Fail gracefully.
+      throw new RuntimeException("ERROR: No locations could be found that distance apart (" + maxDistanceApart + "). ")
+    }
+    val startLocation = startEndLocations.get._1
+    val endLocation = startEndLocations.get._2
 
+    // Put the coin in the end location
+    val coin = new Coin()
+    endLocation.addObject(coin)
     val taskObjects = new ArrayBuffer[FastObject]
     taskObjects.append(coin)
 
+    // Put a box in the start location
+    val box = new Box()
+    startLocation.addObject(box)
 
     // Add distractor items
     val addedDistractorNames = this.addDistractorItems(r, locations, numToAdd = numDistractorItems, ArrayBuffer.empty[FastObject], fold)
@@ -602,12 +623,12 @@ class MapReaderGameGenerator {
     // Create environment map (to be added to the agent inventory later)
     val mapbook = this.mkMap(r, locations, segmentMode = SEGMENT_MODE_GROUPED)
 
-    return (locations, taskObjects, mapbook)
+    return (locations, taskObjects, mapbook, box, startLocation, endLocation, distanceApart)
   }
 
   // Find two locations that are N units apart
   def findStartEndLocations(r:Random, locations:ArrayBuffer[Room], distance:Int = 1):Option[(Room, Room)] = {
-    val MAX_ATTEMPTS = 10
+    val MAX_ATTEMPTS = 25
     var attempts:Int = 0
 
     while (attempts < MAX_ATTEMPTS) {
@@ -1021,11 +1042,12 @@ class MapReaderGameGenerator {
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
+  def mkGame(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
     props("numLocations") = numLocations
+    props("maxDistanceApart") = maxDistanceApart
     props("numDistractorItems") = numDistractorItems
     props("includeDoors") = if (includeDoors) { 1 } else { 0 }
     props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
@@ -1033,14 +1055,15 @@ class MapReaderGameGenerator {
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, taskObjects, mapbook) = mkEnvironment(r, numLocations, numDistractorItems, includeDoors, fold)
-    val game = new MapReaderGame( locations.toArray, taskObjects, mapbook, limitInventorySize, generationProperties = props.toMap )
+    val (locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart) = mkEnvironment(r, numLocations, maxDistanceApart, numDistractorItems, includeDoors, fold)
+    props("actualDistanceApart") = actualDistanceApart
+    val game = new MapReaderGame( locations.toArray, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(MapReaderGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(MapReaderGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -1048,7 +1071,7 @@ class MapReaderGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize, fold)
+        val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize, fold)
         val goldAgent = new MapReaderGoldAgent(game)   //## TODO
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
@@ -1062,7 +1085,7 @@ class MapReaderGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize)
+    val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize)
     return (game, goldPath)
   }
 

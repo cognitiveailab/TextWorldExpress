@@ -2,7 +2,7 @@ package textworldexpress.games
 
 import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
 import textworldexpress.goldagent.{CoinGoldAgent, MapReaderGoldAgent}
-import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Street, Supermarket}
+import textworldexpress.objects.{Alley, Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Foyer, Garage, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Sideyard, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
 import scala.collection.mutable
@@ -588,6 +588,10 @@ class MapReaderGameGenerator {
     if (numLocations >= 9) locations.append( new Driveway(r) )
     if (numLocations >= 10) locations.append( new Street(r) )
     if (numLocations >= 11) locations.append( new Supermarket(r) )
+    if (numLocations >= 12) locations.append( new Sideyard(r) )
+    if (numLocations >= 13) locations.append( new Alley(r) )
+    if (numLocations >= 14) locations.append( new Foyer(r) )
+    if (numLocations >= 15) locations.append( new Garage(r) )
 
 
     // Create connection map
@@ -1065,7 +1069,7 @@ class MapReaderGameGenerator {
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
+  def mkGame(seed:Long, numLocations:Int = 15, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -1086,7 +1090,7 @@ class MapReaderGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 15, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 1
     val rg = new Random()
 

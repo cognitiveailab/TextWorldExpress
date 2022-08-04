@@ -426,7 +426,7 @@ class Kitchen(r:Random, addKnife:Boolean = true) extends Room("kitchen") {
 
 
 class Backyard(r:Random) extends Room("backyard") {
-  this.prefersConnectingTo = Array("corridor", "kitchen", "living room")
+  this.prefersConnectingTo = Array("corridor", "kitchen", "living room", "sideyard", "alley")
 
   // Constructor
   this.init()
@@ -513,7 +513,7 @@ class Bathroom(r:Random) extends Room("bathroom") {
 }
 
 class Corridor(r:Random) extends Room("corridor") {
-  this.prefersConnectingTo = Array("kitchen", "bathroom", "backyard", "laundry room", "bedroom", "living room")
+  this.prefersConnectingTo = Array("kitchen", "bathroom", "backyard", "laundry room", "bedroom", "living room", "foyer", "garage")
 
   // Constructor
   this.init()
@@ -529,7 +529,7 @@ class Corridor(r:Random) extends Room("corridor") {
 }
 
 class LivingRoom(r:Random) extends Room("living room") {
-  this.prefersConnectingTo = Array("kitchen", "bathroom", "backyard", "bedroom")
+  this.prefersConnectingTo = Array("kitchen", "bathroom", "backyard", "bedroom", "foyer")
 
   // Constructor
   this.init()
@@ -549,7 +549,7 @@ class LivingRoom(r:Random) extends Room("living room") {
 }
 
 class Driveway(r:Random) extends Room("driveway") {
-  this.prefersConnectingTo = Array("corridor", "backyard")
+  this.prefersConnectingTo = Array("corridor", "backyard", "sideyard", "alley", "garage")
 
   // Constructor
   this.init()
@@ -561,7 +561,7 @@ class Driveway(r:Random) extends Room("driveway") {
 }
 
 class Street(r:Random) extends Room("street") {
-  this.prefersConnectingTo = Array("driveway", "backyard", "supermarket")
+  this.prefersConnectingTo = Array("driveway", "backyard", "supermarket", "alley")
 
   // Constructor
   this.init()
@@ -573,13 +573,60 @@ class Street(r:Random) extends Room("street") {
 }
 
 class Supermarket(r:Random) extends Room("supermarket") {
-  this.prefersConnectingTo = Array("street")
+  this.prefersConnectingTo = Array("street", "alley")
 
   // Constructor
   this.init()
 
   def init(): Unit = {
     this.addObject(new Showcase() )
+  }
+
+}
+
+class Sideyard(r:Random) extends Room("sideyard") {
+  this.prefersConnectingTo = Array("backyard", "driveway")
+
+  // Constructor
+  this.init()
+
+  def init(): Unit = {
+    this.addObject( new PatioChair() )
+    this.addObject( new PatioTable() )
+    this.addObject( new Garden() )
+  }
+
+}
+
+class Alley(r:Random) extends Room("alley") {
+  this.prefersConnectingTo = Array("backyard", "driveway", "street", "supermarket")
+
+  // Constructor
+  this.init()
+
+  def init(): Unit = {
+  }
+
+}
+
+class Foyer(r:Random) extends Room("foyer") {
+  this.prefersConnectingTo = Array("livingroom", "corridor")
+
+  // Constructor
+  this.init()
+
+  def init(): Unit = {
+  }
+
+}
+
+class Garage(r:Random) extends Room("garage") {
+  this.prefersConnectingTo = Array("driveway", "corridor")
+
+  // Constructor
+  this.init()
+
+  def init(): Unit = {
   }
 
 }

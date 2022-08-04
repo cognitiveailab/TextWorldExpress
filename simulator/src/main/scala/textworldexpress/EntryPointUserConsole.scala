@@ -21,8 +21,8 @@ object EntryPointUserConsole {
 
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
-    gameProps("numLocations") = 4                   // Number of locations
-    gameProps("maxDistanceApart") = 3               // Distance apart
+    gameProps("numLocations") = 15                   // Number of locations
+    gameProps("maxDistanceApart") = 4               // Distance apart
     gameProps("numIngredients") = 2
     gameProps("numDistractorItems") = 10
     //gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)

@@ -310,8 +310,8 @@ object GameGenerator {
     val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize", "maxDistanceApart")
     // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
 
-    val numLocations:Int            = properties.getOrElse("numLocations", 11)
-    val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 3)
+    val numLocations:Int            = properties.getOrElse("numLocations", 15)
+    val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 4)
     val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
     val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
     val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }

@@ -12,7 +12,7 @@ import scala.util.control.Breaks.{break, breakable}
 
 
 // 'taskObjects' just contains the reference to any coin(s) to be collected in the agent's inventory
-class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject]) extends Scorer {
+class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject], box:Box) extends Scorer {
 
   def doScoring(): Unit = {
     // Check status of each object
@@ -20,15 +20,22 @@ class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject]) extends Scor
     var taskFailure:Boolean = false
     var taskSuccess:Boolean = false
 
-    // The score here is essentially just the number of taskObjects in the inventory.
+    // Get a score of 1 for each task object in the inventory
     for (taskObject <- taskObjects) {
       if ((taskObject.currentContainer != null) && (taskObject.currentContainer.name == "inventory")) {
         curScore += 1
       }
     }
 
+    // Get a score of 2 for each task object in the box
+    for (taskObject <- taskObjects) {
+      if ((taskObject.currentContainer != null) && (taskObject.currentContainer.name == box.name)) {
+        curScore += 2
+      }
+    }
+
     // Determine if the task is successfully completed or not
-    if (curScore == taskObjects.length) {
+    if (curScore == this.calculateMaxScore()) {
       taskSuccess = true
     } else {
       taskSuccess = false
@@ -43,7 +50,7 @@ class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject]) extends Scor
   // Calculate the maximum possible score for this recipe
   def calculateMaxScore():Double = {
     var maxScore:Double = 0.0
-    maxScore = this.taskObjects.length
+    maxScore = (this.taskObjects.length) * 2
     return maxScore
   }
 
@@ -65,7 +72,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer:Scorer = new CoinGameScoring(taskObjects)
+  val scorer:Scorer = new MapReaderGameScoring(taskObjects, box)
 
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]

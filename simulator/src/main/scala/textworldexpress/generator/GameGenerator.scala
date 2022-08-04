@@ -185,7 +185,7 @@ class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, inclu
 /*
  * Map Reader
  */
-class GameGeneratorMapReader(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
+class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
   val generator = new MapReaderGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
@@ -196,6 +196,9 @@ class GameGeneratorMapReader(numLocations:Int = 11, numDistractorItems:Int = 0, 
     val os = new StringBuilder
     if (numLocations < 1) os.append("Number of locations must be greater than one (specified value = " + numLocations + "). ")
     if (numLocations > 11) os.append("Number of locations must be less than or equal to 11 (specified value = " + numLocations + "). ")
+
+    if (maxDistanceApart < 1) os.append("Maximum distance apart must be at least 1 (specified value = " + maxDistanceApart + ").")
+    if (maxDistanceApart <= 4) os.append("Maximum distance apart must be less than or equal to 4 (specified value = " + maxDistanceApart + ").")
 
     if (numDistractorItems < 0) os.append("Number of distractor objects must be greater than or equal to zero (specified value = " + numDistractorItems + "). ")
     if (numDistractorItems > 10) os.append("Number of distractor objects must be less than or equal to 10 (specified value = " + numDistractorItems + "). ")
@@ -223,11 +226,11 @@ class GameGeneratorMapReader(numLocations:Int = 11, numDistractorItems:Int = 0, 
    * Game generation
    */
   def mkGame(seed:Long, fold:String):TextGame = {
-    return generator.mkGame(seed=seed, numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+    return generator.mkGame(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
-    return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+    return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
 
 }
@@ -304,16 +307,17 @@ object GameGenerator {
 
   // Make the coin game
   private def mkMapReader(properties:Map[String, Int]):GameGenerator = {
-    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize")
+    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize", "maxDistanceApart")
     // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
 
     val numLocations:Int            = properties.getOrElse("numLocations", 11)
+    val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 3)
     val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
     val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
     val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }
 
     // Make game
-    val game = new GameGeneratorMapReader(numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
+    val game = new GameGeneratorMapReader(numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
 
     // Check for unrecognized properties
     for (propName <- properties.keySet) {

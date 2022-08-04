@@ -659,6 +659,12 @@ class Cookbook() extends FastObject("cookbook") {
 
 }
 
+// It's called 'Mapbook' because 'Map' is a standard collection name
+class Mapbook() extends FastObject(name = "map") {
+  this.isReadable = true
+  this.isMovable = true
+
+}
 
 /*
  * Generic furniture objects

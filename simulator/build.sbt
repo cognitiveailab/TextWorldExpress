@@ -36,7 +36,9 @@ mainClass in Compile := Some("textworldexpress.runtime.PythonInterface")
 // Proguard
 //
 
+/*
 enablePlugins(SbtProguard)
 proguardOptions in Proguard ++= Seq("-dontoptimize", "-dontobfuscate", "-dontnote", "-dontwarn", "-ignorewarnings")
 proguardOptions in Proguard += "-keepclasseswithmembers class textworldexpress.runtime.PythonInterface {*;}"
 javaOptions in (Proguard, proguard) := Seq("-Xmx1G")
+*/

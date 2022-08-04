@@ -13,16 +13,17 @@ object EntryPointUserConsole {
 
   def consoleTWC(): Unit = {
     //val SF_GAME_NAME:String = "twc"
-    val SF_GAME_NAME:String = "cookingworld"
+    //val SF_GAME_NAME:String = "cookingworld"
+    val SF_GAME_NAME:String = "mapreader"
     val seed = Random.nextInt(100)
     //val seed = 16
     val fold = "train"
 
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
-    gameProps("numLocations") = 3                   // Number of locations
+    gameProps("numLocations") = 11                   // Number of locations
     gameProps("numIngredients") = 2
-    gameProps("numDistractorItems") = 2
+    gameProps("numDistractorItems") = 10
     //gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
 
     val (success, generator) = GameGenerator.mkGameGenerator(gameName = SF_GAME_NAME, gameProps.toMap)

@@ -1,6 +1,6 @@
 package textworldexpress.generator
 
-import textworldexpress.games.{CoinGameGenerator, KitchenGameGenerator, TWCGameGenerator}
+import textworldexpress.games.{CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
 import textworldexpress.struct.TextGame
 
 /*
@@ -182,12 +182,62 @@ class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, inclu
 }
 
 
+/*
+ * Map Reader
+ */
+class GameGeneratorMapReader(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
+  val generator = new MapReaderGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    if (numLocations < 1) os.append("Number of locations must be greater than one (specified value = " + numLocations + "). ")
+    if (numLocations > 11) os.append("Number of locations must be less than or equal to 11 (specified value = " + numLocations + "). ")
+
+    if (numDistractorItems < 0) os.append("Number of distractor objects must be greater than or equal to zero (specified value = " + numDistractorItems + "). ")
+    if (numDistractorItems > 10) os.append("Number of distractor objects must be less than or equal to 10 (specified value = " + numDistractorItems + "). ")
+
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Map Reader\n")
+    os.append("numLocations: " + numLocations + "\n")
+    os.append("numDistractorItems: " + numDistractorItems + "\n")
+    os.append("includeDoors: " + includeDoors + "\n")
+    os.append("limitInventorySize: " + limitInventorySize + "\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+  }
+
+}
+
 
 /*
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin")
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -252,6 +302,26 @@ object GameGenerator {
     return game
   }
 
+  // Make the coin game
+  private def mkMapReader(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize")
+    // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
+
+    val numLocations:Int            = properties.getOrElse("numLocations", 11)
+    val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
+    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
+    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }
+
+    // Make game
+    val game = new GameGeneratorMapReader(numLocations=numLocations, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + ". ")
+    }
+
+    return game
+  }
 
   /*
    * The main generator.
@@ -270,6 +340,10 @@ object GameGenerator {
       }
       case "coin" => {
         val game = this.mkCoin(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "mapreader" => {
+        val game = this.mkMapReader(properties)
         return (!game.isInvalid(), game)
       }
 

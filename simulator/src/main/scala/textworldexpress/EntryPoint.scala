@@ -38,10 +38,13 @@ object EntryPoint {
 
     //val gameName = "kitchen"
     //val gameName = "twc"
-    val gameName = "coin"
+    //val gameName = "coin"
+    val gameName = "mapreader"
 
     val gameFold:String = "train"
-    val properties = Map("numLocations" -> 11)
+    //val properties = Map("numLocations" -> 11)
+    val properties = Map("numLocations" -> 11, "maxDistanceApart" -> 3)
+
     //val properties = Map("numLocations" -> 3)
 
     val (success, gameGenerator) = GameGenerator.mkGameGenerator(gameName, properties)

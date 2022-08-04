@@ -198,7 +198,7 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
     if (numLocations > 11) os.append("Number of locations must be less than or equal to 11 (specified value = " + numLocations + "). ")
 
     if (maxDistanceApart < 1) os.append("Maximum distance apart must be at least 1 (specified value = " + maxDistanceApart + ").")
-    if (maxDistanceApart <= 4) os.append("Maximum distance apart must be less than or equal to 4 (specified value = " + maxDistanceApart + ").")
+    if (maxDistanceApart > 4) os.append("Maximum distance apart must be less than or equal to 4 (specified value = " + maxDistanceApart + ").")
 
     if (numDistractorItems < 0) os.append("Number of distractor objects must be greater than or equal to zero (specified value = " + numDistractorItems + "). ")
     if (numDistractorItems > 10) os.append("Number of distractor objects must be less than or equal to 10 (specified value = " + numDistractorItems + "). ")

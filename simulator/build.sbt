@@ -7,11 +7,6 @@ scalaVersion := "2.13.8"
 
 resolvers += "jetbrains-intellij-dependencies" at "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies"
 
-libraryDependencies += "net.liftweb" %% "lift-json" % "3.4.3"
-
-// Parser combinators
-libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.0.0"
-
 // For JSON in SuperFastTextGames
 libraryDependencies += "com.lihaoyi" %% "upickle" % "2.0.0"
 libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.8.0"

@@ -94,6 +94,9 @@ def userConsole(args):
 
     print("Completed.")
 
+    #print("Run History:")
+    #print(env.getRunHistory())
+
     print("Shutting down server...")
     env.shutdown()
 

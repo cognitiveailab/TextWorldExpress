@@ -28,7 +28,7 @@ def randomModel(args):
     # Load the task
     gameFold = "train"
     gameSeed = 0
-    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
+    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"    
     generateGoldPath = args['gold_paths']
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 

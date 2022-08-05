@@ -77,6 +77,10 @@ def randomModel(args):
         totalTime += deltaTime
         totalSteps += curIter
 
+        if (args['verbose'] == True):
+            print("History:")
+            print(env.getRunHistory())
+
         #time.sleep(1)
 
     print("Completed.")

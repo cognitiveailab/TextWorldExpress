@@ -40,7 +40,8 @@ class TextWorldExpressEnv:
         self.envStepLimit = envStepLimit
 
         # Clear the run histories
-        #self.clearRunHistories()
+        self.runHistory = []
+        self.clearRunHistory()
 
         # By default, set that the gold path was not generated unless the user asked for it
         #self.goldPathGenerated = False
@@ -56,7 +57,32 @@ class TextWorldExpressEnv:
         # Shutdown the server
         self.shutdown()
 
+    #
+    #   Run History
+    #
+    def clearRunHistory(self):
+        self.runHistory = []
 
+    def getRunHistory(self):
+        # Find final score
+        finalScore = 0
+        if (len(self.runHistory) > 0):
+            finalScore = self.runHistory[-1]['score']
+
+        # Pack history
+        packed = {
+            'properties': self.getGenerationProperties(),
+            'finalScore': finalScore,
+            'numSteps': len(self.runHistory),
+            'history': self.runHistory,            
+        }
+        return packed
+
+    def addStepToHistory(self, step):
+        self.runHistory.append(step)
+
+    def getNumSteps(self):
+        return len(self.runHistory)
 
     #
     #   Methods
@@ -75,15 +101,19 @@ class TextWorldExpressEnv:
     # Ask the simulator to load an environment from a script
     def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
         #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
+        self.clearRunHistory()
 
         self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
-        self.parseJSONResponse()
+        self.parseJSONResponse()        
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
 
         # Keep track of whether the gold path was generated, to generate verbose error messages
         self.goldPathGenerated = generateGoldPath
+
+        # Add this step to the run history
+        self.addStepToHistory(self.parsedResponse)
 
         return self.parsedResponse
 
@@ -95,21 +125,31 @@ class TextWorldExpressEnv:
 
     # Ask the simulator to reset an environment back to it's initial state
     def resetWithSeed(self, seed, gameFold, generateGoldPath=False):
+        self.clearRunHistory()
+
         self.responseStr = self.gateway.generateNewGameJSON(seed, gameFold, generateGoldPath)
         self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
 
+        # Add this step to the run history
+        self.addStepToHistory(self.parsedResponse)
+
         return self.parsedResponse
 
     # Ask the simulator to reset an environment back to it's initial state
     def resetWithRandomSeed(self, gameFold, generateGoldPath=False):
+        self.clearRunHistory()
+
         self.responseStr = self.gateway.resetWithRandomSeedJSON(gameFold, generateGoldPath)
         self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
+
+        # Add this step to the run history
+        self.addStepToHistory(self.parsedResponse)
 
         return self.parsedResponse
 
@@ -164,26 +204,47 @@ class TextWorldExpressEnv:
         #self.parsedResponse = json.loads(self.responseStr)
         # External JSON parser (faster)
         self.parsedResponse = orjson.loads(self.responseStr)
-
+        # Add placeholders for inferred properties
+        self.parsedResponse['reward'] = 0
+        self.parsedResponse['done'] = False
+        self.parsedResponse['numMoves'] = 0
 
     #
     # Step
     #
     def step(self, inputStr:str):
-        # Take a step in the environment
+        # Step 1: Take a step in the environment
         self.responseStr = self.gateway.stepJSON(inputStr)
         self.parseJSONResponse()
 
-        # Calculate reward
+        # Step 2: Calculate reward
         score = self.parsedResponse['score']
         reward = score - self.lastStepScore         # Calculate reward (delta score) for this step
         self.lastStepScore = score                  # Store current score for reward calculation on the next step
         self.parsedResponse['reward'] = reward      # Add reward to response
+        
+        # Step 3: Calculate what move number we're currently at
+        numMoves = self.getNumSteps()
+        self.parsedResponse['numMoves'] = numMoves
 
+        # Step 4: Calcualte whether a 'done' condition has been met.
+        isCompleted = False
+        # Condition 1: If the number of moves exceeds the environment step limit, then set isCompleted to be true
+        if (numMoves > self.envStepLimit):
+            isCompleted = True
 
-        # If the number of moves exceeds the environment step limit, then set isCompleted to be true
-        #if (numMoves > self.envStepLimit):
-        #    isCompleted = True
+        # Condition 2: Success if score is >= 1.0
+        if (score >= 1.0):
+            isCompleted = True
+
+        # Condition 3: Done if the environment itself has set one of the done conditions
+        if ((self.parsedResponse['tasksuccess'] == True) or (self.parsedResponse['taskfailure'] == True)):
+            isCompleted = True
+
+        self.parsedResponse['done'] = isCompleted
+
+        # Step 5: Add this step to the run history
+        self.addStepToHistory(self.parsedResponse)
 
         return self.parsedResponse
 

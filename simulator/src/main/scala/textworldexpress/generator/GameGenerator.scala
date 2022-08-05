@@ -195,7 +195,7 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
   private def checkValidConfiguration():String = {
     val os = new StringBuilder
     if (numLocations < 1) os.append("Number of locations must be greater than one (specified value = " + numLocations + "). ")
-    if (numLocations > 11) os.append("Number of locations must be less than or equal to 11 (specified value = " + numLocations + "). ")
+    if (numLocations > 15) os.append("Number of locations must be less than or equal to 15 (specified value = " + numLocations + "). ")
 
     if (maxDistanceApart < 1) os.append("Maximum distance apart must be at least 1 (specified value = " + maxDistanceApart + ").")
     if (maxDistanceApart > 4) os.append("Maximum distance apart must be less than or equal to 4 (specified value = " + maxDistanceApart + ").")

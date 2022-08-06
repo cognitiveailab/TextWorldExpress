@@ -1,0 +1,6 @@
+games/
+gen_games/
+roms/
+dist/
+*.egg-info
+precrawledpaths/

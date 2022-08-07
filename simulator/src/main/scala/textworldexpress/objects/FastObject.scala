@@ -713,6 +713,13 @@ class Mapbook() extends FastObject(name = "map") {
 
 }
 
+// A math problem, for Arithmetic Game
+class MathProblem() extends FastObject(name = "math problem") {
+  this.isReadable = true
+  this.isMovable = true
+
+}
+
 /*
  * Answer box
  */

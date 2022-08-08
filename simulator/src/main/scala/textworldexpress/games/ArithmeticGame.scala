@@ -52,7 +52,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
     }
 
     // If we're at the maximum score, set the task success to be true
-    if (curScore == 3) {
+    if (curScore >= this.calculateMaxScore()) {
       taskSuccess = true
     }
 
@@ -615,7 +615,8 @@ class ArithmeticGameGenerator {
 
     val mathproblem = new MathProblem
     // TODO: Make description more complicated/task specific (e.g. place the item with the same quantity as the answer in the answer box...)
-    mathproblem.readText = "Your task is to solve the following math problem: " + arithmeticProblem.get.generateText()
+    mathproblem.readText = "Your task is to solve the following math problem: " + arithmeticProblem.get.generateText() + " . \n"
+    mathproblem.readText += "Then, pick up the item with the same quantity as the answer, and place it in the box. "
 
     return (mathproblem, arithmeticProblem.get)
   }

@@ -1113,7 +1113,7 @@ class MapReaderGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize)
+    val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize, fold)
     return (game, goldPath)
   }
 

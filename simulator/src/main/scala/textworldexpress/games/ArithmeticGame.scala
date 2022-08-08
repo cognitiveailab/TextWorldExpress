@@ -905,14 +905,10 @@ class ArithmeticGameGenerator {
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):ArithmeticGame = {
+  def mkGame(seed:Long, fold:String = "train"):ArithmeticGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
-    props("numLocations") = numLocations
-    props("numDistractorItems") = numDistractorItems
-    props("includeDoors") = if (includeDoors) { 1 } else { 0 }
-    props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
     props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
@@ -924,7 +920,7 @@ class ArithmeticGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(ArithmeticGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(ArithmeticGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -932,7 +928,7 @@ class ArithmeticGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize, fold)
+        val game = this.mkGame(seed, fold)
         val goldAgent = new ArithmeticGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
@@ -946,7 +942,7 @@ class ArithmeticGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize)
+    val game = this.mkGame(seed, fold)
     return (game, goldPath)
   }
 

@@ -886,7 +886,7 @@ class CoinGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize)
+    val game = this.mkGame(seed, numLocations, numDistractorItems, includeDoors, limitInventorySize, fold)
     return (game, goldPath)
   }
 

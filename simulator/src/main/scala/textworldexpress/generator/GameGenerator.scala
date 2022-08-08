@@ -237,10 +237,53 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
 
 
 /*
+ * Arithmetic Game
+ */
+class GameGeneratorArithmetic() extends GameGenerator {
+  val generator = new MapReaderGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Arithmetic\n")
+    os.append("This game has no parameters other than seed, and game fold (train/dev/test).\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+}
+
+
+
+/*
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader")
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -305,7 +348,7 @@ object GameGenerator {
     return game
   }
 
-  // Make the coin game
+  // Make the map reader game
   private def mkMapReader(properties:Map[String, Int]):GameGenerator = {
     val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize", "maxDistanceApart")
     // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
@@ -322,6 +365,21 @@ object GameGenerator {
     // Check for unrecognized properties
     for (propName <- properties.keySet) {
       if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + ". ")
+    }
+
+    return game
+  }
+
+  // Make the arithmetic game
+  private def mkArithmetic(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array()
+
+    // Make game
+    val game = new GameGeneratorArithmetic()
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
     }
 
     return game
@@ -350,7 +408,10 @@ object GameGenerator {
         val game = this.mkMapReader(properties)
         return (!game.isInvalid(), game)
       }
-
+      case "arithmetic" => {
+        val game = this.mkArithmetic(properties)
+        return (!game.isInvalid(), game)
+      }
       // Unknown case: Game not recognized.
       case _ => {
         val game = this.mkCoin( Map[String, Int]() )    // Placeholder game, with empty properties

@@ -1019,7 +1019,7 @@ class TWCGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, numItemsToPutAway, includeDoors, limitInventorySize)
+    val game = this.mkGame(seed, numLocations, numItemsToPutAway, includeDoors, limitInventorySize, fold)
     return (game, goldPath)
   }
 

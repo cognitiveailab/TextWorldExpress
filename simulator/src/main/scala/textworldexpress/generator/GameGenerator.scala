@@ -1,6 +1,6 @@
 package textworldexpress.generator
 
-import textworldexpress.games.{CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
+import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
 import textworldexpress.struct.TextGame
 
 /*
@@ -240,7 +240,7 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
  * Arithmetic Game
  */
 class GameGeneratorArithmetic() extends GameGenerator {
-  val generator = new MapReaderGameGenerator()
+  val generator = new ArithmeticGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
   /*

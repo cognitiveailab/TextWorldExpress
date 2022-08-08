@@ -14,6 +14,7 @@ class ArithmeticGoldAgent(game:ArithmeticGame) {
     val stepResult = game.initalStep()
 
     // Step 1: read math problem
+    game.step("take math problem")
     game.step("read math problem")
 
     // Step 2: Pick up correct task object

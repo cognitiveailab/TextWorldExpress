@@ -23,21 +23,23 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
     var taskSuccess:Boolean = false
 
     // If the book (math problem) has been read, increase the score.
-    if (correctObject.hasBeenRead) {
+    if (mathProblemObj.hasBeenRead) {
       curScore += 1
     }
 
-    // The score here is essentially just the number of taskObjects in the inventory.
+    // NOTE: No longer give partial scores for picking up the correct object -- otherwise the agent could just try all the objects until it gets the right score.
+    /*
     if ((correctObject.currentContainer != null) && (correctObject.currentContainer.name == "inventory")) {
       // If the correct object is picked up, increase score
       curScore += 1
     }
+     */
 
     // If anything other than the correct object is in the answer box, task failure
     for (obj <- answerBox.contents) {
       if (obj.name == correctObject.name) {
         // Correct object -- set to win
-        curScore += 2
+        curScore += 1
       } else {
         // An incorrect object, set to task failure
         taskFailure = true
@@ -46,7 +48,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
 
     // If we failued the task, then set the score to -1, regardless of progress
     if (taskFailure) {
-      curScore = -1
+      curScore = -2
     }
 
     // If we're at the maximum score, set the task success to be true
@@ -62,7 +64,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
 
   // Calculate the maximum possible score for this recipe
   def calculateMaxScore():Double = {
-    var maxScore:Double = 3.0
+    var maxScore:Double = 2.0
     return maxScore
   }
 
@@ -461,6 +463,22 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
       }
     }
 
+    // Inventory objects
+    for (iObj <- this.agentInventory.contents) {
+
+      // For each environment object
+      for (eObj <- visibleObjects) {
+        if ((eObj.isContainer) && (eObj.isOpen)) {
+          actionsOut.append( ("put " + iObj.name + " in " + eObj.name, ACTION_PUTIN, Array(iObj, eObj)) )
+        }
+      }
+
+      // Readable
+      if (iObj.isReadable) {
+        actionsOut.append( ("read " + iObj.name, ACTION_READ, Array(iObj)) )
+      }
+
+    }
 
 
     return actionsOut
@@ -571,7 +589,7 @@ class ArithmeticGameGenerator {
     val visibleObjects = locations(0).collectVisibleObjects()
     val validContainers = new ArrayBuffer[FastObject]
     for (obj <- visibleObjects) {
-      if (obj.isContainer && obj.isOpen) validContainers.append(obj)
+      if (obj.isContainer && obj.isOpen && (obj.name != answerBox.name)) validContainers.append(obj)
     }
 
     // Add the objects (correct and distractor) to the containers around this location

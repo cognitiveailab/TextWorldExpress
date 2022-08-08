@@ -553,7 +553,7 @@ class ArithmeticGameGenerator {
   val doorMaker = new DoorMaker()
 
 
-  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], MathProblem, Box, FastObject) = {
+  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], ArithmeticProblem, MathProblem, Box, FastObject) = {
     val locations = new ArrayBuffer[Room]()
 
     // Add only a single location for this game (no map/multiple locations).
@@ -605,7 +605,7 @@ class ArithmeticGameGenerator {
     }
 
 
-    return (locations, mathProblemObj, answerBox, correctObject)
+    return (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject)
   }
 
 
@@ -932,7 +932,10 @@ class ArithmeticGameGenerator {
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, mathProblemObj, answerBox, correctObject) = mkEnvironment(r, seed.toInt, fold)
+    val (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject) = mkEnvironment(r, seed.toInt, fold)
+    // Add artithmetic problem properties to the properties
+    props("hidden_num1") = arithmeticProblem.num1
+    props("hidden_num2") = arithmeticProblem.num2
     val game = new ArithmeticGame( locations.toArray, mathProblemObj, answerBox, correctObject, generationProperties = props.toMap )
 
     return game

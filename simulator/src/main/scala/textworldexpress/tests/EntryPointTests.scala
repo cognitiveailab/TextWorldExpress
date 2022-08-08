@@ -65,6 +65,8 @@ object EntryPointTests {
           }
           val scores = game.getScore()
           if (scores.scoreNormalized != 1.0) {
+            println ("")
+            println ("------------------------------------------------------------------------------------------------")
             println ("ERROR ON GAME " + i + " / " + numEnvs)
             println ("PLAYTHROUGH: (" + game.getHistory().length + " steps)")
             for (hStep <- game.getHistory()) {
@@ -73,6 +75,7 @@ object EntryPointTests {
               println (hStep.observationStr)
               println ("Score: " + hStep.scores.scoreRaw)
             }
+            println ("------------------------------------------------------------------------------------------------")
             //throw new RuntimeException("ERROR: Ran gold path, score not 1.0 (" + scores._2 + ")")
             numFailedGoldPaths += 1
           }
@@ -147,7 +150,7 @@ object EntryPointTests {
   // Entry point
   def main(args:Array[String]): Unit = {
 
-    val numEnvs:Int = 100
+    val numEnvs:Int = 1000
     var numStepsPerEnv:Int = 50
 
     var totalErrors:Int = 0
@@ -158,7 +161,7 @@ object EntryPointTests {
         val numErrors = this.testGame(gameName, gameFold, numEnvs, numStepsPerEnv)
 
         if (numErrors > 0) {
-          totalErrors += 1
+          totalErrors += numErrors
           errorSources.append(gameName + " (" + gameFold + ")")
         }
       }

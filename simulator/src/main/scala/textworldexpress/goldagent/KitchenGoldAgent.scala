@@ -248,6 +248,11 @@ class KitchenGoldAgent(game:KitchenGame) {
     } else {
       // Knife is not visible -- try opening cutlery drawer
       game.step("open cutlery drawer")
+      val visibleObjects2 = game.agentLocation.collectVisibleObjects()
+      if (visibleObjects2.filter(_.name == "knife").size == 0) {
+        // Knife still not visible -- try looking in kitchen cupboard
+        game.step("open kitchen cupboard")
+      }
       game.step("take knife")
     }
 

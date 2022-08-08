@@ -8,7 +8,7 @@ object GenerateArithmeticProblems {
 
   def main(args:Array[String]): Unit = {
 
-    val setSize:Int = 5                              // 25 per operator (100 total across the 4 operators)
+    val setSize:Int = 25                              // 25 per operator (100 total across the 4 operators)
     val numUniqueProblemsToGenerate:Int = setSize*3   // *3 for train, dev, and test
     val maxInt = 50
     val r = new Random(2501)
@@ -68,19 +68,19 @@ object GenerateArithmeticProblems {
     println ("Train: ")
     val trainShuffled = r.shuffle(train)
     val trainArrayStr = this.mkArray(trainShuffled.toArray)
-    println(trainArrayStr)
+    println("val trainSet = " + trainArrayStr)
     println ("")
 
     println ("Dev: ")
     val devShuffled = r.shuffle(dev)
     val devArrayStr = this.mkArray(devShuffled.toArray)
-    println(devArrayStr)
+    println("val devSet = " + devArrayStr)
     println ("")
 
     println ("Test: ")
     val testShuffled = r.shuffle(test)
     val testArrayStr = this.mkArray(testShuffled.toArray)
-    println(testArrayStr)
+    println("val testSet = " + testArrayStr)
     println("")
 
   }

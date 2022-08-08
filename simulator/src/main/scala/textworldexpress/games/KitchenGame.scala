@@ -385,6 +385,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
 
   def actionRead(params:Array[FastObject]):String = this.actionRead(params(0))
   def actionRead(obj:FastObject):String = {
+    obj.hasBeenRead = true
     return obj.readText
   }
 

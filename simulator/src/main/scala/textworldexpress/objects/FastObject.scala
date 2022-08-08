@@ -37,6 +37,7 @@ class FastObject(val name:String) {
   // Readability:Boolean = false
   var isReadable:Boolean = false
   var readText:String = ""
+  var hasBeenRead:Boolean = false
 
   var isDeleted:Boolean = false
   var isEaten:Boolean = false
@@ -1097,6 +1098,19 @@ class Meal() extends FastObject("meal") {
 class Coin() extends FastObject("coin") {
   this.isMovable = true
 }
+
+/*
+ * Arithmetic Game
+ */
+class BundleOfObjects(name:String) extends FastObject(name) {
+  this.isMovable = true
+
+  override def getDescription():String = {
+    return this.name
+  }
+
+}
+
 
 /*
  * Instances

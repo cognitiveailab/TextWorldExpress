@@ -337,6 +337,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
 
   def actionRead(params:Array[FastObject]):String = this.actionRead(params(0))
   def actionRead(obj:FastObject):String = {
+    obj.hasBeenRead = true
     return obj.readText
   }
 

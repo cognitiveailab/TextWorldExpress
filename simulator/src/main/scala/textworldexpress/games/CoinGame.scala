@@ -324,6 +324,7 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
 
   def actionRead(params:Array[FastObject]):String = this.actionRead(params(0))
   def actionRead(obj:FastObject):String = {
+    obj.hasBeenRead = true
     return obj.readText
   }
 

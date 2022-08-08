@@ -8,16 +8,22 @@ object GenerateArithmeticProblems {
 
   def main(args:Array[String]): Unit = {
 
-    val numUniqueProblemsToGenerate:Int = 25*3
+    val setSize:Int = 5                              // 25 per operator (100 total across the 4 operators)
+    val numUniqueProblemsToGenerate:Int = setSize*3   // *3 for train, dev, and test
     val maxInt = 50
     val r = new Random(2501)
-
-
     val operators = Array("+", "-", "*", "/")
 
+    // Train, dev, and test sets
+    val train = new ArrayBuffer[ArithmeticProblem]
+    val dev = new ArrayBuffer[ArithmeticProblem]
+    val test = new ArrayBuffer[ArithmeticProblem]
+
+    // For each operator (+, -, *, /)
     for (operator <- operators) {
       val existingProblems = new ArrayBuffer[ArithmeticProblem]
 
+      // Generate a list of 'numUniqueProblemsToGenerate' unique problems
       while (existingProblems.length < numUniqueProblemsToGenerate) {
         // Randomly generate a problem
         var num1 = r.nextInt(maxInt-1)+1
@@ -45,20 +51,52 @@ object GenerateArithmeticProblems {
       // Display
       for (i <- 0 until existingProblems.length) {
         println (i + ":\t" + existingProblems(i).toString() + "     (result: " + existingProblems(i).generateResult().get + ")")
-        println ("\t\t" + existingProblems(i).toCodeString())
       }
+
+      // Shuffle them, and add to train/dev/test sets
+      val shuffled = r.shuffle(existingProblems)
+      train.insertAll(train.size, shuffled.slice(0, setSize))
+      dev.insertAll(dev.size, shuffled.slice(setSize, setSize*2))
+      test.insertAll(test.size, shuffled.slice(setSize*2, setSize*3))
+
       println ("")
     }
 
-    val test = new ArithmeticProblem(num1 = 9, num2 = 36, operation = "/", manualDistractors = Array(45, 27, 324, 17, 15))
-    println (test.toString())
-    println (test.toCodeString())
-    println (test.generateResult())
-    println (test.generateDistractors().mkString(", "))
 
+    // Show train/dev/test sets
+
+    println ("Train: ")
+    val trainShuffled = r.shuffle(train)
+    val trainArrayStr = this.mkArray(trainShuffled.toArray)
+    println(trainArrayStr)
+    println ("")
+
+    println ("Dev: ")
+    val devShuffled = r.shuffle(dev)
+    val devArrayStr = this.mkArray(devShuffled.toArray)
+    println(devArrayStr)
+    println ("")
+
+    println ("Test: ")
+    val testShuffled = r.shuffle(test)
+    val testArrayStr = this.mkArray(testShuffled.toArray)
+    println(testArrayStr)
+    println("")
 
   }
 
+  def mkArray(in:Array[ArithmeticProblem]): String = {
+
+    // Display
+    val elements = new ArrayBuffer[String]
+    for (i <- 0 until in.length) {
+      //println (i + ":\t" + in(i).toString() + "     (result: " + in(i).generateResult().get + ")")
+      elements.append( in(i).toCodeString() )
+    }
+
+    return "Array(\n\t" + elements.mkString(",\n\t") + "\n\t)"
+
+  }
 
 }
 
@@ -184,7 +222,7 @@ class ArithmeticProblem(val num1:Int, val num2:Int, val operation:String, val ma
   override def toString() = this.generateText()
 
   def toCodeString():String = {
-    return "new ArithmeticProblem(num1 = " + num1 + ", num2 = " + num2 + ", operation = \"" + operation + "\", manualDistractors = Array(" + this.generateDistractors().mkString(", ") + "))"
+    return "new ArithmeticProblem(num1 = " + num1.formatted("%3s") + ", num2 = " + num2.formatted("%3s") + ", operation = \"" + operation + "\", manualDistractors = Array(" + this.generateDistractors().map(_.formatted("%4s")).mkString(", ") + "))"
   }
 
 }

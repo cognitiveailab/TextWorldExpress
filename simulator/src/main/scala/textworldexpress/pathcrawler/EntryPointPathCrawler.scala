@@ -221,7 +221,7 @@ object EntryPointPathCrawler {
 
 
     // Convert
-    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT)
+    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT, string2Idx = StepResultHashed.string2IDX.toMap)
     println( precrawled.StringLUTToString() )
 
     // Save
@@ -269,7 +269,7 @@ object EntryPointPathCrawler {
     gameProps("limitInventorySize") = 0             // Number of distractor items
 
     val gameName = "coin"
-    val maxDepth = 13
+    val maxDepth = 5
 
 
     for (i <- 0 until numGamesToCrawl) {
@@ -291,13 +291,45 @@ object EntryPointPathCrawler {
   }
 
 
+  def crawlArithmetic(numGamesToCrawl:Int=1): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+
+    val gameName = "arithmetic"
+    val maxDepth = 6
+
+
+    for (i <- 0 until numGamesToCrawl) {
+      try {
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest")
+      } catch {
+        case e:Throwable => { println ("ERROR: " + e.toString) }
+      }
+    }
+
+    for (i <- 0 until numGamesToCrawl) {
+      try {
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest")
+      } catch {
+        case e:Throwable => { println ("ERROR: " + e.toString) }
+      }
+    }
+
+  }
+
 
   def main(args:Array[String]): Unit = {
 
     //crawlTWC(numGamesToCrawl = 20)
 
-    crawlCoin(numGamesToCrawl = 20)
+    //crawlCoin(numGamesToCrawl = 20)
+    //crawlCoin(numGamesToCrawl = 1)
 
+    val startTime = System.currentTimeMillis()
+
+    crawlArithmetic(numGamesToCrawl = 1)
+
+    val deltaTime = System.currentTimeMillis() - startTime
+    println ("Runtime: " + (deltaTime / 1000) + " seconds")
 
   }
 

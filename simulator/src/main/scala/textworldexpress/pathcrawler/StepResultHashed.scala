@@ -2,6 +2,7 @@ package textworldexpress.pathcrawler
 
 import textworldexpress.struct.StepResult
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // Note: Storage class names are shortened, to reduce JSON size when serializing
@@ -50,22 +51,46 @@ case class StepResultHashed(val obs:Int, val look:Int, val inv:Int, val acts:Arr
     return new StepResultHashed(obs=obs, look=look, inv=inv, acts=acts, score=score, scoreNorm=score, succ=false, fail=false, valid=true)
   }
 
+  // JSON serialization
+  def toJSON():String = {
+    val os = new StringBuilder
+
+    os.append("{")
+    os.append("\"obs\": " + obs + ", ")
+    os.append("\"look\": " + look + ", ")
+    os.append("\"inv\": " + inv + ", ")
+    os.append("\"acts\": [" + acts.mkString(", ") + "], ")
+    os.append("\"score\": " + score + ", ")
+    os.append("\"scoreNorm\": " + scoreNorm + ", ")
+    os.append("\"succ\": " + succ + ", ")
+    os.append("\"valid\": " + valid)
+    os.append("}")
+
+    return os.toString()
+  }
+
 }
 
 object StepResultHashed {
   val stringLUT = new ArrayBuffer[String]()
+  val string2IDX = mutable.HashMap[String, Int]()
 
   def resetLUT(): Unit = {
     stringLUT.clear()
+    string2IDX.clear()
   }
 
   private def add(strIn:String):Int = synchronized {
-    val idx = this.stringLUT.indexOf(strIn)
+    //val idx = this.stringLUT.indexOf(strIn)
+    val idx = this.string2IDX.get(strIn)
+
     // Check for existing
-    if (idx != -1) return idx
+    if (idx.isDefined) return idx.get
     // Does not exist -- add
-    this.stringLUT.append(strIn)
-    return this.stringLUT.length-1
+    this.stringLUT.append(strIn)            // Add to LUT
+    val newIdx = this.stringLUT.length-1    // Add to hashmap for quick idx lookup
+    string2IDX(strIn) = newIdx
+    return newIdx
   }
 
   def getStr(idx:Int):String = {

@@ -136,6 +136,9 @@ class TextWorldExpressEnv:
         # Add this step to the run history
         self.addStepToHistory(self.parsedResponse)
 
+        # Add the step command to the run history
+        self.parsedResponse['lastActionStr'] = ""
+
         return self.parsedResponse
 
     # Ask the simulator to reset an environment back to it's initial state
@@ -150,6 +153,9 @@ class TextWorldExpressEnv:
 
         # Add this step to the run history
         self.addStepToHistory(self.parsedResponse)
+
+        # Add the step command to the run history
+        self.parsedResponse['lastActionStr'] = ""
 
         return self.parsedResponse
 
@@ -209,6 +215,18 @@ class TextWorldExpressEnv:
         self.parsedResponse['done'] = False
         self.parsedResponse['numMoves'] = 0
 
+        # Convert success/failure variables from strings to Booleans
+        # Success
+        if (self.parsedResponse['tasksuccess'] == "true"):
+            self.parsedResponse['tasksuccess'] = True
+        else:
+            self.parsedResponse['tasksuccess'] = False
+        # Failure
+        if (self.parsedResponse['taskfailure'] == "true"):
+            self.parsedResponse['taskfailure'] = True
+        else:
+            self.parsedResponse['taskfailure'] = False
+
     #
     # Step
     #
@@ -216,6 +234,9 @@ class TextWorldExpressEnv:
         # Step 1: Take a step in the environment
         self.responseStr = self.gateway.stepJSON(inputStr)
         self.parseJSONResponse()
+
+        # Add the step command to the run history
+        self.parsedResponse['lastActionStr'] = inputStr
 
         # Step 2: Calculate reward
         score = self.parsedResponse['score']

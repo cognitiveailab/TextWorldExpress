@@ -68,6 +68,7 @@ def userConsole(args):
         print("Step " + str(curIter))
         print(str(obs['observation']))
         print("Score: " + str(obs['scoreRaw']) + " (raw)    " + str(obs['score']) + " (normalized)")
+        print("Reward: " + str(obs['reward']))
         #print("Valid Actions: " + str(validActions))
 
         if (obs['tasksuccess'] == True):

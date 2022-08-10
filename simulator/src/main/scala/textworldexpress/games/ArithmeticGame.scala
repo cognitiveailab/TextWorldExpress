@@ -936,6 +936,7 @@ class ArithmeticGameGenerator {
     // Add artithmetic problem properties to the properties
     props("hidden_num1") = arithmeticProblem.num1
     props("hidden_num2") = arithmeticProblem.num2
+    props("hidden_op") = if (arithmeticProblem.operation == "+") { 0 } else if (arithmeticProblem.operation == "-") { 1 } else if (arithmeticProblem.operation == "*") { 2 } else if (arithmeticProblem.operation == "/") { 3 } else { -1 }
     val game = new ArithmeticGame( locations.toArray, mathProblemObj, answerBox, correctObject, generationProperties = props.toMap )
 
     return game

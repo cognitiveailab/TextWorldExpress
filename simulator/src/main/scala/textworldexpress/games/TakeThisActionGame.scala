@@ -405,6 +405,12 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
       if (obj.isMovable) {
         actionsOut.append(("take " + obj.name, ACTION_TAKE, Array(obj)))
       }
+
+      // Readable
+      // NOTE: Unlike other tasks, for this task, the instructions can be read without picking them up
+      if (obj.isReadable) {
+        actionsOut.append( ("read " + obj.name, ACTION_READ, Array(obj)) )
+      }
     }
 
     // Inventory objects
@@ -437,7 +443,7 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
     val nextObjToPickUpIdx = this.getScore().scoreRaw.toInt
     if ((nextObjToPickUpIdx >= 0) && (nextObjToPickUpIdx < this.objectOrder.length)) {
       val nextObjToPickUp = this.objectOrder(nextObjToPickUpIdx)
-      this.instructionBook.readText = "The current task is to pick up the " + nextObjToPickUp.name + "."
+      this.instructionBook.readText = "The current task is to take the " + nextObjToPickUp.name + "."
     } else {
       this.instructionBook.readText = "The task is completed."
     }
@@ -530,6 +536,7 @@ class TakeThisActionGameGenerator {
 
     // Generate the arithmetic problem (abstract), and the math problem object.
     val instructionBook = new Instructions()
+    instructionBook.isMovable = false
 
     // Add the instructions to the location
     locations(0).addObject(instructionBook)
@@ -577,9 +584,11 @@ class TakeThisActionGameGenerator {
     // Create task objects, in order
     val objectsOut = new ArrayBuffer[FastObject]
     for (i <- 0 until numObjects) {
-      val objName = objectNames(i)._1
+      val objName = shuffled(i)._1
       val obj = new FastObject(name = objName)
       obj.isMovable = true
+
+      objectsOut.append(obj)
     }
 
     // Return

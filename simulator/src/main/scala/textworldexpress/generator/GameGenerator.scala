@@ -1,6 +1,6 @@
 package textworldexpress.generator
 
-import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator, TakeThisActionGameGenerator}
+import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, SimonSaysGameGenerator, TWCGameGenerator, TakeThisActionGameGenerator}
 import textworldexpress.struct.TextGame
 
 /*
@@ -321,10 +321,51 @@ class GameGeneratorTakeThisAction() extends GameGenerator {
 
 
 /*
+ * Simon Says Game
+ */
+class GameGeneratorSimonSays() extends GameGenerator {
+  val generator = new SimonSaysGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Simon Says\n")
+    os.append("This game has no parameters other than seed, and game fold (train/dev/test).\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+}
+
+/*
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "takethisaction")
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "takethisaction", "simonsays")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -441,6 +482,21 @@ object GameGenerator {
     return game
   }
 
+  // Make the 'simon says' game
+  private def mkSimonSays(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array()
+
+    // Make game
+    val game = new GameGeneratorSimonSays()
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
+    }
+
+    return game
+  }
+
   /*
    * The main generator.
    * Returns (success, GameGenerator)
@@ -470,6 +526,10 @@ object GameGenerator {
       }
       case "takethisaction" => {
         val game = this.mkTakeThisAction(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "simonsays" => {
+        val game = this.mkSimonSays(properties)
         return (!game.isInvalid(), game)
       }
       // Unknown case: Game not recognized.

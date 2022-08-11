@@ -1,6 +1,7 @@
 package textworldexpress.games
 
-import textworldexpress.objects.{FastObject}
+import textworldexpress.goldagent.SimonSaysGoldAgent
+import textworldexpress.objects.FastObject
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
 import scala.collection.mutable

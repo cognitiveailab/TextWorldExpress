@@ -9,10 +9,8 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 import scala.util.control.Breaks.{break, breakable}
 
-
-
-// 'taskObjects' just contains the reference to any coin(s) to be collected in the agent's inventory
-class SimonSaysGameScoring(val goldActionSequence:Array[String], lastValidActions:ListBuffer[(String, Int, Array[FastObject])]) extends Scorer {
+// GoldActionSequences contains the list of action sequences that the agent should repeat.
+class SimonSaysGameScoring(val goldActionSequence:Array[String], history:ArrayBuffer[ActionHistory]) extends Scorer {
 
   def doScoring(): Unit = {
     var curScore:Double = 0
@@ -20,24 +18,27 @@ class SimonSaysGameScoring(val goldActionSequence:Array[String], lastValidAction
     var taskSuccess:Boolean = false
 
     // Check: Make sure the number of actions taken is less than or equal to the number of gold actions requested
-    if (goldActionSequence.length > lastValidActions.length) {
+    if (history.length-1 > goldActionSequence.length) {
       val scores = new GameScore(scoreRaw = -1, scoreNormalized = -1, taskSuccess = false, taskFailure = true)
       this.curScore = scores
       return
     }
 
     // Check each action taken by the agent, to make sure it was the correct (gold) action
-    for (i <- 0 until lastValidActions.length) {
-      val actionStr = lastValidActions(i)._1
+    if (history.length > 1) {
+      for (i <- 1 until history.length) {
+        val actionStr = history(i).actionStr
+        //println("history(" + i + "): " + actionStr + "    " + history(i).scores.scoreNormalized)
 
-      if (goldActionSequence(i) == actionStr) {
-        // Chose the right option here
-        curScore += 1
-      } else {
-        // Task failure
-        taskFailure = true
+        if (goldActionSequence(i-1) == actionStr) {
+          // Chose the right option here
+          curScore += 1
+        } else {
+          // Task failure
+          taskFailure = true
+        }
+
       }
-
     }
 
     // If one action was incorrect, then task failure
@@ -48,7 +49,7 @@ class SimonSaysGameScoring(val goldActionSequence:Array[String], lastValidAction
     }
 
     // If all actions have been taken, and all were correct, then task success
-    if (goldActionSequence.length == lastValidActions.length) {
+    if (goldActionSequence.length == history.length-1) {
       taskSuccess = true
     }
 
@@ -74,14 +75,17 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]
 
-  // Scorer
-  val scorer:Scorer = new SimonSaysGameScoring(goldActionSequence, lastValidActions)
-
   // The action/observation history
   var history = new ArrayBuffer[ActionHistory]
 
+  // Scorer
+  val scorer:Scorer = new SimonSaysGameScoring(goldActionSequence, history)
+
   // Internal game random number generator -- primarily for randomizing valid action list.
   val random = new Random(seed)
+
+  // Current step
+  var currentStep:Int = 0
 
   /*
    * Cloning
@@ -161,11 +165,13 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
   /*
    * Make current observation for Simon Says
    */
-  def mkObservation():String = {
-    val curStage = this.lastValidActions.length
-
+  def mkObservation(curStage:Int):String = {
     // Check for task completion
-    if (curStage > this.goldActionSequence.length) {
+    if (this.getScore().taskFailure) {
+      return "Task failure."
+    }
+
+    if (curStage >= this.goldActionSequence.length) {
       return "Task Completed."
     }
 
@@ -207,11 +213,6 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
     }
     val wasValidAction = if (actionNumber == ACTION_INVALID) { false } else { true }    // If the action is valid, true, otherwise, false
 
-    // Do scoring
-    scorer.doScoring()
-
-    // Get current score
-    val curScores = this.getScore()
 
     // Generate next valid actions
     val validActions = this.mkActions(ListBuffer.empty[FastObject])
@@ -222,14 +223,27 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
 
 
     // Generate observation, free-look, and inventory strings
-    val observationStr = this.mkObservation()                       //## Special to this task: Observation is generated, rather than coming from environment
     val freeLookStr = ""
     val inventoryStr = ""
 
+    val observationStr = this.mkObservation(curStage = this.currentStep)                       //## Special to this task: Observation is generated, rather than coming from environment
+
+    // This part is a bit weird -- the scorer uses the history to generate the score.  But the history stores the score, so there's a circular reference.
+    // So, we add a faux entry to the history -- calculate the score, then pop it off and put the real one on.
     // Add to action history
-    if (actionNumber >= 0) {
-      this.history.append(new ActionHistory(actionStr, observationStr, curScores))
-    }
+    this.history.append(new ActionHistory(actionStr, observationStr, this.getScore()))
+
+    // Do scoring
+    scorer.doScoring()
+
+    // Get current score
+    val curScores = this.getScore()
+
+    // The strange part
+    this.history.remove(this.history.size-1)
+    this.history.append(new ActionHistory(actionStr, observationStr, curScores))
+
+    this.currentStep += 1
 
     // Return
     val result = new StepResult(observationStr=observationStr, freeLookStr=freeLookStr, inventoryStr=inventoryStr, validActions = validActionStrs.toArray, scoreRaw=curScores.scoreRaw, scoreNormalized=curScores.scoreNormalized, taskSuccess=curScores.taskSuccess, taskFailure=curScores.taskFailure, wasValidAction = wasValidAction)
@@ -259,10 +273,10 @@ class SimonSaysGameGenerator {
     val actionsOut = new ArrayBuffer[String]
     for (i <- 0 until numObjects) {
       val objName = shuffled(i)._1
-      actionsOut.append("take the " + objName)
-      actionsOut.append("eat the " + objName)
+      var indefinite = if (Array("a", "e", "i", "o", "u").contains(objName.charAt(0).toString)) { "an" } else { "a" }
+      actionsOut.append("take " + indefinite + " " + objName)
+      actionsOut.append("eat " + indefinite + " " + objName)
     }
-
 
     // Step 2: Action actions (from canonical simon says games)
     val actionsTrain = Array("sit down", "turn around in a circle", "jump up and down", "hop on your right foot", "meow like a cat")
@@ -288,7 +302,8 @@ class SimonSaysGameGenerator {
 
   def mkGame(seed:Long, fold:String = "train"):SimonSaysGame = {
     val r = new Random(seed)
-    val gameLength:Int = r.nextInt(2) + 3   // Game lengths between 3-5 actions
+    val gameLength:Int = r.nextInt(3) + 3   // Game lengths between 3-5 actions
+
 
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()

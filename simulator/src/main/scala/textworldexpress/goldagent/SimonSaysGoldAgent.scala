@@ -27,7 +27,8 @@ class SimonSaysGoldAgent(game:SimonSaysGame) {
 
     // Success
     val path = game.history.map(_.actionStr).toArray
-    return (true, path)
+    val pathTrimmed = path.slice(1, path.length)
+    return (true, pathTrimmed)
   }
 
 }

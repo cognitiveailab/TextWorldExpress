@@ -4,7 +4,7 @@ import textworldexpress.data.MathProblemGenerator.{devSet, testSet, trainSet}
 import textworldexpress.preprocessing.{ArithmeticProblem, ItemQuantity, SortingProblem}
 
 object SortingProblemGenerator {
-  // Hardcoded train/dev/test sets with problems that are unique across sets
+  // Hardcoded train/dev/test sets
 
   //Train
   val trainSet = Array(

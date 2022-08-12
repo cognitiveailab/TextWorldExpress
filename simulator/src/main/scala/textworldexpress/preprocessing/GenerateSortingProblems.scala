@@ -1,6 +1,6 @@
 package textworldexpress.preprocessing
 
-import textworldexpress.objects.FastObject
+import textworldexpress.objects.{BundleOfObjects, FastObject}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
@@ -215,14 +215,13 @@ class SortingProblem(inputItems:Array[ItemQuantity]) {
       // Make object name
       var name = ""
       if (iq.SISuffix.length > 0) {
-        name = iq.quantity + " of " + name
+        name = iq.quantity + iq.SISuffix + " of " + iq.name
       } else {
-        name = iq.quantity + " " + name
+        name = iq.quantity + " " + iq.name
       }
 
       // Make FastObject
-      val obj = new FastObject(name)
-      obj.isMovable = true
+      val obj = new BundleOfObjects(name)
       out.append(obj)
     }
 

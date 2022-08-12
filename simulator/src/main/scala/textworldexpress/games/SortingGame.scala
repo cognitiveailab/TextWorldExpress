@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator}
+import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator, SortingProblemGenerator}
 import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent, SortingGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem
@@ -555,11 +555,7 @@ class SortingGame(val locations:Array[Room], val itemsToSort:Array[FastObject], 
 }
 
 
-class ArithmeticGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
-  val doorMaker = new DoorMaker()
-
+class SortingGameGenerator {
 
   def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], Array[FastObject], Box) = {
     val locations = new ArrayBuffer[Room]()
@@ -588,12 +584,13 @@ class ArithmeticGameGenerator {
     // Add an answer box
     val answerBox = new Box()
     locations(0).addObject( answerBox )
-/*
-    // Make correct and distractor objects
-    val (correctObject, distractorObjects) = mkCorrectAndDistractorObjects(r, arithmeticProblem, fold)
+
+    // Get sorting problem
+    val sortingProblem = SortingProblemGenerator.getProblem(seed, fold)
+    val itemsToSortInOrder = sortingProblem.get.orderedItems
 
     // Place objects
-    val objectsToPlace = r.shuffle( (Array(correctObject) ++ distractorObjects).toList ).toArray
+    val objectsToPlace = r.shuffle( itemsToSortInOrder.toList ).toArray
     // Find possible containers for objects
     val visibleObjects = locations(0).collectVisibleObjects()
     val validContainers = new ArrayBuffer[FastObject]
@@ -612,311 +609,9 @@ class ArithmeticGameGenerator {
         locations(0).addObject(obj)
       }
     }
-    */
-
-    return (locations, Array.empty[FastObject], answerBox)
-  }
 
 
-  // Make correct and distractor objects
-  def mkCorrectAndDistractorObjects(r:Random, arithmeticProblem: ArithmeticProblem, gameFold:String):(FastObject, Array[FastObject]) = {
-    val objectNamesTrain  = Array(("apple", "apples"), ("orange", "oranges"), ("grape", "grapes"), ("tangerine", "tangerines"), ("banana", "bananas"), ("pineapple", "pineapples"), ("papaya", "papayas"), ("peach", "peaches"), ("strawberry", "strawberries"), ("grapefruit", "grapefruits") )
-    val objectNamesDev    = Array(("broccoli", "brocollis"), ("onion", "onions"), ("cucumber", "cucumbers"), ("potato", "potatoes"), ("cucumber", "cucumbers"), ("coconut", "coconuts"), ("watermelon", "watermelons"), ("mango", "mangos"), ("olive", "olives"), ("lime", "limes"), ("pear", "pears") )
-    val objectNamesTest   = Array(("pepper", "peppers"), ("tomato", "tomatoes"), ("eggplant", "eggplants"), ("squash", "squashes"), ("pumpkin", "pumpkins"), ("pea", "peas"), ("avocado", "avocados"), ("cabbage", "cabbages"), ("prune", "prunes"), ("blueberry", "blueberries") )
-
-    // Find appropriate set, and shuffle order
-    val objectNames:Array[(String, String)] = if (gameFold == "train") { objectNamesTrain } else if (gameFold == "dev") { objectNamesDev } else if (gameFold == "test") { objectNamesTest } else { Array.empty[(String, String)] }
-    val shuffled = r.shuffle(objectNames.toList).toArray
-
-    // Get correct object name, and distractor object names
-    val trueObjectName = shuffled(0)
-    val distractorObjectNames = shuffled.slice(1, shuffled.length)
-
-    // True object
-    val trueObject = this.mkBundledObject(trueObjectName, arithmeticProblem.generateResult().get)
-
-    // Distractor objects
-    val distractorObjects = new ArrayBuffer[BundleOfObjects]
-    val distractorQuantities = arithmeticProblem.generateDistractors()
-    for (i <- 0 until distractorQuantities.length) {
-      distractorObjects.append( this.mkBundledObject(distractorObjectNames(i), distractorQuantities(i)) )
-    }
-
-    // Return
-    return (trueObject, distractorObjects.toArray)
-  }
-
-
-
-  // Make a bundle of objects (e.g. a bundle of 5 oranges), with correct singular/plural name based on quantity.
-  def mkBundledObject(names:(String, String), quantity:Int):BundleOfObjects = {
-    // Get the singular or plural name
-    val nameStr = if (quantity == 1) names._1 else names._2
-    // Assemble full name string, with quantities
-    val fullNameStr = quantity.toString + " " + nameStr
-    // Create object
-    val obj = new BundleOfObjects(fullNameStr)
-
-    return obj
-  }
-
-  // Randomly add some number of distractor items to the environment, in their canonical locations, using the TWC database.
-  def addDistractorItems(r:Random, locations:ArrayBuffer[Room], numToAdd:Int, taskObjects:ArrayBuffer[FastObject], fold:String): ArrayBuffer[String] = {
-    val objectNamesAdded = new ArrayBuffer[String]()
-    for (taskObject <- taskObjects) objectNamesAdded.append(taskObject.name)
-
-    var attempts:Int = 0
-    while ((objectNamesAdded.length < numToAdd+taskObjects.length) && (attempts < 100)) {
-      // Step 1: Pick a random location
-      val randLocIdx:Int = r.nextInt(locations.length)
-      val location = locations(randLocIdx)
-      val objects = location.contents.toArray
-      if (objects.length > 0) {
-        val randObjIdx = r.nextInt(objects.length)
-        val container = objects(randObjIdx)
-
-        //println("location: " + location.name)
-
-        val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
-        if (distractorItem.isDefined) {
-          if (!objectNamesAdded.contains(distractorItem.get.name)) {
-            container.addObject(distractorItem.get)
-            objectNamesAdded.append(distractorItem.get.name)
-            //println ("Added " + distractorItem.get.name + " to " + container.name + " in " + location.name)
-          }
-        } else {
-          //println ("distractor not defined")
-        }
-      }
-
-      attempts += 1
-      //println ("Attempts: " + attempts)
-    }
-
-    return objectNamesAdded
-  }
-
-
-  // Connects rooms (adds pointers to other locations in the Room storage classes) based on a given connection map
-  def connectRoomsFromMap(r:Random, map:Array[Array[Room]], includeDoors:Boolean): Unit = {
-    for (i <- 0 until map.length) {
-      for (j <- 0 until map(i).length) {
-
-        val cell = map(i)(j)
-
-        if (cell != null) {
-          // Step 1: Check north
-          if (i < map.length-1) {
-            val queryLoc = map(i+1)(j)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationNorth = queryLoc
-                queryLoc.locationSouth = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorNorth = door.get
-                    queryLoc.doorSouth = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 2: Check south
-          if (i >= 1) {
-            val queryLoc = map(i-1)(j)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationSouth = queryLoc
-                queryLoc.locationNorth = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorSouth = door.get
-                    queryLoc.doorNorth = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 3: Check east
-          if (j >= 1) {
-            val queryLoc = map(i)(j-1)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationEast = queryLoc
-                queryLoc.locationWest = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorEast = door.get
-                    queryLoc.doorWest = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 4: Check west
-          if (j < map(i).length-1) {
-            val queryLoc = map(i)(j+1)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationWest = queryLoc
-                queryLoc.locationEast = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorWest = door.get
-                    queryLoc.doorEast = door.get
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-  }
-
-  def displayMap(map:Array[Array[Room]]):String = {
-    val os = new mutable.StringBuilder()
-
-    for (i <- 0 until map.size) {
-      for (j <- 0 until map(i).size) {
-        var cellStr = "--"
-        val cell = map(i)(j)
-        if (cell != null) cellStr = cell.name
-
-        os.append( cellStr.formatted("%20s") + " ")
-      }
-      os.append("\n")
-    }
-
-    os.toString()
-  }
-
-
-  // Find an empty direction
-  def findEmptyDirection(r:Random, map:Array[Array[Room]], locX:Int, locY:Int):(Int, Int) = {
-    // Step 1: Randomly shuffle the order of directions to evaluate first
-    val orderToCheck = r.shuffle( ArrayBuffer(0, 1, 2, 3) )   // Randomly generate the order to check
-
-    // Step 2: Iterate through the direction order, finding the first available direction
-    for (directionRef <- orderToCheck) {
-      if (directionRef == 0) {
-        // Left
-        if ((locX - 1) >= 0) {
-          if (map(locX - 1)(locY) == null) return (locX - 1, locY)
-        }
-      } else if (directionRef == 1) {
-        // Right
-        if ((locX + 1) < map.length) {
-          if (map(locX + 1)(locY) == null) return (locX + 1, locY)
-        }
-      } else if (directionRef == 2) {
-        // Up
-        if ((locY - 1) >= 0) {
-          if (map(locX)(locY - 1) == null) return (locX, locY - 1)
-        }
-      } else if (directionRef == 3) {
-        // Down
-        if ((locY + 1) < map.length) {
-          if (map(locX)(locY + 1) == null) return (locX, locY + 1)
-        }
-      }
-    }
-
-    // If no available directions were found, then return (-1, -1)
-    return (-1, -1)
-  }
-
-
-  def mkConnections(r:Random, locations:ArrayBuffer[Room]): Option[Array[Array[Room]]] = {
-    val GRID_SIZE = 7
-    val map = Array.ofDim[Room](GRID_SIZE, GRID_SIZE)
-
-    // Initialize blank map
-    for (i <- 0 until GRID_SIZE) {
-      for (j <- 0 until GRID_SIZE) {
-        map(i)(j) = null
-      }
-    }
-
-    // Keep track of locations yet to place
-    val locationsLeft = new ArrayBuffer[Room]
-    locationsLeft.insertAll(0, r.shuffle(locations))     // Randomly shuffle locations in
-
-    // Place the first location in the center
-    var lastX = 3
-    var lastY = 3
-    map(lastX)(lastY) = locationsLeft.last
-    locationsLeft.remove(locationsLeft.size-1)      // Remove from the back
-    var lastLocation = map(lastX)(lastY)
-
-
-    var attempts:Int = 0
-    val populatedLocations = new ArrayBuffer[(Int, Int)]()
-    populatedLocations.append( (lastX, lastY) )
-
-    breakable {
-      while (locationsLeft.length > 0) {
-        // Pick a random reference point
-        val refIdx = r.nextInt(populatedLocations.length)
-        lastX = populatedLocations(refIdx)._1
-        lastY = populatedLocations(refIdx)._2
-        lastLocation = map(lastX)(lastY)
-
-
-        // Pick a random location
-        val locationIdx = r.nextInt(locationsLeft.length)
-        val location = locationsLeft(locationIdx)
-
-        //println (attempts + ": Trying to place: " + location.name )
-
-        // If these locations prefer connecting to each other
-        if (location.prefersConnectingTo.contains(lastLocation.name)) {
-          // Find an empty direction
-          val (newX, newY) = findEmptyDirection(r, map, lastX, lastY)
-          if (newX != -1) {
-            // Set new location
-            map(newX)(newY) = location
-            // Remove from generation
-            locationsLeft.remove(locationIdx)
-
-            // Store that this location has been populated
-            populatedLocations.append( (newX, newY) )
-
-            //println ("\tPlaced at: " + newX + ", " + newY)
-          } else {
-            //println ("\tCan't find location")
-          }
-
-
-
-        } else {
-          //println ("\tDoesn't connect to last")
-        }
-
-
-        attempts += 1
-        if (attempts > 100) break()
-      }
-    }
-
-
-    //println( displayMap(map) )
-
-    if (locationsLeft.length > 0) return None
-    return Some(map)
+    return (locations, itemsToSortInOrder, answerBox)
   }
 
 

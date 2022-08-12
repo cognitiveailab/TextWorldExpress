@@ -17,7 +17,8 @@ object EntryPointUserConsole {
     //val SF_GAME_NAME:String = "mapreader"
     //val SF_GAME_NAME:String = "arithmetic"
     //val SF_GAME_NAME:String = "takethisaction"
-    val SF_GAME_NAME:String = "simonsays"
+    //val SF_GAME_NAME:String = "simonsays"
+    val SF_GAME_NAME:String = "sorting"
     val seed = Random.nextInt(100)
     //val seed = 16
     val fold = "train"

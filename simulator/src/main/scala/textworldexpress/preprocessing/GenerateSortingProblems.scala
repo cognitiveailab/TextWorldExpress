@@ -58,7 +58,7 @@ object GenerateSortingProblems {
       } else if (fold == "dev") {
         dev.insertAll(dev.size, problems)
       } else if (fold == "test") {
-        dev.insertAll(test.size, problems)
+        test.insertAll(test.size, problems)
       } else {
         throw new RuntimeException("ERROR: Unknown fold (" + fold + ")")
       }
@@ -119,7 +119,7 @@ object GenerateSortingProblems {
         } else if (fold == "dev") {
           dev.insertAll(dev.size, problems)
         } else if (fold == "test") {
-          dev.insertAll(test.size, problems)
+          test.insertAll(test.size, problems)
         } else {
           throw new RuntimeException("ERROR: Unknown fold (" + fold + ")")
         }
@@ -129,7 +129,7 @@ object GenerateSortingProblems {
 
 
     // Show train/dev/test sets
-    /*
+
     println ("Train: ")
     val trainShuffled = r.shuffle(train)
     val trainArrayStr = this.mkArray(trainShuffled.toArray)
@@ -147,11 +147,10 @@ object GenerateSortingProblems {
     val testArrayStr = this.mkArray(testShuffled.toArray)
     println("val testSet = " + testArrayStr)
     println("")
-    */
 
   }
 
-  def mkArray(in:Array[ArithmeticProblem]): String = {
+  def mkArray(in:Array[SortingProblem]): String = {
 
     // Display
     val elements = new ArrayBuffer[String]
@@ -195,7 +194,10 @@ class ItemQuantity(val name:String, val quantity:Long, val SISuffix:String) {
       }
     }
 
+  }
 
+  def toCodeString():String = {
+    return "new ItemQuantity(\"" + name + "\", " + quantity + ", \"" + SISuffix + "\")"
   }
 
 }
@@ -225,6 +227,10 @@ class SortingProblem(inputItems:Array[ItemQuantity]) {
     }
 
     return out.toArray
+  }
+
+  def toCodeString():String = {
+    return "new SortingProblem(inputItems = Array(" + this.inputItems.map(_.toCodeString()).mkString(", ") + ")"
   }
 
 }

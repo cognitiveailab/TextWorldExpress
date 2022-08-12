@@ -111,7 +111,7 @@ def parse_args():
     parser = argparse.ArgumentParser(desc)
     parser.add_argument("--jar_path", type=str,
                         help="Path to the ScienceWorld jar file. Default: use builtin.")
-    parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader', 'arithmetic', 'takethisaction', 'simonsays'], default='cookingworld',
+    parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader', 'arithmetic', 'takethisaction', 'simonsays', 'sorting'], default='cookingworld',
                         help="Specify the game to play. Default: %(default)s")
     parser.add_argument("--game-fold", type=str, choices=['train', 'dev', 'test'], default='train',
                         help="Specify the game set to use (train, dev, test). Default: %(default)s")

@@ -2,6 +2,7 @@ package textworldexpress.preprocessing
 
 import textworldexpress.objects.{BundleOfObjects, FastObject}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import scala.util.control.Breaks.{break, breakable}
@@ -13,7 +14,7 @@ object GenerateSortingProblems {
     val setSize:Int = 25                              // 25 per operator (100 total across the 4 operators)
     val numUniqueProblemsToGenerate:Int = setSize*3   // *3 for train, dev, and test
     val maxInt = 50
-    val r = new Random(1052)
+    val r = new Random(2051)
 
     // Train, dev, and test sets
     val train = new ArrayBuffer[SortingProblem]
@@ -35,9 +36,17 @@ object GenerateSortingProblems {
         val problemSize = r.nextInt(3) + 3
 
         val items = new ArrayBuffer[ItemQuantity]
+        val existingQuantities = mutable.Set[Int]()
         for (j <- 0 until problemSize) {
           val objectNamesShuffled = r.shuffle(objectNames.toList).toArray
-          val quantity = r.nextInt(maxInt)+1
+
+          // Make a unique quantity, that hasn't been used in this problem before
+          var quantity = r.nextInt(maxInt) + 1
+          while (existingQuantities.contains(quantity)) {
+            quantity = r.nextInt(maxInt) + 1
+          }
+          existingQuantities.add(quantity)
+
           val objName = objectNamesShuffled(0)
 
           var name = ""
@@ -89,15 +98,24 @@ object GenerateSortingProblems {
           val problemSize = r.nextInt(3) + 3
 
           val items = new ArrayBuffer[ItemQuantity]
+          val existingQuantities = mutable.Set[Int]()
           for (j <- 0 until problemSize) {
             val materialNamesShuffled = r.shuffle(materialNames.toList).toArray
-            val quantity = r.nextInt(maxInt) + 1
+
+            // Make a unique quantity, that hasn't been used in this problem before
+            var quantity = r.nextInt(maxInt) + 1
+            while (existingQuantities.contains(quantity)) {
+              quantity = r.nextInt(maxInt) + 1
+            }
+            existingQuantities.add(quantity)
+
             val materialName = materialNamesShuffled(0)
 
             // Next: Generate random suffix
             var suffixes = Array("")
             if (property == "length") {
-              suffixes = Array("mm", "cm", "m", "km")
+              //suffixes = Array("mm", "cm", "m", "km")
+              suffixes = Array("mm", "cm", "m")   // Might not be super plausible to pick up kilometers of material
             } else if (property == "mass") {
               suffixes = Array("mg", "g", "kg")
             } else if (property == "volume") {
@@ -130,19 +148,19 @@ object GenerateSortingProblems {
 
     // Show train/dev/test sets
 
-    println ("Train: ")
+    println ("// Train ")
     val trainShuffled = r.shuffle(train)
     val trainArrayStr = this.mkArray(trainShuffled.toArray)
     println("val trainSet = " + trainArrayStr)
     println ("")
 
-    println ("Dev: ")
+    println ("// Dev ")
     val devShuffled = r.shuffle(dev)
     val devArrayStr = this.mkArray(devShuffled.toArray)
     println("val devSet = " + devArrayStr)
     println ("")
 
-    println ("Test: ")
+    println ("// Test ")
     val testShuffled = r.shuffle(test)
     val testArrayStr = this.mkArray(testShuffled.toArray)
     println("val testSet = " + testArrayStr)

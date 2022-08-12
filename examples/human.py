@@ -53,8 +53,12 @@ def userConsole(args):
     # Initialize a random task variation in this set
     obs = env.resetWithSeed(gameSeed, gameFold, generateGoldPath)
 
+    # Task description
+    print("Task Description: " + env.getTaskDescription())
+    print("")
+    
     # Take action
-    curIter = 0
+    curIter = 0    
 
     userInputStr = ""
     print("\nType 'exit' to quit.\n")

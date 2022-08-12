@@ -106,6 +106,12 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
 
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
+  /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to take exactly the actions that are requested of you."
+  }
 
   /*
    * History

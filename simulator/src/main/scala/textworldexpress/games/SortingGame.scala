@@ -183,6 +183,13 @@ class SortingGame(val locations:Array[Room], val itemsToSort:Array[FastObject], 
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to sort objects by quantity.  First, place the object with the smallest quantity in the box.  Then, place the objects with the next smallest quantity in the box, and repeat until all objects have been placed in the box."
+  }
+
+  /*
    *  Action helpers
    */
 

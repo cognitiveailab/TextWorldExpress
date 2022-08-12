@@ -118,6 +118,14 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
 
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
+
+  /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to read and follow the instructions presented in the environment.  Repeat this until the game is completed."
+  }
+
   /*
    *  Action helpers
    */

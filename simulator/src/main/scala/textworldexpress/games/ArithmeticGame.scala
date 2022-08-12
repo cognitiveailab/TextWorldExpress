@@ -175,6 +175,13 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your first task is to solve the math problem. Then, pick up the item with the same quantity as the math problem answer, and place it in the box."
+  }
+
+  /*
    *  Action helpers
    */
 

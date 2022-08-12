@@ -174,6 +174,10 @@ class TextWorldExpressEnv:
     def getGenerationProperties(self):        
         return orjson.loads(self.gateway.getGenerationPropertiesJSON())
 
+    # Get the current game's task description
+    def getTaskDescription(self):
+        return self.gateway.getTaskDescription()
+
     #
     # Train/development/test sets
     #

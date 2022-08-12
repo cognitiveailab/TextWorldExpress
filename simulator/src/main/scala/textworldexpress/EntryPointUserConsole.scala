@@ -45,6 +45,8 @@ object EntryPointUserConsole {
     println ("Game Properties (from game): " + game.getGenerationProperties().toString())
     println ("-----------------------------------------------------------")
     println ("")
+    println ("Task: " + game.getTaskDescription())
+    println ("")
 
     var stepResult = game.initalStep()
 

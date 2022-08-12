@@ -230,7 +230,7 @@ class SortingProblem(inputItems:Array[ItemQuantity]) {
   }
 
   def toCodeString():String = {
-    return "new SortingProblem(inputItems = Array(" + this.inputItems.map(_.toCodeString()).mkString(", ") + ")"
+    return "new SortingProblem(inputItems = Array(" + this.inputItems.map(_.toCodeString()).mkString(", ") + ") )"
   }
 
 }

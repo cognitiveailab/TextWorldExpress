@@ -1,7 +1,7 @@
 package textworldexpress.games
 
 import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator}
-import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent}
+import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent, SortingGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -92,7 +92,7 @@ class SortingGame(val locations:Array[Room], val itemsToSort:Array[FastObject], 
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer:Scorer = new ArithmeticGameScoring(mathProblemObj, answerBox, correctObject)
+  val scorer:Scorer = new SortingGameScoring(itemsToSort, answerBox)
 
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]
@@ -111,10 +111,10 @@ class SortingGame(val locations:Array[Room], val itemsToSort:Array[FastObject], 
    */
 
   // TODO: Not implemented
-  def deepCopy():ArithmeticGame = {
+  def deepCopy():SortingGame = {
     println ("NOTE: deepCopy() not implemented -- returning a shallow copy")
     // Return
-    return new ArithmeticGame(locations, mathProblemObj, answerBox, correctObject, seed, generationProperties)
+    return new SortingGame(locations, itemsToSort, answerBox, seed, generationProperties)
   }
 
   // Connect a cloned array of locations in the same way as this map
@@ -561,7 +561,7 @@ class ArithmeticGameGenerator {
   val doorMaker = new DoorMaker()
 
 
-  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], ArithmeticProblem, MathProblem, Box, FastObject) = {
+  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], Array[FastObject], Box) = {
     val locations = new ArrayBuffer[Room]()
 
     // Add only a single location for this game (no map/multiple locations).
@@ -578,16 +578,17 @@ class ArithmeticGameGenerator {
     if (randLocationIdx == 9) locations.append(new Street(r))
     if (randLocationIdx == 10) locations.append(new Supermarket(r))
 
+    /*
     // Generate the arithmetic problem (abstract), and the math problem object.
     val (mathProblemObj, arithmeticProblem) = this.mkArithmeticProblem(seed, fold)
 
     // Add the math problem object to the location
     locations(0).addObject(mathProblemObj)
-
+*/
     // Add an answer box
     val answerBox = new Box()
     locations(0).addObject( answerBox )
-
+/*
     // Make correct and distractor objects
     val (correctObject, distractorObjects) = mkCorrectAndDistractorObjects(r, arithmeticProblem, fold)
 
@@ -611,23 +612,11 @@ class ArithmeticGameGenerator {
         locations(0).addObject(obj)
       }
     }
+    */
 
-
-    return (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject)
+    return (locations, Array.empty[FastObject], answerBox)
   }
 
-
-  def mkArithmeticProblem(seed:Int, gameFold:String): (MathProblem, ArithmeticProblem) = {
-    val arithmeticProblem = MathProblemGenerator.getProblem(seed, gameFold)
-    if (arithmeticProblem.isEmpty) throw new RuntimeException("ERROR: Unable to generate arithmetic problem.")
-
-    val mathproblem = new MathProblem
-    // TODO: Make description more complicated/task specific (e.g. place the item with the same quantity as the answer in the answer box...)
-    mathproblem.readText = "Your task is to solve the following math problem: " + arithmeticProblem.get.generateText() + " . \n"
-    mathproblem.readText += "Then, pick up the item with the same quantity as the answer, and place it in the box. "
-
-    return (mathproblem, arithmeticProblem.get)
-  }
 
   // Make correct and distractor objects
   def mkCorrectAndDistractorObjects(r:Random, arithmeticProblem: ArithmeticProblem, gameFold:String):(FastObject, Array[FastObject]) = {
@@ -932,7 +921,7 @@ class ArithmeticGameGenerator {
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, fold:String = "train"):ArithmeticGame = {
+  def mkGame(seed:Long, fold:String = "train"):SortingGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -940,18 +929,17 @@ class ArithmeticGameGenerator {
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject) = mkEnvironment(r, seed.toInt, fold)
+    val (locations, itemsToSort, answerBox) = mkEnvironment(r, seed.toInt, fold)
     // Add artithmetic problem properties to the properties
-    props("hidden_num1") = arithmeticProblem.num1
-    props("hidden_num2") = arithmeticProblem.num2
-    props("hidden_op") = if (arithmeticProblem.operation == "+") { 0 } else if (arithmeticProblem.operation == "-") { 1 } else if (arithmeticProblem.operation == "*") { 2 } else if (arithmeticProblem.operation == "/") { 3 } else { -1 }
-    val game = new ArithmeticGame( locations.toArray, mathProblemObj, answerBox, correctObject, generationProperties = props.toMap )
+    props("hidden_problemsize") = itemsToSort.length
+
+    val game = new SortingGame( locations.toArray, itemsToSort, answerBox, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(ArithmeticGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(SortingGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -960,7 +948,7 @@ class ArithmeticGameGenerator {
     breakable {
       while (attempts < MAX_ATTEMPTS) {
         val game = this.mkGame(seed, fold)
-        val goldAgent = new ArithmeticGoldAgent(game)
+        val goldAgent = new SortingGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 

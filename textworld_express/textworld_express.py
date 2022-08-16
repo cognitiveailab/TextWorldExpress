@@ -231,6 +231,10 @@ class TextWorldExpressEnv:
         else:
             self.parsedResponse['taskfailure'] = False
 
+        # Also add the task description to the observation (feature request)
+        self.parsedResponse['taskDescription'] = self.getTaskDescription()
+
+
     #
     # Step
     #

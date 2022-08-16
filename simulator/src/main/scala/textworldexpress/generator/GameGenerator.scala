@@ -481,8 +481,8 @@ object GameGenerator {
     val numLocations:Int            = properties.getOrElse("numLocations", 15)
     val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 4)
     val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
-    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
-    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }
+    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 0) == 1) { true } else { false }
+    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 0) == 1) { true } else { false }
 
     // Make game
     val game = new GameGeneratorMapReader(numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)

@@ -86,7 +86,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   // Internal game random number generator -- primarily for randomizing valid action list.
   val random = new Random(seed)
 
-  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the starting location. A map is provided, that you may find helpful."
+  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the " + startLocation.name + ". A map is provided, that you may find helpful."
 
 
   /*

@@ -569,7 +569,7 @@ class MapReaderRandomGameGenerator {
     val locations = new ArrayBuffer[Room]()
 
     // Randomly generate locations (blank rooms)
-    val locationNames = Array("washroom", "bathroom", "cupboard", "pantry", "basement", "closet", "kitchen", "kitchenette", "launderette", "laundromat", "laundry place", "shower", "sauna", "steam room", "pantry", "closet", "attic", "garage", "vault", "cellar", "spare room", "canteen", "cookery", "scullery", "cookhouse", "bedroom", "bedchamber", "chamber", "lounge", "bar", "parlor", "salon", "playroom", "recreation zone", "office", "studio", "workshop", "cubicle", "study", "greenhouse", "outside", "street", "driveway", "supermarket", "alley", "side yard", "living room", "library", "storage room", "backyard")
+    val locationNames = Set("washroom", "bathroom", "cupboard", "pantry", "basement", "closet", "kitchen", "kitchenette", "launderette", "laundromat", "laundry place", "shower", "sauna", "steam room", "pantry", "attic", "garage", "vault", "cellar", "spare room", "canteen", "cookery", "scullery", "cookhouse", "bedroom", "bedchamber", "chamber", "lounge", "bar", "parlor", "salon", "playroom", "recreation zone", "office", "studio", "workshop", "cubicle", "study", "greenhouse", "outside", "street", "driveway", "supermarket", "alley", "side yard", "living room", "library", "storage room", "backyard")
     val shuffledLocationNames = r.shuffle(locationNames.toList)
 
     for (i <- 0 until numLocations) {
@@ -1090,8 +1090,7 @@ class MapReaderRandomGameGenerator {
       }
     }
 
-
-    println( displayMap(map) )
+    //println( displayMap(map) )
 
     if (locationsLeft.length > 0) return None
     return Some(map)

@@ -22,7 +22,7 @@ object EntryPointUserConsole {
     //val SF_GAME_NAME:String = "sorting"
     //val SF_GAME_NAME:String = "simonsays-memory"
     //val seed = Random.nextInt(100)
-    val seed = 84
+    val seed = 85
     val fold = "train"
 
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.

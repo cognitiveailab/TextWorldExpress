@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.goldagent.SimonSaysGoldAgent
+import textworldexpress.goldagent.{SimonSaysGoldAgent, SimonSaysMemoryGoldAgent}
 import textworldexpress.objects.FastObject
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
@@ -181,8 +181,14 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
       return "Task Completed."
     }
 
-    val os = "Simon says, take this action: " + this.goldActionSequence(curStage)
-    return os
+    if (curStage == 0) {
+      // First step
+      return "Simon says, take these actions in ordern: " + this.goldActionSequence.mkString(", ") + "."
+    } else {
+      // Subsequent steps -- if we reach here, they are making progress.
+      return "Good work!"
+    }
+
   }
 
 
@@ -337,7 +343,7 @@ class SimonSaysMemoryGameGenerator {
     breakable {
       while (attempts < MAX_ATTEMPTS) {
         val game = this.mkGame(seed, fold)
-        val goldAgent = new SimonSaysGoldAgent(game)
+        val goldAgent = new SimonSaysMemoryGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 

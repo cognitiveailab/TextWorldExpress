@@ -18,10 +18,11 @@ object EntryPointUserConsole {
     //val SF_GAME_NAME:String = "arithmetic"
     //val SF_GAME_NAME:String = "takethisaction"
     //val SF_GAME_NAME:String = "simonsays"
-    val SF_GAME_NAME:String = "sorting"
+    //val SF_GAME_NAME:String = "sorting"
+    val SF_GAME_NAME:String = "simonsays-memory"
     //val seed = Random.nextInt(100)
     val seed = 84
-    val fold = "dev"
+    val fold = "train"
 
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     //gameProps("includeDoors") = 0                   // Disable doors

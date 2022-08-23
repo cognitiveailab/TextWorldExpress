@@ -183,7 +183,7 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
 
     if (curStage == 0) {
       // First step
-      return "Simon says, take these actions in ordern: " + this.goldActionSequence.mkString(", ") + "."
+      return "Simon says, take these actions in order: " + this.goldActionSequence.mkString(", ") + "."
     } else {
       // Subsequent steps -- if we reach here, they are making progress.
       return "Good work!"

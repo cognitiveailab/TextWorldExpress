@@ -94,27 +94,9 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
    */
 
   // TODO: Still not working (needs location map cloning)
-  def deepCopy():CoinGame = {
-    val clonedTaskObjects = new ArrayBuffer[FastObject]
-
-    // Step 1: Clone locations
-    val locationsClone = new Array[Room](locations.length)
-    for (i <- 0 until locations.length) {
-      locationsClone(i) = locations(i).deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
-    }
-
-    // Step 2: Connect rooms
-    this.connectClonedMap(locationsClone)
-
-    // Step 3: Create new game
-    val game = new CoinGame(locationsClone, clonedTaskObjects, this.limitInventorySize, seed = this.seed, this.generationProperties)
-
-    // Also clone the agent inventory
-    game.agentInventory = this.agentInventory.deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
-
-
+  def deepCopy():MapReaderGame = {
     // Return
-    game
+    new MapReaderGame(locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, seed, generationProperties)
   }
 
   // Connect a cloned array of locations in the same way as this map

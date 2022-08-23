@@ -449,7 +449,7 @@ class GameGeneratorSorting() extends GameGenerator {
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "takethisaction", "simonsays", "sorting")
+
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -616,6 +616,8 @@ object GameGenerator {
    * The main generator.
    * Returns (success, GameGenerator)
    */
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "takethisaction", "simonsays", "simonsays-memory", "sorting")
+
   def mkGameGenerator(gameName:String, properties:Map[String, Int] = Map[String, Int]()):(Boolean, GameGenerator) = {
 
     gameName.toLowerCase match {

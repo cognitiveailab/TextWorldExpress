@@ -196,20 +196,3 @@ class MapReaderRandomGoldAgent(game:MapReaderRandomGame) {
 
 
 }
-
-
-// Storage class for the map pathfinding algorithm for the gold agent
-class TreeNode(val location:Room, val parent:Option[TreeNode] = None, val children:ArrayBuffer[TreeNode] = new ArrayBuffer[TreeNode]) {
-  def addChild(node:TreeNode): Unit = {
-    this.children.append(node)
-  }
-
-  def getPathToRoot():Array[String] = {
-    // Stop case: at root
-    if (this.parent.isEmpty) return Array.empty[String]
-
-    // Recurse case: Somewhere along tree
-    return Array(location.name) ++ this.parent.get.getPathToRoot()
-  }
-}
-

@@ -66,7 +66,8 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
 
     // Create a fresh game
     val game = precachedGame.deepCopy()
-    //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = 1, "train")
+    // Make a game that isn't precached
+    //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = startSeed, gameFold)
     //val game = _game
 
     // Step 1: Do actions so far
@@ -269,7 +270,7 @@ object EntryPointPathCrawler {
     gameProps("limitInventorySize") = 0             // Number of distractor items
 
     val gameName = "coin"
-    val maxDepth = 13
+    val maxDepth = 5
 
 
     for (i <- 0 until numGamesToCrawl) {
@@ -291,12 +292,40 @@ object EntryPointPathCrawler {
   }
 
 
+  def crawlArithmetic(numGamesToCrawl:Int=1): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+
+    val gameName = "arithmetic"
+    val maxDepth = 5
+
+
+    for (i <- 0 until numGamesToCrawl) {
+      try {
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest")
+      } catch {
+        case e:Throwable => { println ("ERROR: " + e.toString) }
+      }
+    }
+
+    for (i <- 0 until numGamesToCrawl) {
+      try {
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest")
+      } catch {
+        case e:Throwable => { println ("ERROR: " + e.toString) }
+      }
+    }
+
+  }
+
 
   def main(args:Array[String]): Unit = {
 
     //crawlTWC(numGamesToCrawl = 20)
 
-    crawlCoin(numGamesToCrawl = 20)
+    //crawlCoin(numGamesToCrawl = 20)
+    crawlCoin(numGamesToCrawl = 1)
+
+    //crawlArithmetic(numGamesToCrawl = 1)
 
 
   }

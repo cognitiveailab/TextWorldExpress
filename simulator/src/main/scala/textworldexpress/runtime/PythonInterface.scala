@@ -3,10 +3,12 @@ package textworldexpress.runtime
 import py4j.GatewayServer
 import textworldexpress.generator.GameGenerator
 import textworldexpress.struct.{StepResult, TextGame}
+import textworldexpress.symbolicmodule.SymbolicModuleInterface
 
 import collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 
 class PythonInterface() {
@@ -16,20 +18,37 @@ class PythonInterface() {
   // Game and gold path
   var gameGenerator:GameGenerator = null
   var game:TextGame = null
+  var gameName:String = ""
+  var gameFold:String = ""
+  var paramStr:String = ""
+  var enabledModulesStr:String = ""
+  var gameSeed:Int = 0
   var goldPath:Array[String] = Array.empty[String]
   var properties:Map[String, Int] = Map[String, Int]()
   var curStepResult:StepResult = null
 
+  var enabledModuleStrs:Array[String] = Array.empty[String]
+  var moduleInterface:SymbolicModuleInterface = null
+
+  var history = new ArrayBuffer[StepHistory]
+
   /*
    * Load/reset/shutdown server
    */
-  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):StepResult = {
+  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean, enabledModulesStr:String = ""):StepResult = {
     // Clear variables
     this.game = null
+    this.gameName = gameName
+    this.gameFold = gameFold
+    this.gameSeed = seed
+    this.paramStr = paramStr
+    this.enabledModulesStr = enabledModulesStr
     this.goldPath = Array.empty[String]
     this.errorStr = ""
     this.curStepResult = null
     this.gameGenerator = null
+    this.moduleInterface = null
+    this.history = new ArrayBuffer[StepHistory]
 
     // Step 1: Parse any properties passed in through the string
     val (_props, propErrorStr) = PythonInterface.parseParamStr(paramStr)
@@ -47,29 +66,88 @@ class PythonInterface() {
     this.gameGenerator = gameGenerator
 
     // Step 3: Generate new game
-    return this.generateNewGame(seed, gameFold, generateGoldPath)
+    this.curStepResult = this.generateNewGame(seed, gameFold, generateGoldPath)
+
+    // Step 4: Initialize any symbolic modules
+    // Parse the module request string
+    this.enabledModuleStrs = enabledModulesStr.split(",").map(_.trim)
+    // Add symbolic modules
+    this.resetSymbolicModules()
+
+    // Add actions from symbolic modules
+    this.addValidActionsFromModules()
+
+    // Add to history
+    this.history.append( new StepHistory(actionStr = "", moduleStr = "", this.curStepResult) )
+
+    return this.curStepResult
   }
 
   // Mirror with JSON output
-  def loadJSON(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):String = {
-    val stepResult = this.load(gameName, gameFold, seed, paramStr, generateGoldPath)
-    stepResult.toJSON()
+  def loadJSON(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean, enabledModulesStr:String = ""):String = {
+    this.curStepResult = this.load(gameName, gameFold, seed, paramStr, generateGoldPath)
+    this.addValidActionsFromModules()
+    return this.curStepResult.toJSON()
   }
 
+  // Reset the symbolic modules
+  def resetSymbolicModules(): Unit = {
+    moduleInterface = null
+    // Reset
+    moduleInterface = new SymbolicModuleInterface(properties = game.getGenerationProperties())
+    // Add requested modules
+    for (enabledModuleStr <- this.enabledModuleStrs) {
+      moduleInterface.addModule(moduleName = enabledModuleStr)
+    }
+    // TODO: Check for errors (e.g. modules that do not exist)
+  }
 
-  // Assumes that load() has already been called, and gameGenerator is valud.
+  // Adds any additional valid actions from the symbolic modules into the action space
+  def addValidActionsFromModules(): Unit = {
+    if (this.moduleInterface != null) {
+      val newValidActions = (this.curStepResult.validActions ++ this.moduleInterface.getValidCommands()).toSet.toArray    // Remove any duplicates
+      //println ("### ACTIONS FROM MODULE: " + this.moduleInterface.getValidCommands().mkString(", "))
+      //println ("### ADDING VALID ACTIONS: " + newValidActions.mkString(", "))
+      this.curStepResult = this.curStepResult.cloneButReplaceValidActions(newValidActions = newValidActions)
+    }
+  }
+
+  // Assumes that load() has already been called, and gameGenerator is valid.
   def generateNewGame(seed:Int, gameFold:String, generateGoldPath:Boolean):StepResult = {
     if (this.gameGenerator == null) {
       errorStr = "ERROR: Game generator is not initialized.  Call load() before attempting to generate new games."
       return StepResult.mkErrorMessage(errorStr)
     }
 
+    // Store/reset generation parameters
+    this.gameSeed = seed
+    this.gameFold = gameFold
+    this.history = new ArrayBuffer[StepHistory]
+
     // Generate new game
     if (generateGoldPath) {
       // With gold path
-      val (_game, _goldPath) = this.gameGenerator.mkGameWithGoldPath(seed, gameFold)
-      this.game = _game
-      this.goldPath = _goldPath
+
+      // Case 1: Without symbolic modules
+      if ((this.moduleInterface == null) || (this.moduleInterface.getEnabledModuleNames().length == 0)) {
+        val (_game, _goldPath) = this.gameGenerator.mkGameWithGoldPath(seed, gameFold)
+        this.game = _game
+        this.goldPath = _goldPath
+      } else {
+        // Case 2: With symbolic modules (requires going through Interface instead of Game
+        // First, create a faux interface that duplicates this one
+        val fauxInterface = new PythonInterface()
+        fauxInterface.load(gameName = this.gameName, gameFold = this.gameFold, seed = this.gameSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr = this.enabledModulesStr)
+        // Then, call the gold agent with this interface
+        val rg = new Random(seed)
+        println ("### HERE")
+        val (success, _goldPath) = this.gameGenerator.mkGoldPathModules(rg, fauxInterface)
+        this.goldPath = _goldPath
+        if (!success) println ("### ERROR: Unable to generate gold path with module interface.")
+        // Also create the game
+        this.game = this.gameGenerator.mkGame(seed, gameFold)
+
+      }
 
       // Check gold path is present
       if (goldPath.length == 0) this.errorStr = "ERROR: Unable to generate gold path."
@@ -78,8 +156,16 @@ class PythonInterface() {
       this.game = this.gameGenerator.mkGame(seed, gameFold)
     }
 
+    // Reset the symbolic modules
+    this.resetSymbolicModules()
+
     // Take first 'step'
     this.curStepResult = game.initalStep()
+    addValidActionsFromModules()
+
+    // Add to history
+    this.history.append( new StepHistory(actionStr = "", moduleStr = "", this.curStepResult) )
+
     return this.curStepResult
   }
 
@@ -104,13 +190,16 @@ class PythonInterface() {
     }
 
     // Step 2: Generate new game
-    return this.generateNewGame(seed = randSeed, gameFold, generateGoldPath)
+    this.curStepResult = this.generateNewGame(seed = randSeed, gameFold, generateGoldPath)
+    this.addValidActionsFromModules()
+    return this.curStepResult
   }
 
   // Mirror with JSON output
   def resetWithRandomSeedJSON(gameFold:String, generateGoldPath:Boolean):String = {
-    val stepResult = this.resetWithRandomSeed(gameFold, generateGoldPath)
-    stepResult.toJSON()
+    this.curStepResult = this.resetWithRandomSeed(gameFold, generateGoldPath)
+    this.addValidActionsFromModules()
+    this.curStepResult.toJSON()
   }
 
 
@@ -214,13 +303,45 @@ class PythonInterface() {
     // Sanitize user input
     val userInputSanitized = userInputString.trim
 
+    // Valid actions (with valid actions from the module, if enabled)
+    val validActions =
+      if (this.moduleInterface == null) { this.curStepResult.validActions }
+      else { this.curStepResult.validActions ++ this.moduleInterface.getValidCommands() }
+
     // Check for valid action
-    if (!this.curStepResult.validActions.contains(userInputSanitized)) {
+    if (!validActions.contains(userInputSanitized)) {
       return StepResult.mkInvalidStep(this.curStepResult)
     }
 
     // Take step
-    this.curStepResult = game.step(userInputSanitized)
+    var wasModuleCommand:Boolean = false
+    // First, check to see if the action is intended for the symbolic module
+    if (this.moduleInterface != null) {
+      val (success, resultStr) = this.moduleInterface.runCommand(userInputSanitized)
+      if (success) {
+        // The command was successfully run by a symbolic module.
+        // Reuse the last curStepResult (since a module command shouldn't change the environment), but just replace the old observation with the output of the module
+        wasModuleCommand = true
+        this.curStepResult = this.curStepResult.cloneButReplaceObservation(newObservationStr = resultStr)
+
+      } else {
+        // The command was not run by the module -- run in the environment
+        this.curStepResult = game.step(userInputSanitized)
+      }
+    } else {
+      // Modules not enabled -- run in the environment
+      this.curStepResult = game.step(userInputSanitized)
+    }
+
+    // Add any actions available from the symbolic modules to the action space
+    this.addValidActionsFromModules()
+
+    // Add to history
+    if (wasModuleCommand) {
+      this.history.append(new StepHistory(actionStr = "", moduleStr = userInputSanitized, this.curStepResult))
+    } else {
+      this.history.append(new StepHistory(actionStr = userInputSanitized, moduleStr = "", this.curStepResult))
+    }
 
     // Return
     return this.curStepResult

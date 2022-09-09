@@ -14,7 +14,7 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
     val moduleNameSanitized = moduleName.trim().toLowerCase
 
     if (moduleNameSanitized == ModuleCalc.MODULE_NAME) {
-      println("Adding calc module")
+      //println("Adding calc module")
       this.modules.append( new ModuleCalc(properties) )
 
     } else {

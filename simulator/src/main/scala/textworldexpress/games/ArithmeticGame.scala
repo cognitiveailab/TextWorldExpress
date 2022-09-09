@@ -952,7 +952,7 @@ class ArithmeticGameGenerator {
 
   def mkGameWithGoldPath(seed:Long, fold:String = "train"):(ArithmeticGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
-    val rg = new Random()
+    val rg = new Random(seed)
 
     var attempts: Int = 0
     var goldPath = Array.empty[String]

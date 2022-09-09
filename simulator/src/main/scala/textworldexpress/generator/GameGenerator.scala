@@ -1,7 +1,11 @@
 package textworldexpress.generator
 
 import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, MapReaderRandomGameGenerator, SimonSaysGameGenerator, SimonSaysMemoryGameGenerator, SortingGameGenerator, TWCGameGenerator, TakeThisActionGameGenerator}
+import textworldexpress.goldagent.ArithmeticGoldAgentWithModule
+import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.TextGame
+
+import scala.util.Random
 
 /*
  * Abstract class for game generators
@@ -21,6 +25,8 @@ abstract class GameGenerator {
 
   // Makes a game (including generating a gold path)
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String])
+
+  def mkGoldPathModules(r:Random, interface:PythonInterface):(Boolean, Array[String]) = (false, Array.empty[String])
 
 }
 
@@ -327,6 +333,12 @@ class GameGeneratorArithmetic() extends GameGenerator {
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
     return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+  override def mkGoldPathModules(r:Random, interface:PythonInterface):(Boolean, Array[String]) = {
+    val agent = new ArithmeticGoldAgentWithModule(interface)
+    val (success, path) = agent.mkGoldPath(r)
+    return (success, path)
   }
 
 }

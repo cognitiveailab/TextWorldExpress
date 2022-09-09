@@ -1,13 +1,15 @@
 package textworldexpress.pathcrawler
 
 import textworldexpress.generator.GameGenerator
+import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.{StepResult, TextGame}
+import textworldexpress.symbolicmodule.ModuleCalc
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-//class CrawlerRunner(id:Int, SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], initialPath:Array[String], startSeed:Int=0, gameFold:String="train", maxDepth:Int=5) extends Thread {
-class CrawlerRunner(id:Int, crawler:EntryPointPathCrawler, initialPath:Array[String], maxDepth:Int=5) extends Thread {
+
+class CrawlerRunnerWithModule(id:Int, crawler:EntryPointPathCrawlerWithModule, initialPath:Array[String], maxDepth:Int=5) extends Thread {
   private var isRunning:Boolean = false
   private var isWinning:Boolean = false
   private var isCompleted:Boolean = false
@@ -37,9 +39,7 @@ class CrawlerRunner(id:Int, crawler:EntryPointPathCrawler, initialPath:Array[Str
 
 }
 
-
-
-class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], startSeed:Int, gameFold:String) {
+class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Map[String, Int], startSeed:Int, gameFold:String, enabledModulesStr:String) {
 
   val (success, generator) = GameGenerator.mkGameGenerator(gameName = SF_GAME_NAME, gameProps)
   if (!success) throw new RuntimeException("ERROR creating text game(): " + generator.errorStr)
@@ -48,6 +48,14 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
 
   // Clear the string LUT
   StepResultHashed.resetLUT()
+
+  // Make parameter string from parameters (for Interface)
+  var params = new ArrayBuffer[String]
+  for (key <- gameProps.keySet) {
+    params.append(key + "=" + gameProps(key))
+  }
+  val paramStr = params.mkString(",")
+
 
   /*
    * Game crawling
@@ -65,16 +73,17 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
     if (curDepth >= maxDepth) return None
 
     // Create a fresh game
-    val game = precachedGame.deepCopy()
+    //val game = precachedGame.deepCopy()
     // Make a game that isn't precached
     //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = startSeed, gameFold)
     //val game = _game
+    val interface = new PythonInterface()
+    var stepResult:StepResult = interface.load(gameName = SF_GAME_NAME, gameFold, seed = startSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr)
 
     // Step 1: Do actions so far
-    var stepResult:StepResult = game.initalStep()
     // Subsequent steps
     for (actionStr <- pathSoFar) {
-      stepResult = game.step(actionStr)
+      stepResult = interface.step(actionStr)
     }
     val stepResultHashed = StepResultHashed.mkFromStepResult(stepResult)
 
@@ -111,14 +120,14 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
 
     } else {
       // Threaded
-      val runners = new Array[CrawlerRunner](validActions.length)
+      val runners = new Array[CrawlerRunnerWithModule](validActions.length)
 
       // Start threads
       for (i <- 0 until validActions.length) {
         val validActionStr = validActions(i)
         val initialPath = pathSoFar ++ Array(validActionStr)
         //runners(i) = new CrawlerRunner(i, SF_GAME_NAME, gameProps, initialPath, startSeed, gameFold, maxDepth)
-        runners(i) = new CrawlerRunner(i, this, initialPath, maxDepth)
+        runners(i) = new CrawlerRunnerWithModule(i, this, initialPath, maxDepth)
         runners(i).start()
       }
 
@@ -179,11 +188,11 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
 
 
 
-object EntryPointPathCrawler {
+object EntryPointPathCrawlerWithModule {
 
-  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, filenameOutPrefix:String) = {
+  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String) = {
     // Create crawler
-    val crawler = new EntryPointPathCrawler(gameName, gameProps.toMap, variationIdx, gameFold)
+    val crawler = new EntryPointPathCrawlerWithModule(gameName, gameProps.toMap, variationIdx, gameFold, enabledModulesStr)
 
     println ("Starting crawling...")
     val startTime = System.currentTimeMillis()
@@ -249,14 +258,14 @@ object EntryPointPathCrawler {
 
     val gameName = "twc"
     val maxDepth = 6
-
+    val enabledModulesStr = ""
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
     }
 
   }
@@ -271,11 +280,11 @@ object EntryPointPathCrawler {
 
     val gameName = "coin"
     val maxDepth = 5
-
+    val enabledModulesStr = ""
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -283,7 +292,7 @@ object EntryPointPathCrawler {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -296,12 +305,13 @@ object EntryPointPathCrawler {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
-    val maxDepth = 5
+    val maxDepth = 4
+    val enabledModulesStr = ModuleCalc.MODULE_NAME
 
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -309,7 +319,7 @@ object EntryPointPathCrawler {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -331,121 +341,6 @@ object EntryPointPathCrawler {
   }
 
 
-
-}
-
-
-// Storage class for crawled path
-class PrecrawledPathNode(val stepResult:StepResultHashed, val validSteps:Map[String, PrecrawledPathNode]) {
-  // A unique ID for this node
-  var id:Int = -1
-
-  // Size of the tree starting from this node
-  def treeSize():Int = {
-    var sum:Int = validSteps.size
-    for (validStep <- validSteps.keySet) {
-      sum += validSteps(validStep).treeSize()
-    }
-    return sum
-  }
-
-  def hasWinning():Boolean = {
-    if (this.stepResult.succ) return true
-
-    for (validStep <- validSteps.keySet) {
-      if (validSteps(validStep).hasWinning() == true) return true
-    }
-
-    // If we reach here, no winning path found
-    return false
-  }
-
-  def winningPath():(Boolean, Array[String]) = {
-    if (this.stepResult.succ) {
-      return (true, Array.empty[String])
-    }
-
-    var bestPath:Option[Array[String]] = None
-    for (validStepStr <- validSteps.keySet) {
-
-      val (success, path) = validSteps(validStepStr).winningPath()
-      if (success) {
-        // If we haven't found a winning path yet, OR the new winning path is shorter than the current-best winning path, then replace the current winning path
-        if ((bestPath.isEmpty) || (bestPath.get.length > path.length+1)) {
-          bestPath = Some(Array(validStepStr) ++ path)
-        }
-      }
-    }
-
-    if (bestPath.isDefined) {
-      // Winning path found
-      return (true, bestPath.get)
-    } else {
-      // No winning path found
-      return (false, Array.empty[String])
-    }
-
-  }
-
-
-  def runPath(actions:Array[String]):Array[StepResultHashed] = {
-
-    val curAction = actions(0)
-    println("")
-    println("curAction: " + curAction)
-    println("validActions: " + this.validSteps.keySet)
-    if (this.validSteps.contains(curAction)) {
-      val result = this.validSteps(curAction)
-      println("Obs: " + result.stepResult.obs )
-      if (actions.length > 1) {
-        // Recursive condition
-        val remainingActions = actions.slice(1, actions.length)
-        println("Remaining actions: " + remainingActions.mkString(", "))
-        return Array(result.stepResult) ++ result.runPath(remainingActions)     // Recursive call
-      } else {
-        // Stop condition
-        return Array(result.stepResult)
-      }
-    } else {
-      // Unknown action
-      throw new RuntimeException("ERROR: Unknown action (" + curAction + ").")
-    }
-
-  }
-
-}
-
-
-object PrecrawledPathNode {
-  var curId:Int = -1
-
-  /*
-   * Node ID assignment
-   */
-  def resetID(): Unit = {
-    this.curId = -1
-  }
-
-  def getNextId():Int = {
-    this.curId += 1
-    return this.curId
-  }
-
-  // Assign unique IDs to all nodes
-  def assignUniqueIDs(in:PrecrawledPathNode): Unit = {
-    this.resetID()
-    this.assignUniqueIDsHelper(in)
-  }
-
-  private def assignUniqueIDsHelper(in:PrecrawledPathNode) {
-    // This node
-    in.id = this.getNextId()
-
-    // Child nodes
-    for (child <- in.validSteps.values) {
-      this.assignUniqueIDsHelper(child)
-    }
-  }
 
 }
 

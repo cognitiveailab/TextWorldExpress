@@ -1,5 +1,6 @@
 package textworldexpress.symbolicmodule
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 class SymbolicModuleInterface(val properties:Map[String, Int]) {
@@ -75,3 +76,38 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
 
 }
 
+
+
+object SymbolicModuleInterface {
+
+  def testCalc(): Unit = {
+    val properties = mutable.Map[String, Int]()
+    properties("hidden_num1") = 10
+    properties("hidden_num2") = 15
+
+    val smi = new SymbolicModuleInterface(properties.toMap)
+
+    smi.addModule(ModuleCalc.MODULE_NAME)
+
+    println ("Enabled modules: " + smi.getEnabledModuleNames().mkString(", "))
+
+    println ("Valid commands: " + smi.getValidCommands().mkString(", "))
+
+    println ("")
+
+    for (validCommand <- smi.getValidCommands()) {
+      println ("Command: " + validCommand)
+      println ("\t Output: " + smi.runCommand(validCommand))
+      println ("")
+    }
+
+  }
+
+
+  def main(args:Array[String]): Unit = {
+
+    testCalc()
+
+  }
+
+}

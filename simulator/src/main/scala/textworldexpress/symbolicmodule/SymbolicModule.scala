@@ -1,6 +1,6 @@
 package textworldexpress.symbolicmodule
 
-class SymbolicModule(val moduleName:String) {
+class SymbolicModule(val moduleName:String, properties:Map[String, Int]) {
 
 
   /*
@@ -39,7 +39,7 @@ class SymbolicModule(val moduleName:String) {
   def runCommand(actionStr:String): String = {
     // Step 1: Check that this command is valid
     if (this.isValidCommand(actionStr)) {
-      return "This is not a valid command for this module (" + this.moduleName + ", " + actionStr + ")"
+      return SymbolicModule.mkErrorMessageInvalidCommand(this.moduleName, actionStr)
     }
 
     // Valid command
@@ -47,4 +47,13 @@ class SymbolicModule(val moduleName:String) {
   }
 
 
+}
+
+
+
+object SymbolicModule {
+
+  def mkErrorMessageInvalidCommand(moduleName:String, actionStr:String): String = {
+    return "This is not a valid command for this module (" + moduleName + ", " + actionStr + ")"
+  }
 }

@@ -2,7 +2,7 @@ package textworldexpress.symbolicmodule
 
 import scala.collection.mutable.ArrayBuffer
 
-class SymbolicModuleInterface {
+class SymbolicModuleInterface(val properties:Map[String, Int]) {
 
   val modules = new ArrayBuffer[SymbolicModule]
 
@@ -12,18 +12,21 @@ class SymbolicModuleInterface {
   def addModule(moduleName:String): Unit = {
     val moduleNameSanitized = moduleName.trim().toLowerCase
 
-    if (moduleNameSanitized == "calc") {
+    if (moduleNameSanitized == ModuleCalc.MODULE_NAME) {
       println("Adding calc module")
-      // TODO
-//      this.modules.append( new ModuleCalc() )
+      this.modules.append( new ModuleCalc(properties) )
+
+    } else {
+      // Default
+      println ("Cannot add unknown module (" + moduleNameSanitized + ").")
     }
 
   }
 
 
   // Get a list of enabled modules
-  def getEnabledModuleNames(): Unit = {
-    val names = this.modules.map(_.moduleName).sorted
+  def getEnabledModuleNames(): Array[String] = {
+    val names = this.modules.map(_.moduleName).sorted.toArray
     return names
   }
 
@@ -71,3 +74,4 @@ class SymbolicModuleInterface {
   }
 
 }
+

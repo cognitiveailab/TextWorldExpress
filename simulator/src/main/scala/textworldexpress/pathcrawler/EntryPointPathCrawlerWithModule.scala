@@ -305,7 +305,7 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
-    val maxDepth = 4
+    val maxDepth = 6
     val enabledModulesStr = ModuleCalc.MODULE_NAME
 
 
@@ -335,8 +335,12 @@ object EntryPointPathCrawlerWithModule {
     //crawlCoin(numGamesToCrawl = 20)
     //crawlCoin(numGamesToCrawl = 1)
 
+    val startTime = System.currentTimeMillis()
+
     crawlArithmetic(numGamesToCrawl = 1)
 
+    val deltaTime = System.currentTimeMillis() - startTime
+    println ("Runtime: " + (deltaTime / 1000) + " seconds")
 
   }
 

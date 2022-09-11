@@ -65,10 +65,10 @@ class EntryPointPathCrawler(SF_GAME_NAME:String = "coin", gameProps:Map[String, 
     if (curDepth >= maxDepth) return None
 
     // Create a fresh game
-    val game = precachedGame.deepCopy()
+    //val game = precachedGame.deepCopy()
     // Make a game that isn't precached
-    //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = startSeed, gameFold)
-    //val game = _game
+    val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = startSeed, gameFold)
+    val game = _game
 
     // Step 1: Do actions so far
     var stepResult:StepResult = game.initalStep()
@@ -296,7 +296,7 @@ object EntryPointPathCrawler {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
-    val maxDepth = 5
+    val maxDepth = 6
 
 
     for (i <- 0 until numGamesToCrawl) {
@@ -325,8 +325,12 @@ object EntryPointPathCrawler {
     //crawlCoin(numGamesToCrawl = 20)
     //crawlCoin(numGamesToCrawl = 1)
 
+    val startTime = System.currentTimeMillis()
+
     crawlArithmetic(numGamesToCrawl = 1)
 
+    val deltaTime = System.currentTimeMillis() - startTime
+    println ("Runtime: " + (deltaTime / 1000) + " seconds")
 
   }
 

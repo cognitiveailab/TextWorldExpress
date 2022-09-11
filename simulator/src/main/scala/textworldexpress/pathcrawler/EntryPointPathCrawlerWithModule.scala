@@ -305,13 +305,13 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
-    val maxDepth = 6
+    val maxDepth = 5
     val enabledModulesStr = ModuleCalc.MODULE_NAME
 
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -319,7 +319,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest")
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -337,7 +337,7 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    crawlArithmetic(numGamesToCrawl = 1)
+    crawlArithmetic(numGamesToCrawl = 50)
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")

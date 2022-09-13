@@ -46,7 +46,8 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
     }
 
     // Step 2: Remove any duplicates (just in case), and keep a consistent order
-    val outSanitized = out.toSet.toArray.sorted
+    // NOTE: Removing duplicates is now expected in the modules themselves, for speed/efficiency.
+    val outSanitized = out.toArray.sorted
     return outSanitized
   }
 

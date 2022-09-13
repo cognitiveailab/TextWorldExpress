@@ -22,7 +22,7 @@ class ModuleCalc(val properties:Map[String, Int]) extends SymbolicModule(ModuleC
     }
 
     // Convert to a set to remove duplicates
-    return out.toSet.toArray.sorted
+    return out.toSet.toArray
   }
 
 

@@ -5,13 +5,12 @@ import scala.io.Source
 import scala.util.control.Breaks._
 import ModuleKnowledgeBaseTWC.ACTION_PREFIX
 
-class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
-  // Precached actions
-  val precachedValidActions = this.mkValidActions()
+import scala.collection.mutable
 
+class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
 
   override def getValidCommands(): Array[String] = {
-    return this.precachedValidActions
+    return ModuleKnowledgeBaseTWC.precachedValidActions
   }
 
   override def runCommand(actionStr: String): String = {
@@ -20,28 +19,28 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
       return SymbolicModule.mkErrorMessageInvalidCommand(this.moduleName, actionStr)
     }
 
-    // Step 2: Get query results.
-    val queryStr = actionStr.substring(ACTION_PREFIX.length).trim()
-    val queryResults = this.runQuery(queryStr)
-
-    // Step 3: Check that we have a non-zero number of results
-    if (queryResults.length == 0) {
-      return "No results found."
-    }
-
-    // Step 4: Return the results
-    val os = new StringBuilder()
-    os.append("The results are:\n ")
-    for (result <- queryResults) {
-      os.append(result.mkString(" ") + ".\n ")
-    }
-
-    // Return
-    return os.toString()
+    // Get results from precached query
+    return ModuleKnowledgeBaseTWC.precachedResults(actionStr)
   }
 
+}
+
+
+object ModuleKnowledgeBaseTWC {
+  val MODULE_NAME   = "kb-twc"
+  val KB_FILENAME   = "kb-twc.tsv"
+
+  val ACTION_PREFIX = "query "
+
+  // Load the KB
+  val knowledgeBaseRows = ModuleKnowledgeBaseTWC.loadTSV(ModuleKnowledgeBaseTWC.KB_FILENAME)
+
+  // Precached actions
+  val precachedValidActions = this.mkValidActions()
+  val precachedResults = this.mkPrecachedQueries()
+
   /*
-   * Precachine
+   * Precaching
    */
   private def mkValidActions():Array[String] = {
     val out = new ArrayBuffer[String]
@@ -58,9 +57,34 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
     return out.toSet.toArray.sorted
   }
 
-  /*
-   * Run queries
-   */
+  // Precache all queries
+  private def mkPrecachedQueries(): Map[String, String] = {
+    val out = mutable.Map[String, String]()
+
+    for (queryStr <- this.mkValidActions()) {
+      val queryResults = this.runQuery(queryStr)
+
+      val os = new StringBuilder()
+      // Step 3: Check that we have a non-zero number of results
+      if (queryResults.length == 0) {
+        os.append("No results found.")
+      } else {
+        // Step 4: Return the results
+        os.append("The results are:\n ")
+        for (result <- queryResults) {
+          os.append(result.mkString(" ") + ".\n ")
+        }
+      }
+
+      // Store query in cache
+      out(queryStr) = os.toString()
+    }
+
+    // Return
+    out.toMap
+  }
+
+  // Run queries
   def runQuery(queryStr:String): Array[Array[String]] = {
     val out = new ArrayBuffer[Array[String]]
     val queryStrSanitized = queryStr.trim().toLowerCase
@@ -81,19 +105,6 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
     // Return
     out.toArray
   }
-
-
-}
-
-
-object ModuleKnowledgeBaseTWC {
-  val MODULE_NAME   = "kb-twc"
-  val KB_FILENAME   = "kb-twc.tsv"
-
-  val ACTION_PREFIX = "query "
-
-  // Load the KB
-  val knowledgeBaseRows = ModuleKnowledgeBaseTWC.loadTSV(ModuleKnowledgeBaseTWC.KB_FILENAME)
 
   // Load a TSV file
   def loadTSV(filenameIn:String): Array[Array[String]] = {

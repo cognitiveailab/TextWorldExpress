@@ -538,8 +538,8 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
 
 
 class CoinGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  //val TWCObjectDatabase = new LoadTWCDataJSON()
+  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -608,7 +608,7 @@ class CoinGameGenerator {
 
         //println("location: " + location.name)
 
-        val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val distractorItem = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (distractorItem.isDefined) {
           if (!objectNamesAdded.contains(distractorItem.get.name)) {

@@ -6,9 +6,6 @@ import scala.util.control.Breaks._
 import ModuleKnowledgeBaseTWC.ACTION_PREFIX
 
 class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
-  // Load knowledge base
-  val knowledgeBaseRows = ModuleKnowledgeBaseTWC.loadTSV(ModuleKnowledgeBaseTWC.KB_FILENAME)
-
   // Precached actions
   val precachedValidActions = this.mkValidActions()
 
@@ -49,7 +46,7 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
   private def mkValidActions():Array[String] = {
     val out = new ArrayBuffer[String]
 
-    for (row <- this.knowledgeBaseRows) {
+    for (row <- ModuleKnowledgeBaseTWC.knowledgeBaseRows) {
       out.append(ACTION_PREFIX + row(0)) // First element of the triple
       out.append(ACTION_PREFIX + row(1)) // Second element of the triple
       out.append(ACTION_PREFIX + row(2)) // Third element of the triple
@@ -69,7 +66,7 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
     val queryStrSanitized = queryStr.trim().toLowerCase
 
     // For each row in the knowledge base
-    for (row <- this.knowledgeBaseRows) {
+    for (row <- ModuleKnowledgeBaseTWC.knowledgeBaseRows) {
       breakable {
         // Check to see if any one of the columns contains the query text.  If it does, include it in the results.
         for (col <- row) {
@@ -94,6 +91,9 @@ object ModuleKnowledgeBaseTWC {
   val KB_FILENAME   = "kb-twc.tsv"
 
   val ACTION_PREFIX = "query "
+
+  // Load the KB
+  val knowledgeBaseRows = ModuleKnowledgeBaseTWC.loadTSV(ModuleKnowledgeBaseTWC.KB_FILENAME)
 
   // Load a TSV file
   def loadTSV(filenameIn:String): Array[Array[String]] = {

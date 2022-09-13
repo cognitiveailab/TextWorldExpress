@@ -712,7 +712,7 @@ class TWCGameGenerator {
 
         //println("location: " + location.name)
 
-        val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val item = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (item.isDefined) {
           //println ("Item: " + item.get.name)

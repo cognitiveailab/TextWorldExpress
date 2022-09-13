@@ -555,8 +555,8 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
 
 
 class ArithmeticGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  //val TWCObjectDatabase = new LoadTWCDataJSON()
+  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -687,7 +687,7 @@ class ArithmeticGameGenerator {
 
         //println("location: " + location.name)
 
-        val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val distractorItem = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (distractorItem.isDefined) {
           if (!objectNamesAdded.contains(distractorItem.get.name)) {

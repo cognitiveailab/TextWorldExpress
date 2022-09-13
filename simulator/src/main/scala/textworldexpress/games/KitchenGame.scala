@@ -694,8 +694,8 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
 
 
 class KitchenGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  //val TWCObjectDatabase = new LoadTWCDataJSON()
+  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -736,7 +736,7 @@ class KitchenGameGenerator {
 
 
     // Randomly generate recipe
-    val recipeIngredients = TWKitchenObjectDatabase.mkRandomRecipe(r, numIngredients, fold)
+    val recipeIngredients = LoadTWKitchenDataJSON.mkRandomRecipe(r, numIngredients, fold)
 
     // Add recipe ingredients to environment
     val taskObjects = this.addIngredientItems(r, locations, recipeIngredients)
@@ -835,7 +835,7 @@ class KitchenGameGenerator {
     for (i <- 0 until recipeIngredients.length) {
       val ingredient = recipeIngredients(i)
       //println (TWKitchenObjectDatabase.lutObj.keySet.toArray.sorted.mkString(", "))
-      val recipeItem = TWKitchenObjectDatabase.mkFastObjectByName(ingredient.name)
+      val recipeItem = LoadTWKitchenDataJSON.mkFastObjectByName(ingredient.name)
       val validLocations = recipeItem.canonicalLocations
 
       // Try to place the object in a random location
@@ -877,7 +877,7 @@ class KitchenGameGenerator {
         //println("location: " + location.name)
 
         //val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name)
-        val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
+        val distractorItem = LoadTWKitchenDataJSON.mkRandomObjectByLocation(r, container.name)
         if (distractorItem.isDefined) {
           if (!objectNamesAdded.contains(distractorItem.get.name)) {
             container.addObject(distractorItem.get)

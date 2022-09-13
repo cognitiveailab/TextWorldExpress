@@ -558,8 +558,8 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
 
 
 class MapReaderGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  //val TWCObjectDatabase = new LoadTWCDataJSON()
+  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -800,7 +800,7 @@ class MapReaderGameGenerator {
 
         //println("location: " + location.name)
 
-        val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val item = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (item.isDefined) {
           //println ("Item: " + item.get.name)

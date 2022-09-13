@@ -27,10 +27,15 @@ case class TWCObject(name:String, locations:Array[String]) {
 // Loader
 class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
 
-  val (allObjsTrain, lutObjTrain, lutLocationTrain) = this.load(filename, "train")
-  val (allObjsDev, lutObjDev, lutLocationDev) = this.load(filename, "valid")
-  val (allObjsTest, lutObjTest, lutLocationTest) = this.load(filename, "test")
+}
 
+
+object LoadTWCDataJSON {
+  val DEFAULT_FILENAME = "twc_objects.folds.json"
+
+  val (allObjsTrain, lutObjTrain, lutLocationTrain) = this.load(DEFAULT_FILENAME, "train")
+  val (allObjsDev, lutObjDev, lutLocationDev) = this.load(DEFAULT_FILENAME, "valid")
+  val (allObjsTest, lutObjTest, lutLocationTest) = this.load(DEFAULT_FILENAME, "test")
 
   /*
    * Getters
@@ -133,15 +138,8 @@ class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
     return (out.toArray, lutObj.toMap, lutLocation.toMap)
   }
 
-}
-
-
-object LoadTWCDataJSON {
-  val DEFAULT_FILENAME = "twc_objects.folds.json"
-
   def main(args:Array[String]): Unit = {
-    val d = new LoadTWCDataJSON()
-    val allObjs = d.allObjsTrain ++ d.allObjsDev ++ d.allObjsTest
+    val allObjs = this.allObjsTrain ++ this.allObjsDev ++ this.allObjsTest
     println ("Loaded " + allObjs.length + " objects")
   }
 

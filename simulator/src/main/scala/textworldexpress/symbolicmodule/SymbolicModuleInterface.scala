@@ -15,7 +15,10 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
 
     if (moduleNameSanitized == ModuleCalc.MODULE_NAME) {
       //println("Adding calc module")
-      this.modules.append( new ModuleCalc(properties) )
+      this.modules.append(new ModuleCalc(properties))
+
+    } else if (moduleNameSanitized == ModuleKnowledgeBaseTWC.MODULE_NAME) {
+      this.modules.append(new ModuleKnowledgeBaseTWC(properties))
 
     } else {
       // Default
@@ -104,9 +107,31 @@ object SymbolicModuleInterface {
   }
 
 
+  def testKBTWC(): Unit = {
+    val properties = mutable.Map[String, Int]()
+
+    val smi = new SymbolicModuleInterface(properties.toMap)
+
+    smi.addModule(ModuleKnowledgeBaseTWC.MODULE_NAME)
+
+    println ("Enabled modules: " + smi.getEnabledModuleNames().mkString(", "))
+
+    println ("Valid commands: " + smi.getValidCommands().mkString(", "))
+
+    println ("")
+
+    for (validCommand <- smi.getValidCommands()) {
+      println ("Command: " + validCommand)
+      println ("\t Output: " + smi.runCommand(validCommand))
+      println ("")
+    }
+
+  }
+
   def main(args:Array[String]): Unit = {
 
-    testCalc()
+    //testCalc()
+    testKBTWC()
 
   }
 

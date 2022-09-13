@@ -21,7 +21,8 @@ class ModuleCalc(val properties:Map[String, Int]) extends SymbolicModule(ModuleC
       out.append( opStr + " " + validArguments(1) + " " + validArguments(0))
     }
 
-    return out.toArray
+    // Convert to a set to remove duplicates
+    return out.toSet.toArray.sorted
   }
 
 

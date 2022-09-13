@@ -3,7 +3,7 @@ package textworldexpress.pathcrawler
 import textworldexpress.generator.GameGenerator
 import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.{StepResult, TextGame}
-import textworldexpress.symbolicmodule.ModuleCalc
+import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -98,7 +98,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     // Step 3: For each action, try and crawl it
     var useThreads:Boolean = false
     //if (pathSoFar.length == 0) useThreads = true    // Use threads for the second path step
-    if (pathSoFar.length < 2) useThreads = true    // Use threads for the second path step
+    if ((pathSoFar.length < 1) || ((pathSoFar.length < 2) && (validActions.length < 25))) useThreads = true    // Use threads for the second path step
 
     if (!useThreads) {
       // Serialized/Non-threaded
@@ -152,7 +152,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
         }
 
         Thread.sleep(250)
-        println("Threads still running: " + stillRunning.mkString(" "))
+        println("Threads still running (" + stillRunning.length + "): " + stillRunning.mkString(" "))
       }
 
     }
@@ -301,7 +301,10 @@ object EntryPointPathCrawlerWithModule {
   }
 
 
-  def crawlArithmetic(numGamesToCrawl:Int=1): Unit = {
+  /*
+   * With module
+   */
+  def crawlArithmeticWithModule(numGamesToCrawl:Int=1): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
@@ -327,6 +330,27 @@ object EntryPointPathCrawlerWithModule {
 
   }
 
+  def crawlTWCWithModule(numGamesToCrawl:Int=1): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+    gameProps("includeDoors") = 0                   // Disable doors
+    gameProps("numLocations") = 1                   // Number of locations
+    gameProps("numItemsToPutAway") = 2              // Number of items to put away (TWC)
+    //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
+
+    val gameName = "twc"
+    val maxDepth = 3
+    val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
+
+    for (i <- 0 until numGamesToCrawl) {
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+    }
+
+    for (i <- 0 until numGamesToCrawl) {
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+    }
+
+  }
+
 
   def main(args:Array[String]): Unit = {
 
@@ -337,7 +361,9 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    crawlArithmetic(numGamesToCrawl = 50)
+    //crawlArithmeticWithModule(numGamesToCrawl = 50)
+
+    crawlTWCWithModule(numGamesToCrawl = 1)
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")

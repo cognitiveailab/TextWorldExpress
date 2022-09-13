@@ -55,7 +55,7 @@ class ModuleKnowledgeBaseTWC(val properties:Map[String, Int]) extends SymbolicMo
       out.append(ACTION_PREFIX + row(2)) // Third element of the triple
     }
 
-    println(out.mkString(", "))
+    //## println(out.mkString(", "))
 
     // Convert to a set to remove duplicates
     return out.toSet.toArray.sorted

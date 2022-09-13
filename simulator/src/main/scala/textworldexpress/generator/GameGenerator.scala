@@ -1,7 +1,7 @@
 package textworldexpress.generator
 
 import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, MapReaderRandomGameGenerator, SimonSaysGameGenerator, SimonSaysMemoryGameGenerator, SortingGameGenerator, TWCGameGenerator, TakeThisActionGameGenerator}
-import textworldexpress.goldagent.ArithmeticGoldAgentWithModule
+import textworldexpress.goldagent.{ArithmeticGoldAgentWithModule, TWCGoldAgentWithModule}
 import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.TextGame
 
@@ -133,6 +133,13 @@ class GameGeneratorTWC(numLocations:Int = 3, numItemsToPutAway:Int = 4, includeD
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
     return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, numItemsToPutAway=numItemsToPutAway, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
+
+  override def mkGoldPathModules(r:Random, interface:PythonInterface):(Boolean, Array[String]) = {
+    val agent = new TWCGoldAgentWithModule(interface)
+    val (success, path) = agent.mkGoldPath(r)
+    return (success, path)
+  }
+
 
 }
 

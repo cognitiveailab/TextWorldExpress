@@ -4,3 +4,5 @@ roms/
 dist/
 *.egg-info
 precrawledpaths/
+simulator/target/
+simulator/project

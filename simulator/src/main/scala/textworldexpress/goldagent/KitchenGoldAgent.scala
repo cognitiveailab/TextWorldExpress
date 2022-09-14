@@ -293,11 +293,17 @@ class KitchenGoldAgent(game:KitchenGame) {
       if (ingredient.preparation.contains("roasted")) game.step("cook " + ingredient.name + " in oven")
     }
 
-    // Step 6C: Barbeque
+    // Step 6C: Barbeque or Toaster
     for (ingredient <- game.recipe) {
       if (ingredient.preparation.contains("grilled")) {
-        if (!this.moveToLocation(r, location="backyard")) return false
-        game.step("cook " + ingredient.name + " in barbeque")
+        if (game.locations.length < 3) {
+          if (!this.moveToLocation(r, location="kitchen")) return false
+          game.step("cook " + ingredient.name + " in toaster")
+        }
+        else {
+          if (!this.moveToLocation(r, location="backyard")) return false
+          game.step("cook " + ingredient.name + " in barbeque")
+        }
       }
     }
     if (!this.moveToLocation(r, "kitchen")) return false

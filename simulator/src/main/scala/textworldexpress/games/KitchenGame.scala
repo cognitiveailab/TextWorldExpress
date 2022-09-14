@@ -329,7 +329,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     } else if (device.name == "oven") {
       obj.isRoasted = true
       return "You roast the " + obj.name + " with the " + device.name + "."
-    } else if (device.name == "barbeque") {
+    } else if (device.name == "barbeque" || device.name == "toaster") {
       obj.isGrilled = true
       return "You grill the " + obj.name + " with the " + device.name + "."
     }
@@ -694,7 +694,7 @@ class KitchenGameGenerator {
   def mkEnvironment(r:Random, numLocations:Int, numDistractorItems:Int, numIngredients:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[RecipeIngredient], ArrayBuffer[FastObject]) = {
     val locations = new ArrayBuffer[Room]()
 
-    val kitchen = new Kitchen(r)
+    val kitchen = new Kitchen(r, addToaster=numLocations < 3)
     locations.append(kitchen)
 
     if (numLocations >= 2) locations.append( new Pantry(r) )
@@ -794,7 +794,7 @@ class KitchenGameGenerator {
       // Cooking
       if (recipeIngredients(i).preparation.contains("fried"))     os.append("  fry the " + recipeIngredients(i).name + "\n")
       if (recipeIngredients(i).preparation.contains("roasted"))   os.append("  roast the " + recipeIngredients(i).name + "\n")
-      if (recipeIngredients(i).preparation.contains("grilled"))   os.append("  barbeque the " + recipeIngredients(i).name + "\n")
+      if (recipeIngredients(i).preparation.contains("grilled"))   os.append("  grill the " + recipeIngredients(i).name + "\n")
     }
 
     os.append("  prepare meal\n\n")

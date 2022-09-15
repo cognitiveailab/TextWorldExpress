@@ -3,6 +3,7 @@ package textworldexpress.tests
 import textworldexpress.generator.GameGenerator
 import textworldexpress.struct.TextGame
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.StdIn.readLine
 import scala.util.Random
@@ -12,7 +13,7 @@ import scala.util.Random
  */
 object EntryPointTests {
 
-  def testGame(gameName:String, gameFold:String, numEnvs:Int = 10000, numStepsPerEnv:Int = 50): Int = {
+  def testGame(gameName:String, gameFold:String, numEnvs:Int = 10000, numStepsPerEnv:Int = 50, properties:Map[String, Int] = Map[String, Int]()): Int = {
     val goldPathGeneration:Boolean = true
     val verifyGoldPaths:Boolean = true
 
@@ -26,8 +27,8 @@ object EntryPointTests {
     var actionsPerStep:Double = 0.0
     var numFailedGoldPaths:Int = 0
 
-    // Use default game properties
-    val properties = Map[String, Int]()
+    // Use default game properties, unless overridden by input to this function
+    //val properties = Map[String, Int]()
     //val properties = Map("numLocations" -> 11)
     //val properties = Map("numLocations" -> 3)
 
@@ -130,6 +131,7 @@ object EntryPointTests {
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Environment: " + gameName)
+    println ("Overridden properties: " + properties.toString())
     println ("Tested with: " + numEnvs + " generated environments, with " + numStepsPerEnv + " randomly chosen steps per environment.")
     println ("Delta time: " + deltaTime + " msec")
     println ("On average, each step has " + actionsPerStep.formatted("%3.3f") + " valid actions. ")
@@ -156,13 +158,26 @@ object EntryPointTests {
     var totalErrors:Int = 0
     val errorSources = new ArrayBuffer[String]()
 
+    val propsToTest = mutable.Map[String, ArrayBuffer[Map[String, Int]]]()
+    // Add default properties case
+    for (gameName <- GameGenerator.VALID_GAME_NAMES) {
+      propsToTest(gameName) = new ArrayBuffer[Map[String, Int]]()
+      propsToTest(gameName).append(Map[String, Int]()) // Blank properties are interpreted as default properties by the game generator
+    }
+    // Add any special cases/edge cases to test
+    propsToTest("cookingworld").append( Map("numLocations" -> 3) )
+    propsToTest("cookingworld").append( Map("numLocations" -> 1) )
+
+
     for (gameName <- GameGenerator.VALID_GAME_NAMES) {
       for (gameFold <- Array("train", "dev", "test")) {
-        val numErrors = this.testGame(gameName, gameFold, numEnvs, numStepsPerEnv)
+        for (props <- propsToTest(gameName)) {
+          val numErrors = this.testGame(gameName, gameFold, numEnvs, numStepsPerEnv, properties = props)
 
-        if (numErrors > 0) {
-          totalErrors += numErrors
-          errorSources.append(gameName + " (" + gameFold + ")")
+          if (numErrors > 0) {
+            totalErrors += numErrors
+            errorSources.append(gameName + " (" + gameFold + ") (Properties: " + props.toString() + ")")
+          }
         }
       }
     }

@@ -842,7 +842,23 @@ class KitchenGameGenerator {
             //println ("Added " + recipeItem.name + " to " + generationLocation)
             break()
           }
+          attempts += 1
         }
+        // If we reach here, the ingredient was not able to be placed for some reason.
+        // The most common reason is that the ingredient lists canonical locations (e.g. garden) that are not in the
+        // current environment, likely beacause a small game without that location was generated.
+        // In this case, we'll just randomly select a location to dump the ingredient in the smaller environment, and move on.
+        val backupLocations = r.shuffle(List("fridge", "counter", "kitchen cupboard", "dining table"))
+        for (backupLocation <- backupLocations) {
+          if (allObjects.contains(backupLocation)) {
+            allObjects(backupLocation).addObject(recipeItem)
+            objectsAdded.append(recipeItem)
+            //println ("Backup: Placing " + recipeItem.name + " in " + backupLocation)
+            break()
+          }
+        }
+
+        // If we reach here, something is really wrong -- throw an exception.
         throw new RuntimeException("ERROR: Unable to place recipe ingredient: " + recipeItem.toString)
       }
 

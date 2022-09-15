@@ -329,7 +329,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     } else if (device.name == "oven") {
       obj.isRoasted = true
       return "You roast the " + obj.name + " with the " + device.name + "."
-    } else if (device.name == "barbeque") {
+    } else if (device.name == "barbeque" || device.name == "toaster") {
       obj.isGrilled = true
       return "You grill the " + obj.name + " with the " + device.name + "."
     }
@@ -694,7 +694,7 @@ class KitchenGameGenerator {
   def mkEnvironment(r:Random, numLocations:Int, numDistractorItems:Int, numIngredients:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[RecipeIngredient], ArrayBuffer[FastObject]) = {
     val locations = new ArrayBuffer[Room]()
 
-    val kitchen = new Kitchen(r)
+    val kitchen = new Kitchen(r, addToaster=numLocations < 3)
     locations.append(kitchen)
 
     if (numLocations >= 2) locations.append( new Pantry(r) )
@@ -794,7 +794,7 @@ class KitchenGameGenerator {
       // Cooking
       if (recipeIngredients(i).preparation.contains("fried"))     os.append("  fry the " + recipeIngredients(i).name + "\n")
       if (recipeIngredients(i).preparation.contains("roasted"))   os.append("  roast the " + recipeIngredients(i).name + "\n")
-      if (recipeIngredients(i).preparation.contains("grilled"))   os.append("  barbeque the " + recipeIngredients(i).name + "\n")
+      if (recipeIngredients(i).preparation.contains("grilled"))   os.append("  grill the " + recipeIngredients(i).name + "\n")
     }
 
     os.append("  prepare meal\n\n")
@@ -842,7 +842,23 @@ class KitchenGameGenerator {
             //println ("Added " + recipeItem.name + " to " + generationLocation)
             break()
           }
+          attempts += 1
         }
+        // If we reach here, the ingredient was not able to be placed for some reason.
+        // The most common reason is that the ingredient lists canonical locations (e.g. garden) that are not in the
+        // current environment, likely beacause a small game without that location was generated.
+        // In this case, we'll just randomly select a location to dump the ingredient in the smaller environment, and move on.
+        val backupLocations = r.shuffle(List("fridge", "counter", "kitchen cupboard", "dining table"))
+        for (backupLocation <- backupLocations) {
+          if (allObjects.contains(backupLocation)) {
+            allObjects(backupLocation).addObject(recipeItem)
+            objectsAdded.append(recipeItem)
+            //println ("Backup: Placing " + recipeItem.name + " in " + backupLocation)
+            break()
+          }
+        }
+
+        // If we reach here, something is really wrong -- throw an exception.
         throw new RuntimeException("ERROR: Unable to place recipe ingredient: " + recipeItem.toString)
       }
 

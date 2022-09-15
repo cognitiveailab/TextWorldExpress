@@ -40,11 +40,12 @@ def userConsole(args):
     # Load the task
     gameFold = "train"
     gameSeed = args['seed']
-    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
+    gameParams = args['game_params']  # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = True
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 
     print("Selected Game: " + str(gameName))
+    print("Selected Seed: " + str(gameSeed))
     print("Generation properties: " + str(env.getGenerationProperties()) )
 
     if (generateGoldPath == True):
@@ -112,6 +113,8 @@ def parse_args():
                         help="Path to the ScienceWorld jar file. Default: use builtin.")
     parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader'], default='cookingworld',
                         help="Specify the game to play. Default: %(default)s")
+    parser.add_argument("--game-params", type=str, default='',
+                        help="Change game generation properties, e.g. 'numLocations=5, includeDoors=1'.")
     parser.add_argument("--game-fold", type=str, choices=['train', 'dev', 'test'], default='train',
                         help="Specify the game set to use (train, dev, test). Default: %(default)s")
     parser.add_argument("--max-steps", type=int, default=50,

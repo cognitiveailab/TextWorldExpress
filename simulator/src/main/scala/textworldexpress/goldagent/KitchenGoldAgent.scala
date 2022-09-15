@@ -149,6 +149,9 @@ class KitchenGoldAgent(game:KitchenGame) {
         randIdx = r.nextInt(validDirections.length)
       }
       game.step("move " + validDirections(randIdx))
+    } else if (validDirections.length == 0) {
+      // There are no locations to move to
+      //return false
     } else {
       game.step("move " + validDirections(0))
     }
@@ -194,19 +197,65 @@ class KitchenGoldAgent(game:KitchenGame) {
    */
 
   private def collectIngredientsHere(): Unit = {
-    var openedContainers = new ArrayBuffer[String]
-    var containersToOpen = Array("fridge")
+    var containersToOpen = Array("fridge", "kitchen cupboard")
 
     // Get a list of all visible objects
-    var visibleObjects = game.agentLocation.collectVisibleObjects()
+    var visibleObjectsInitial = game.agentLocation.collectVisibleObjects()
+
+    // Check if there are any recipe ingredients here
+    for (ingredient <- game.recipe) {
+      for (obj <- visibleObjectsInitial) {
+        if (obj.name == ingredient.name) {
+          game.step("take " + obj.name)
+          this.foundIngredients.append(obj.name)
+        }
+      }
+    }
+
+    // If we've found all the ingredients, no need to open any containers
+    if (this.foundIngredients.length == game.recipe.length) return
 
     // Check if there are any containers that should be opened
-    for (obj <- visibleObjects) {
+    for (obj <- visibleObjectsInitial) {
       if (containersToOpen.contains(obj.name)) {
+        game.step("open " + obj.name)
+
+        val visibleObjects = game.agentLocation.collectVisibleObjects()
+
+        // Check if there are any recipe ingredients here
+        for (ingredient <- game.recipe) {
+          for (obj <- visibleObjects) {
+            if (obj.name == ingredient.name) {
+              game.step("take " + obj.name)
+              this.foundIngredients.append(obj.name)
+            }
+          }
+        }
+
+        // Close any opened containers
+        game.step("close " + obj.name)
+
+        // If we've found all the ingredients, stop opening containers
+        if (this.foundIngredients.length == game.recipe.length) return
+      }
+    }
+
+    /*
+    // NOTE: Uncomment below for a more-generic look-in-every-container solution
+    var openedContainers = new ArrayBuffer[String]
+
+    // Mid-point: If we've found all the ingredients, move on
+    if (this.foundIngredients.length == game.recipe.length) return
+
+    // Otherwise, check all other openable containers
+    openedContainers.clear()
+    for (obj <- visibleObjects) {
+      if ((obj.isOpenable) && (!obj.isOpen) && (!containersToOpen.contains(obj.name))) {
         game.step("open " + obj.name)
         openedContainers.append(obj.name)
       }
     }
+
     visibleObjects = game.agentLocation.collectVisibleObjects()
 
     // Check if there are any recipe ingredients here
@@ -223,6 +272,8 @@ class KitchenGoldAgent(game:KitchenGame) {
     for (cObjName <- openedContainers) {
       game.step("close " + cObjName)
     }
+     */
+
   }
 
 
@@ -293,11 +344,17 @@ class KitchenGoldAgent(game:KitchenGame) {
       if (ingredient.preparation.contains("roasted")) game.step("cook " + ingredient.name + " in oven")
     }
 
-    // Step 6C: Barbeque
+    // Step 6C: Barbeque or Toaster
     for (ingredient <- game.recipe) {
       if (ingredient.preparation.contains("grilled")) {
-        if (!this.moveToLocation(r, location="backyard")) return false
-        game.step("cook " + ingredient.name + " in barbeque")
+        if (game.locations.length < 3) {
+          if (!this.moveToLocation(r, location="kitchen")) return false
+          game.step("cook " + ingredient.name + " in toaster")
+        }
+        else {
+          if (!this.moveToLocation(r, location="backyard")) return false
+          game.step("cook " + ingredient.name + " in barbeque")
+        }
       }
     }
     if (!this.moveToLocation(r, "kitchen")) return false

@@ -17,11 +17,11 @@ object EntryPointUserConsoleInterface {
     val interface = new PythonInterface()
 
 
-    val SF_GAME_NAME:String = "twc"
+    //val SF_GAME_NAME:String = "twc"
     //val SF_GAME_NAME:String = "cookingworld"
     //val SF_GAME_NAME:String = "mapreader"
     //val SF_GAME_NAME:String = "mapreader-random"
-    //val SF_GAME_NAME:String = "arithmetic"
+    val SF_GAME_NAME:String = "arithmetic"
     //val SF_GAME_NAME:String = "takethisaction"
     //val SF_GAME_NAME:String = "simonsays"
     //val SF_GAME_NAME:String = "sorting"
@@ -38,10 +38,11 @@ object EntryPointUserConsoleInterface {
     //gameProps("numDistractorItems") = 10
     //gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
 
-    val paramStr = "numLocations=1"
+    val paramStr = ""
+    //val paramStr = "numLocations=1"
     //val enabledModules = ""
-    //val enabledModules = ModuleCalc.MODULE_NAME
-    val enabledModules = ModuleKnowledgeBaseTWC.MODULE_NAME
+    val enabledModules = ModuleCalc.MODULE_NAME
+    //val enabledModules = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     interface.load(gameName = SF_GAME_NAME, gameFold = fold, seed = seed, paramStr = paramStr, generateGoldPath = true, enabledModulesStr = enabledModules)
     var stepResult = interface.generateNewGame(seed = seed, gameFold = fold, generateGoldPath = true)

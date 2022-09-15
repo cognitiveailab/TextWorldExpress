@@ -44,17 +44,24 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
   val (success, generator) = GameGenerator.mkGameGenerator(gameName = SF_GAME_NAME, gameProps)
   if (!success) throw new RuntimeException("ERROR creating text game(): " + generator.errorStr)
 
-  val precachedGame = this.mkCachedVariations(numVariationsToMake = 1, startSeed, gameFold)(0)
-
-  // Clear the string LUT
-  StepResultHashed.resetLUT()
-
   // Make parameter string from parameters (for Interface)
   var params = new ArrayBuffer[String]
   for (key <- gameProps.keySet) {
     params.append(key + "=" + gameProps(key))
   }
   val paramStr = params.mkString(",")
+
+
+  val precachedGame = this.mkCachedVariations(numVariationsToMake = 1, startSeed, gameFold)(0)
+  /*
+  val precachedInterface = new PythonInterface()
+  val precachedInitialStepResult = precachedInterface.load(gameName = SF_GAME_NAME, gameFold, seed = startSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr)
+   */
+
+
+  // Clear the string LUT
+  StepResultHashed.resetLUT()
+
 
 
   /*
@@ -77,8 +84,17 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     // Make a game that isn't precached
     //val (_game, _goldPath) = this.generator.mkGameWithGoldPath(seed = startSeed, gameFold)
     //val game = _game
+
+    // New: Make every time (with interface)
     val interface = new PythonInterface()
     var stepResult:StepResult = interface.load(gameName = SF_GAME_NAME, gameFold, seed = startSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr)
+
+    /*
+    // Extra new: Try to deepcopy
+    val interface = precachedInterface.deepCopy()
+    var stepResult = this.precachedInitialStepResult
+     */
+
 
     // Step 1: Do actions so far
     // Subsequent steps
@@ -338,16 +354,17 @@ object EntryPointPathCrawlerWithModule {
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
     val gameName = "twc"
-    val maxDepth = 5
+    val maxDepth = 4
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
       this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
     }
-
+    /*
     for (i <- 0 until numGamesToCrawl) {
       this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
     }
+     */
 
   }
 

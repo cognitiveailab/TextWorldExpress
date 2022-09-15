@@ -32,6 +32,31 @@ class PythonInterface() {
 
   var history = new ArrayBuffer[StepHistory]
 
+  // TODO: This is not a full deep copy, but a mostly-deep copy for all the places that would require fast path crawling for a single game.
+  def deepCopy():PythonInterface = {
+    val clonedInterface = new PythonInterface()
+    clonedInterface.gameGenerator = this.gameGenerator
+
+    clonedInterface.game = this.game.deepCopy()
+
+    clonedInterface.gameName = this.gameName
+    clonedInterface.gameFold = this.gameFold
+    clonedInterface.paramStr = this.paramStr
+    clonedInterface.enabledModulesStr = this.enabledModulesStr
+    clonedInterface.gameSeed = this.gameSeed
+    clonedInterface.goldPath = this.goldPath
+    clonedInterface.properties = this.properties
+    clonedInterface.curStepResult = this.curStepResult
+
+    clonedInterface.enabledModuleStrs = this.enabledModuleStrs
+    clonedInterface.moduleInterface = this.moduleInterface
+    for (i <- 0 until this.history.length) {
+      clonedInterface.history.append( this.history(i) )
+    }
+
+    return clonedInterface
+  }
+
   /*
    * Load/reset/shutdown server
    */

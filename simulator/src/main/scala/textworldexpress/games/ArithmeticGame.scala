@@ -39,7 +39,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
     for (obj <- answerBox.contents) {
       if (obj.name == correctObject.name) {
         // Correct object -- set to win
-        curScore += 1
+        curScore = 2
       } else {
         // An incorrect object, set to task failure
         taskFailure = true

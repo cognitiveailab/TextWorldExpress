@@ -101,8 +101,8 @@ case class PrecrawledPath(val nodeLUT:Array[PrecrawledNode], val stringLUT:Array
    */
   def exportToJSONStr():String = {
     System.gc()
-    //return this.asJson.noSpaces
-    return this.asJson.spaces2
+    return this.asJson.noSpaces
+    //return this.asJson.spaces2
   }
 
   def saveToJSON(filename:String) = {

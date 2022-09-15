@@ -7,4 +7,5 @@ import textworldexpress.struct.StepResult
  */
 class StepHistory(val actionStr:String, val moduleStr:String, val stepResult:StepResult) {
   val userInputStr = if (moduleStr.length > 0) { this.moduleStr } else { this.actionStr }
+
 }

@@ -139,6 +139,10 @@ class TextWorldExpressEnv:
     def getGenerationProperties(self):
         return orjson.loads(self.server.getGenerationPropertiesJSON())
 
+    # Get the current game's task description
+    def getTaskDescription(self):
+        return self.gateway.getTaskDescription()
+
     #
     # Train/development/test sets
     #
@@ -180,6 +184,22 @@ class TextWorldExpressEnv:
         parsedResponse['reward'] = 0
         parsedResponse['done'] = False
         parsedResponse['numMoves'] = 0
+
+        # Convert success/failure variables from strings to Booleans
+        # Success
+        if (parsedResponse['tasksuccess'] == "true"):
+            parsedResponse['tasksuccess'] = True
+        else:
+            parsedResponse['tasksuccess'] = False
+        # Failure
+        if (parsedResponse['taskfailure'] == "true"):
+            parsedResponse['taskfailure'] = True
+        else:
+            parsedResponse['taskfailure'] = False
+
+        # Also add the task description to the observation (feature request)
+        parsedResponse['taskDescription'] = self.getTaskDescription()
+
         return parsedResponse
 
     #

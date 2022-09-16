@@ -225,6 +225,14 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to prepare a meal according to the recipe described in the cookbook."
+  }
+
+
+  /*
    *  Action helpers
    */
 

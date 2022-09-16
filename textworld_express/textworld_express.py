@@ -175,7 +175,7 @@ class TextWorldExpressEnv:
 
     # Get the current game's task description
     def getTaskDescription(self):
-        return self.gateway.getTaskDescription()
+        return self.server.getTaskDescription()
 
     #
     # Train/development/test sets

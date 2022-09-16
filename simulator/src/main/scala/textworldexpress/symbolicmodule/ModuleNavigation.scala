@@ -3,7 +3,7 @@ package textworldexpress.symbolicmodule
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
+class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(ModuleNavigation.MODULE_NAME, properties) {
   // The edges (connections between locations) on the map
   var mapEdges = new ArrayBuffer[MapEdge]()    // TODO
 
@@ -101,14 +101,19 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
 
     // Edge case: Check if the start and end locations are the same
     if (startLocation == goalLocation) {
-      return (true, Array.empty[String])
+      return (true, Array(startLocation) )
     }
+
+    // Initialize path pool
+    pathPool.append( Array(startLocation) )
 
     // Iteratively assemble possible paths
     var numIter:Int = 0
     while (numIter < MAX_ITER) {
       // Step 1: Find the next location for each path
       val newPathPool = new ArrayBuffer[ Array[String] ]
+
+      //println ("numIter: " + numIter)
 
       for (path <- pathPool) {
         val lastLoc = path.last
@@ -123,6 +128,7 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
 
           // Winning condition: Check if the last location is the goal location
           if (connection == goalLocation) {
+            //println ("Path: " + newPath.mkString(", "))
             return (true, newPath)
           }
 
@@ -193,8 +199,8 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
   // Scrape observations for related information
   override def scrapeObservationStr(observationStr: String): Unit = {
     // Case 1: Check for whole maps
-    if (observationStr.startsWith("The map reads:")) {
-      val lines = observationStr.split("\n")
+    if (observationStr.trim.startsWith("The map reads:")) {
+      val lines = observationStr.trim.split("\n")
       for (line <- lines) {
         if (line.contains("connects to the")) {
           val fields = line.split(" connects to the ")
@@ -213,13 +219,12 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
 
 
       // Case 2: In a room
-    } else if (observationStr.startsWith("You are in the")) {
+    } else if (observationStr.trim.startsWith("You are in the")) {
       // First, try to determine the current location
       var curLocation = ""
-      val sents = observationStr.split(".")
+      val sents = observationStr.trim.split("\\.")
       for (sent <- sents) {
         if (sent.startsWith("You are in the")) {
-          print("Sent: " + sent)
           val fields = sent.split("You are in the ")
           curLocation = this.trimStopWords(fields(1))
           this.currentLocation = curLocation      // Store current location globally
@@ -244,6 +249,14 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
       }
     }
 
+
+    /*
+    // Debug: Display edges
+    println ("Edges:")
+    for (i <- 0 until this.mapEdges.length) {
+      println ("\t" + i + ": " + this.mapEdges(i).location1 + "\t" + this.mapEdges(i).location2)
+    }
+     */
   }
 
   private def trimStopWords(strIn:String):String = {
@@ -268,18 +281,47 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
    * Commands
    */
   def getPathFromXtoYCommand(startLocation:String, endLocation:String):String = {
-    // TODO
-    return ""
+    val (success, path) = this.findPath(startLocation, endLocation)
+    if ((!success) || (path.length == 0)) {
+      return ("I couldn't find a path from " + startLocation + " to " + endLocation + ".")
+    }
+
+    // If the path length is 1, then the agent is already at the requested goal location
+    if (path.length == 1) {
+      return "You are already at the " + endLocation + "."
+    }
+
+    // Trim off the first location in the path, since it's the current location
+    val pathTrimmed = path.slice(1, until=path.length)
+    return "The path to reach the " + endLocation + " is: " + pathTrimmed.mkString(", ") + "."
   }
 
   def getPathToYCommand(endLocation:String):String = {
-    // TODO
-    return ""
+    if (this.currentLocation.length == 0) {
+      return "I'm not sure what your current location is right now."
+    }
+
+    return this.getPathFromXtoYCommand(this.currentLocation, endLocation)
   }
 
   def getNextStepToYCommand(endLocation:String):String = {
-    // TODO
-    return ""
+    if (this.currentLocation.length == 0) {
+      return "I'm not sure what your current location is right now."
+    }
+
+    val (success, path) = this.findPath(this.currentLocation, endLocation)
+    if ((!success) || (path.length == 0)) {
+      return ("I couldn't find a path from " + this.currentLocation + " to " + endLocation + ".")
+    }
+
+    // If the path length is 1, then the agent is already at the requested goal location
+    if (path.length == 1) {
+      return "You are already at the " + endLocation + "."
+    }
+
+    // Trim off the first location in the path, since it's the current location
+    val nextStep = path(1)
+    return "The next location to go is: " + nextStep
   }
 
 
@@ -299,5 +341,6 @@ class MapEdge(val location1:String, val location2:String) {
     // Default return
     return false
   }
+
 
 }

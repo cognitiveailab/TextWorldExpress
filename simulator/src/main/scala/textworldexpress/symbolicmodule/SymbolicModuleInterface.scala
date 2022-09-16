@@ -21,7 +21,10 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
       this.modules.append(new ModuleKnowledgeBaseTWC(properties))
 
     } else if (moduleNameSanitized == ModuleSortByQuantity.MODULE_NAME) {
-      this.modules.append(new ModuleSortByQuantity(properties) )
+      this.modules.append(new ModuleSortByQuantity(properties))
+
+    } else if (moduleNameSanitized == ModuleNavigation.MODULE_NAME) {
+      this.modules.append(new ModuleNavigation(properties))
 
     } else {
       // Default
@@ -132,10 +135,59 @@ object SymbolicModuleInterface {
 
   }
 
+
+  def testNavigation(): Unit = {
+
+    val properties = mutable.Map[String, Int]()
+    val smi = new SymbolicModuleInterface(properties.toMap)
+
+    smi.addModule(ModuleNavigation.MODULE_NAME)
+
+    println ("Enabled modules: " + smi.getEnabledModuleNames().mkString(", "))
+
+    val obsStr1 = "You are in the kitchen. To the north is the living room. To the east is the hallway. To the south is the backyard. To the west is the pantry."
+
+    val obsStr2 =
+      """The map reads:
+        |  The pantry connects to the kitchen.
+        |  The backyard connects to the kitchen, corridor, street and sideyard.
+        |  The alley connects to the driveway and street.
+        |  The sideyard connects to the backyard.
+        |  The garage connects to the driveway.
+        |  The kitchen connects to the backyard, laundry room, living room and pantry.
+        |  The street connects to the supermarket, alley and backyard.
+        |  The bathroom connects to the living room.
+        |  The driveway connects to the alley and garage.
+        |  The supermarket connects to the street.
+        |  The foyer connects to the corridor.
+        |  The laundry room connects to the kitchen.
+        |  The corridor connects to the backyard and foyer.
+        |  The living room connects to the bedroom, bathroom and kitchen.
+        |  The bedroom connects to the living room.
+      """.stripMargin
+
+    smi.giveEnvironmentStatus(obsStr1, "", "")
+    smi.giveEnvironmentStatus(obsStr2, "", "")
+
+    println ("Valid commands: " + smi.getValidCommands().mkString(", "))
+
+    println ("")
+
+    for (validCommand <- smi.getValidCommands()) {
+      println ("Command: " + validCommand)
+      println ("\t Output: " + smi.runCommand(validCommand))
+      println ("")
+    }
+
+
+  }
+
   def main(args:Array[String]): Unit = {
 
     //testCalc()
-    testKBTWC()
+    //testKBTWC()
+
+    testNavigation()
 
   }
 

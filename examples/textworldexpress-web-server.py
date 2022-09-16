@@ -91,7 +91,7 @@ def app():
     pywebio.session.set_env(title='TextWorldExpress Demo', auto_scroll_bottom=True)
 
     # Initialize environment
-    env = TextWorldExpressEnv(serverPath=None, envStepLimit=100, threadNum=5)
+    env = TextWorldExpressEnv(serverPath=None, envStepLimit=100)
 
     pywebio_out.put_markdown('## TextWorldExpress (Text Simulation)')
     #put_button("Click here to export transcript", onclick=lambda: , color='success', outline=True)

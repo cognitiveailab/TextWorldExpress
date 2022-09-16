@@ -44,10 +44,6 @@ Point your web browser to [localhost:8080](https://localhost:8080).
 # TextWorldExpress Design
 TextWorldExpress is written in Scala (2.12.9), and compiles using `sbt` into a JAR file that is run with `java`. For convenience, a `python` API is provided, which interfaces using the `py4j` package.
 
-**Ports:** TextWorldExpress is nominally run as a server, which interfaces to the Python API with `py4j` through a port. The default port is `25335`.  The actual port used will be 25335 + the thread number provided when a TextWorldExpress class is instantiated.
-
-**Threads:** TextWorldExpress is designed to run many threads simultaneously, if desired. To do so, initialize one `TextWorldExpressEnv` object per thread, and provide a unique `threadNum` for each thread. Don't forget to close down servers that you instantiate using the `env.shutdown()` command.  If you are spawning many threads (10+) at the same time, you may wish to add a short delay (5-10 seconds) after initialization to wait for all the servers to initialize.  If you are using large number of threads, or older hardware, you may need to increase this delay further.
-
 ## Environments
 
 TextWorldExpress includes high-speed versions of three popular benchmark environments for text-game research.
@@ -70,7 +66,7 @@ Typical usage involves first initializing a game generator, then repeatedly gene
 from textworld_express import TextWorldExpressEnv
 
 # Initialize game generator
-env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
+env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'])
 
 # Set the game generator to generate a particular game (cookingworld, twc, or coin)
 env.load(gameName = "twc", gameFold = "train", gameSeed = 0, gameParams = "numLocations=5,includeDoors=1", generateGoldPath=True)

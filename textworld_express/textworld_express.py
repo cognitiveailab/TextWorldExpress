@@ -1,4 +1,4 @@
-from py4j.java_gateway import JavaGateway, GatewayParameters
+from py4j.java_gateway import JavaGateway, GatewayParameters, launch_gateway, CallbackServerParameters
 import subprocess
 
 import os
@@ -17,18 +17,33 @@ class TextWorldExpressEnv:
     #
     # Constructor
     #
-    def __init__(self, serverPath=None, envStepLimit=100, threadNum=0, launchServer=True):
+    def __init__(self, serverPath=None, envStepLimit=100, gateway=None):
         serverPath = serverPath or JAR_PATH  # Use the builtin jar.
 
-        # Define the port number
-        self.portNum = 25335 + threadNum
+        # Launch the server and connect to the JVM
+        self.gateway = gateway
+        if self.gateway is None:
+            # launch Java side with dynamic port and get back the port on which the
+            # server was bound to.
+            port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH)
 
-        # Launch the server
-        if (launchServer == True):
-            self.launchServer(serverPath)
+            # connect python side to Java side with Java dynamic port and start python
+            # callback server with a dynamic port
+            self.gateway = JavaGateway(
+                gateway_parameters=GatewayParameters(auto_field=True, port=port),
+                callback_server_parameters=CallbackServerParameters(port=0))
 
-        # Connect to the JVM
-        self.gateway = JavaGateway(gateway_parameters=GatewayParameters(auto_field=True, port=self.portNum))
+            # retrieve the port on which the python callback server was bound to.
+            python_port = self.gateway.get_callback_server().get_listening_port()
+
+            # tell the Java side to connect to the python callback server with the new
+            # python port. Note that we use the java_gateway_server attribute that
+            # retrieves the GatewayServer instance.
+            self.gateway.java_gateway_server.resetCallbackClient(
+                self.gateway.java_gateway_server.getCallbackClient().getAddress(),
+                python_port)
+
+        self.server = self.gateway.jvm.textworldexpress.runtime.PythonInterface()
 
         # Keep track of the last step score, to calculate reward from score
         self.lastStepScore = 0
@@ -74,7 +89,7 @@ class TextWorldExpressEnv:
             'properties': self.getGenerationProperties(),
             'finalScore': finalScore,
             'numSteps': len(self.runHistory),
-            'history': self.runHistory,            
+            'history': self.runHistory,
         }
         return packed
 
@@ -88,23 +103,13 @@ class TextWorldExpressEnv:
     #   Methods
     #
 
-    # Launches the PY4J server
-    def launchServer(self, serverPath):
-        print("Launching TextWorldExpress Server (Port " + str(self.portNum) + ") -- this may take a moment.")
-        cmd = "nohup java -cp " + serverPath + " textworldexpress.runtime.PythonInterface " + str(self.portNum) + " >/dev/null 2>&1 &"
-
-        subprocess.Popen(cmd, cwd=BASEPATH, shell=True)
-        # The sleep command here is to give time for the server process to spawn.
-        # If you are spawning many threads simultaneously, you may need to increase this time.
-        time.sleep(5)
-
     # Ask the simulator to load an environment from a script
     def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
         #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
         self.clearRunHistory()
 
-        self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
-        self.parseJSONResponse()        
+        self.responseStr = self.server.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
+        self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
@@ -117,17 +122,11 @@ class TextWorldExpressEnv:
 
         return self.parsedResponse
 
-#    # Test to see if the storage class can be directly loaded
-#    def loadTEST(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
-#        #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
-#
-#        return self.gateway.load(gameName, gameFold, seed, paramStr, generateGoldPath)
-
     # Ask the simulator to reset an environment back to it's initial state
     def resetWithSeed(self, seed, gameFold, generateGoldPath=False):
         self.clearRunHistory()
 
-        self.responseStr = self.gateway.generateNewGameJSON(seed, gameFold, generateGoldPath)
+        self.responseStr = self.server.generateNewGameJSON(seed, gameFold, generateGoldPath)
         self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
@@ -142,7 +141,7 @@ class TextWorldExpressEnv:
     def resetWithRandomSeed(self, gameFold, generateGoldPath=False):
         self.clearRunHistory()
 
-        self.responseStr = self.gateway.resetWithRandomSeedJSON(gameFold, generateGoldPath)
+        self.responseStr = self.server.resetWithRandomSeedJSON(gameFold, generateGoldPath)
         self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
@@ -162,39 +161,39 @@ class TextWorldExpressEnv:
 
     # Get a list of valid tasks/environments
     def getGameNames(self):
-        return list(self.gateway.getGameNames())
+        return list(self.server.getGameNames())
 
     # Get the current game's generation properties
-    def getGenerationProperties(self):        
-        return orjson.loads(self.gateway.getGenerationPropertiesJSON())
+    def getGenerationProperties(self):
+        return orjson.loads(self.server.getGenerationPropertiesJSON())
 
     #
     # Train/development/test sets
     #
     def getValidSeedsTrain(self):
-        return list(self.gateway.getSeedsTrain())
+        return list(self.server.getSeedsTrain())
 
     def getValidSeedsDev(self):
-        return list(self.gateway.getSeedsDev())
+        return list(self.server.getSeedsDev())
 
     def getValidSeedsTest(self):
-        return list(self.gateway.getSeedsTest())
+        return list(self.server.getSeedsTest())
 
     def getRandomSeedTrain(self):
-        return self.gateway.getRandomSeedTrain()
+        return self.server.getRandomSeedTrain()
 
     def getRandomSeedDev(self):
-        return self.gateway.getRandomSeedDev()
+        return self.server.getRandomSeedDev()
 
     def getRandomSeedTest(self):
-        return self.gateway.getRandomSeedTest()
+        return self.server.getRandomSeedTest()
 
     #
     # Gold action sequence
     #
     def getGoldActionSequence(self):
         if (self.goldPathGenerated == True):
-            return list(self.gateway.getGoldActionSequence())
+            return list(self.server.getGoldActionSequence())
         else:
             return ["ERROR: Gold path was not generated.  Set `generateGoldPath` flag to true when calling load()."]
 
@@ -214,7 +213,7 @@ class TextWorldExpressEnv:
     #
     def step(self, inputStr:str):
         # Step 1: Take a step in the environment
-        self.responseStr = self.gateway.stepJSON(inputStr)
+        self.responseStr = self.server.stepJSON(inputStr)
         self.parseJSONResponse()
 
         # Step 2: Calculate reward
@@ -222,7 +221,7 @@ class TextWorldExpressEnv:
         reward = score - self.lastStepScore         # Calculate reward (delta score) for this step
         self.lastStepScore = score                  # Store current score for reward calculation on the next step
         self.parsedResponse['reward'] = reward      # Add reward to response
-        
+
         # Step 3: Calculate what move number we're currently at
         numMoves = self.getNumSteps()
         self.parsedResponse['numMoves'] = numMoves

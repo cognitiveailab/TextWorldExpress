@@ -21,14 +21,14 @@ def randomModel(args):
 
 
     # Initialize environment
-    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
+    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'])
     gameNames = env.getGameNames()
     print("Supported Game Names: " + str(gameNames))
 
     # Load the task
     gameFold = "train"
     gameSeed = 0
-    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"    
+    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = args['gold_paths']
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 
@@ -61,7 +61,7 @@ def randomModel(args):
             randomAction = random.choice( validActions )
 
             # Verbose output mode
-            if (args['verbose'] == True):                
+            if (args['verbose'] == True):
                 print("Step " + str(stepIdx))
                 print("Observation: " + str(obs))
                 print("Next random action: " + str(randomAction))
@@ -98,7 +98,7 @@ def parse_args():
     desc = "Run a model that chooses random actions until successfully reaching the goal."
     parser = argparse.ArgumentParser(desc)
     parser.add_argument("--jar_path", type=str,
-                        help="Path to the ScienceWorld jar file. Default: use builtin.")
+                        help="Path to the TextWorldExpress jar file. Default: use builtin.")
     parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader'], default='cookingworld',
                         help="Specify the game to play. Default: %(default)s")
     parser.add_argument("--game-fold", type=str, choices=['train', 'dev', 'test'], default='train',

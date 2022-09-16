@@ -2,6 +2,8 @@ package textworldexpress.goldagent
 
 import textworldexpress.games.{MapReaderGame, MapReaderRandomGame}
 import textworldexpress.objects.Room
+import textworldexpress.runtime.PythonInterface
+import textworldexpress.symbolicmodule.{ModuleCalc, ModuleNavigation}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -194,5 +196,128 @@ class MapReaderRandomGoldAgent(game:MapReaderRandomGame) {
     return Array.empty[String]
   }
 
+
+}
+
+
+
+/*
+ * Agent with module support (MapReaderRandom)
+ */
+class MapReaderRandomGoldAgentWithModule(interface:PythonInterface) {
+  val game = interface.game match { case x:MapReaderRandomGame => x; case _=> null }
+
+  // Make the gold path, using the Calc module
+  private def mkGoldPathMapReaderWithNavModule(r:Random): Boolean = {
+    // Ensure that we're running on the correct game type (MapReaderRandomGame)
+    if (game == null) return false
+    // Ensure that the appropriate modules have been enabled
+    if (!interface.enabledModuleStrs.contains(ModuleCalc.MODULE_NAME)) {
+      println ("MapReaderRandomGoldAgentWithModule: ERROR: " + ModuleNavigation.MODULE_NAME + " is not enabled -- can not generate gold path.")
+    }
+
+    // Step 1: Read task description
+    interface.step("task")
+
+    // Step 2: Read map
+    interface.step("read map")
+
+    // Step 3: Start walking to location
+    if (!this.navigateToLocationUsingModule(game.endLocation)) {
+      //return false
+    }
+
+    // Step 4: Take coin
+    interface.step("take coin")
+
+    // Step 5: Return to start location
+    if (!this.navigateToLocationUsingModule(game.startLocation)) {
+      //return false
+    }
+
+    // Step 6: Put coin in box
+    interface.step("put coin in box")
+
+    return true
+
+  }
+
+  private def navigateToLocationUsingModule(endLocation:Room): Boolean = {
+    val MAX_ITER = 20
+    var numIter:Int = 0
+
+    while (game.agentLocation.name != endLocation.name) {
+      val stepResult = interface.step("next step to " + endLocation.name)
+      val obs = stepResult.observationStr
+
+      val fields = obs.split(":")
+      if (fields.length == 2) {
+        val locationStep = fields(1).trim()
+
+        // North
+        if ((game.agentLocation.locationNorth != null) && (game.agentLocation.locationNorth.name.toLowerCase == locationStep)) {
+          // Check to see if there is a door that needs to be opened first
+          if ((game.agentLocation.doorNorth != null) && (!game.agentLocation.doorNorth.isOpen)) {
+            interface.step("open door to north")
+          }
+          // Move north
+          interface.step("move north")
+
+          // South
+        } else if ((game.agentLocation.locationSouth != null) && (game.agentLocation.locationSouth.name.toLowerCase == locationStep)) {
+          // Check to see if there is a door that needs to be opened first
+          if ((game.agentLocation.doorSouth != null) && (!game.agentLocation.doorSouth.isOpen)) {
+            interface.step("open door to south")
+          }
+          interface.step("move south")
+
+          // East
+        } else if ((game.agentLocation.locationEast != null) && (game.agentLocation.locationEast.name.toLowerCase == locationStep)) {
+          // Check to see if there is a door that needs to be opened first
+          if ((game.agentLocation.doorEast != null) && (!game.agentLocation.doorEast.isOpen)) {
+            interface.step("open door to east")
+          }
+          interface.step("move east")
+
+          // West
+        } else if ((game.agentLocation.locationWest != null) && (game.agentLocation.locationWest.name.toLowerCase == locationStep)) {
+          // Check to see if there is a door that needs to be opened first
+          if ((game.agentLocation.doorWest != null) && (!game.agentLocation.doorWest.isOpen)) {
+            interface.step("open door to west")
+          }
+          interface.step("move west")
+        } else {
+          if (game.agentLocation.name.toLowerCase == locationStep) {
+            // Already at this location -- likely just the first or last step from the pathfinding algorithm.  Just ignore this one.
+          } else {
+            // If we reach here, the path must be incorrect, as the next location on the path isn't accessible from the current location.
+            println("ERROR: Unable to find location (" + locationStep + ")")
+            println("FROM Location: " + game.agentLocation.getDescription())
+            println("")
+            return false
+          }
+        }
+      }
+
+      numIter += 1
+      if (numIter > MAX_ITER) {
+        println ("ERROR: Timed out on navigating path (MAX_ITER = " + MAX_ITER + ")")
+        return false
+      }
+
+    }
+
+    // If we reach here, the navigation was successful
+    return true
+  }
+
+  def mkGoldPath(r:Random):(Boolean, Array[String]) = {
+    val success = this.mkGoldPathMapReaderWithNavModule(r)
+    if (!success) return (false, Array.empty[String])
+
+    // Success
+    val path = interface.history.map(_.userInputStr).toArray.filter(_.length > 0)
+    return (true, path)
+  }
 
 }

@@ -2,7 +2,7 @@ package textworldexpress.goldagent
 
 import textworldexpress.games.TWCGame
 import textworldexpress.runtime.PythonInterface
-import textworldexpress.symbolicmodule.ModuleKnowledgeBaseTWC
+import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -180,6 +180,13 @@ class TWCGoldAgentWithModule(interface:PythonInterface) {
   private def mkGoldPathTWCWithKBModule(r:Random, numIterations:Int = 0, lastLocation:String = ""):Boolean = {
     val MAX_ITERATIONS = 25
     val agentLocation = game.agentLocation
+
+    // Ensure that we're running on the correct game type (TWCGame)
+    if (game == null) return false
+    // Ensure that the appropriate modules have been enabled
+    if (!interface.enabledModuleStrs.contains(ModuleCalc.MODULE_NAME)) {
+      println ("TWCGoldAgentWithModule: ERROR: " + ModuleKnowledgeBaseTWC.MODULE_NAME + " is not enabled -- can not generate gold path.")
+    }
 
     // Stop condition
     if (game.getScore().scoreNormalized >= 1.0f) return true

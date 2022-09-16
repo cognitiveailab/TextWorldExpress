@@ -228,7 +228,7 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
           val fields = sent.split("You are in the ")
           curLocation = this.trimStopWords(fields(1))
           this.currentLocation = curLocation      // Store current location globally
-          print("CurLocation: " + curLocation)
+          //print("CurLocation: " + curLocation)
         }
       }
 

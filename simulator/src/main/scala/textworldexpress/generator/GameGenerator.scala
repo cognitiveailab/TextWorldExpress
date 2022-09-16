@@ -1,7 +1,7 @@
 package textworldexpress.generator
 
 import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, MapReaderRandomGameGenerator, SimonSaysGameGenerator, SimonSaysMemoryGameGenerator, SortingGameGenerator, TWCGameGenerator, TakeThisActionGameGenerator}
-import textworldexpress.goldagent.{ArithmeticGoldAgentWithModule, SortingGoldAgentWithModule, TWCGoldAgentWithModule}
+import textworldexpress.goldagent.{ArithmeticGoldAgentWithModule, MapReaderGoldAgentWithModule, MapReaderRandomGoldAgentWithModule, SortingGoldAgentWithModule, TWCGoldAgentWithModule}
 import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.TextGame
 
@@ -246,6 +246,11 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
     return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
 
+  override def mkGoldPathModules(r:Random, interface:PythonInterface):(Boolean, Array[String]) = {
+    val agent = new MapReaderGoldAgentWithModule(interface)
+    val (success, path) = agent.mkGoldPath(r)
+    return (success, path)
+  }
 }
 
 
@@ -298,6 +303,12 @@ class GameGeneratorMapReaderRandom(numLocations:Int = 11, maxDistanceApart:Int =
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
     return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+  }
+
+  override def mkGoldPathModules(r:Random, interface:PythonInterface):(Boolean, Array[String]) = {
+    val agent = new MapReaderRandomGoldAgentWithModule(interface)
+    val (success, path) = agent.mkGoldPath(r)
+    return (success, path)
   }
 
 }

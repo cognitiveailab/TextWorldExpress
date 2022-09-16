@@ -169,7 +169,6 @@ class PythonInterface() {
         fauxInterface.load(gameName = this.gameName, gameFold = this.gameFold, seed = this.gameSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr = this.enabledModulesStr)
         // Then, call the gold agent with this interface
         val rg = new Random(seed)
-        println ("### HERE")
         val (success, _goldPath) = this.gameGenerator.mkGoldPathModules(rg, fauxInterface)
         this.goldPath = _goldPath
         if (!success) println ("### ERROR: Unable to generate gold path with module interface.")

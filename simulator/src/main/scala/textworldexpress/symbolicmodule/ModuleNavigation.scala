@@ -91,8 +91,53 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
    */
 
   // Find a path between two locations
-  def findPath(startLocation:String, goalLocation:String): Unit = {
-    // TODO
+  // Returns: (Success/failure, Array[String] representing path)
+  def findPath(startLoc:String, goalLoc:String): (Boolean, Array[String]) = {
+    val MAX_ITER = 20
+    var pathPool = new ArrayBuffer[ Array[String] ]()
+
+    val startLocation = startLoc.trim().toLowerCase()
+    val goalLocation = goalLoc.trim().toLowerCase
+
+    // Edge case: Check if the start and end locations are the same
+    if (startLocation == goalLocation) {
+      return (true, Array.empty[String])
+    }
+
+    // Iteratively assemble possible paths
+    var numIter:Int = 0
+    while (numIter < MAX_ITER) {
+      // Step 1: Find the next location for each path
+      val newPathPool = new ArrayBuffer[ Array[String] ]
+
+      for (path <- pathPool) {
+        val lastLoc = path.last
+
+        // Get connections to last location on this path
+        val connections = this.getConnections(lastLoc)
+
+        // Add every connection to this location
+        for (connection <- connections) {
+          val newPath = path ++ Array(connection)
+          newPathPool.append(newPath)
+
+          // Winning condition: Check if the last location is the goal location
+          if (connection == goalLocation) {
+            return (true, newPath)
+          }
+
+        }
+      }
+
+      // Step 2: Once we've made all the pools, swap the old pool with the new one
+      pathPool = newPathPool
+
+      // Keep track of the number of iterations
+      numIter += 1
+    }
+
+    // Timeout: If we reach this point, we've failed to find a path
+    return (false, Array.empty[String])
   }
 
   // Add an edge (that two locations connect)

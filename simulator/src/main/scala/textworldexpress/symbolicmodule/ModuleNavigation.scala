@@ -1,10 +1,11 @@
 package textworldexpress.symbolicmodule
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
   // The edges (connections between locations) on the map
-  var mapEdges = Array.empty[String]    // TODO
+  var mapEdges = new ArrayBuffer[MapEdge]()    // TODO
 
   // The agent's current location
   var currentLocation:String = ""
@@ -96,24 +97,125 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
 
   // Add an edge (that two locations connect)
   def addEdge(location1:String, location2:String): Unit = {
+    val newEdge1 = new MapEdge(location1.toLowerCase, location2.toLowerCase)
 
+    for (curEdge <- this.mapEdges) {
+      if (curEdge.isEqual(newEdge1)) return      // The edge already exists -- do not add
+    }
+
+    // If we reach here, the edge is unique -- add it
+    this.mapEdges.append(newEdge1)
+
+    // Add a symmetric edge
+    val newEdge2 = new MapEdge(location2.toLowerCase, location1.toLowerCase)
+    this.mapEdges.append(newEdge2)
+
+    // Update the list of known locations, since we've added a new edge (that might contain a new location)
+    this.knownLocations = this.getLocations()
   }
 
   // Return a list of locations that connect to Location
   def getConnections(location:String):Array[String] = {
+    val out = new ArrayBuffer[String]
+    for (edge <- this.mapEdges) {
+      if (edge.location1 == location) {
+        out.append(edge.location2)
+      }
+    }
 
+    return out.toArray
+  }
+
+  // Return a list of all known locations
+  def getLocations():Array[String] = {
+    val out = mutable.Set[String]()
+    for (edge <- this.mapEdges) {
+      out.add(edge.location1)
+      out.add(edge.location2)
+    }
+
+    return out.toArray
   }
 
   /*
    * Scraping observations
    */
+
+  override def scrapeFreeLookStr(freeLookStr: String): Unit = {
+    this.scrapeObservationStr(freeLookStr)
+  }
+
+  // Scrape observations for related information
   override def scrapeObservationStr(observationStr: String): Unit = {
-    // TODO
+    // Case 1: Check for whole maps
+    if (observationStr.startsWith("The map reads:")) {
+      val lines = observationStr.split("\n")
+      for (line <- lines) {
+        if (line.contains("connects to the")) {
+          val fields = line.split(" connects to the ")
+          if (fields.length >= 2) {
+            val startLocation = fields(0)
+            val endLocations = fields(1).split(",|and")
+
+            val startLocationStr = this.trimStopWords(startLocation)
+            for (endLocation <- endLocations) {
+              val endLocationStr = this.trimStopWords(endLocation)
+              this.addEdge(startLocationStr, endLocationStr)
+            }
+          }
+        }
+      }
+
+
+      // Case 2: In a room
+    } else if (observationStr.startsWith("You are in the")) {
+      // First, try to determine the current location
+      var curLocation = ""
+      val sents = observationStr.split(".")
+      for (sent <- sents) {
+        if (sent.startsWith("You are in the")) {
+          print("Sent: " + sent)
+          val fields = sent.split("You are in the ")
+          curLocation = this.trimStopWords(fields(1))
+          this.currentLocation = curLocation      // Store current location globally
+          print("CurLocation: " + curLocation)
+        }
+      }
+
+      // Then, try to determine any connecting locations
+      if (curLocation.length > 0) {
+        for (sent <- sents) {
+          if (sent.trim().startsWith("To the")) {
+            val fields = sent.trim().split("To the|you see the|is the")
+            if (fields.length == 3) {
+              val location = fields.last
+              val sanitizedEndLocation = this.trimStopWords(location)
+              if (sanitizedEndLocation.length > 0) {
+                this.addEdge(curLocation, sanitizedEndLocation)
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 
   private def trimStopWords(strIn:String):String = {
-    // TODO
-    return ""
+    val stopWords = Array("a", "an", "the", ".")
+    val sanitizedStr = strIn.replaceAll("[^\\w\\s]", " ")
+    val tokens = sanitizedStr.split(" ")
+
+    val out = new ArrayBuffer[String]
+    for (token <- tokens) {
+      val sanitizedToken = token.trim()
+      if ((sanitizedToken.length > 0) && (!stopWords.contains(sanitizedToken.toLowerCase()))) {
+        out.append(token)
+      }
+    }
+
+    val outStr = out.mkString(" ").trim()
+    return outStr
   }
 
 
@@ -138,6 +240,19 @@ class ModuleNavigation(val properties:Map[String, Int]) extends SymbolicModule(M
 
 }
 
+
 object ModuleNavigation {
   val MODULE_NAME   = "navigation"
+}
+
+
+class MapEdge(val location1:String, val location2:String) {
+
+  // Check to see if this edge is the same as an input edge
+  def isEqual(that:MapEdge): Boolean = {
+    if ((this.location1 == that.location1) && (this.location2 == that.location2)) return true
+    // Default return
+    return false
+  }
+
 }

@@ -99,15 +99,18 @@ case class PrecrawledPath(val nodeLUT:Array[PrecrawledNode], val stringLUT:Array
   /*
    * JSON saving
    */
-  def exportToJSONStr():String = {
+  def exportToJSONStr(humanReadable:Boolean=false):String = {
     System.gc()
-    return this.asJson.noSpaces
-    //return this.asJson.spaces2
+    if (humanReadable) {
+      return this.asJson.spaces2
+    } else {
+      return this.asJson.noSpaces
+    }
   }
 
-  def saveToJSON(filename:String) = {
+  def saveToJSON(filename:String, humanReadable:Boolean=false) = {
     val pw = new PrintWriter(filename)
-    pw.print(this.exportToJSONStr())
+    pw.print(this.exportToJSONStr(humanReadable))
     pw.close()
   }
 
@@ -126,6 +129,7 @@ case class PrecrawledPath(val nodeLUT:Array[PrecrawledNode], val stringLUT:Array
 
 
 object PrecrawledPath {
+  var progressCounter:Long = 0
 
   /*
    * Loading
@@ -149,8 +153,9 @@ object PrecrawledPath {
    * Creation
    */
 
-  def make(root:PrecrawledPathNode, stringLUT:ArrayBuffer[String]): PrecrawledPath = {
+  def make(root:PrecrawledPathNode, stringLUT:ArrayBuffer[String], string2Idx:Map[String, Int]): PrecrawledPath = {
     // Step 1: First, label the path nodes with unique sequential IDs
+    println ("Assigning unique IDs")
     PrecrawledPathNode.assignUniqueIDs(root)
 
     // Step 2: Create an array to use as a fast look-up-table for these nodes
@@ -158,9 +163,12 @@ object PrecrawledPath {
     val nodeLUT = new Array[PrecrawledNode](numNodes)
 
     // Step 3: Populate the nodes
-    this.populateNodeLUT(root, nodeLUT, stringLUT)
+    println ("Populating node LUT")
+    this.progressCounter = 0
+    this.populateNodeLUT(root, nodeLUT, stringLUT, string2Idx)
 
     // Step 4: Generate storage class
+    println ("Generating storage class")
     val out = new PrecrawledPath(nodeLUT = nodeLUT, stringLUT = stringLUT.toArray)
 
     return out
@@ -168,9 +176,15 @@ object PrecrawledPath {
 
 
   // Recursively populate all the nodes into the node look-up table (converting them to a different storage class in the process)
-  private def populateNodeLUT(in:PrecrawledPathNode, nodeLUT:Array[PrecrawledNode], stringLUT:ArrayBuffer[String]): Unit = {
+  private def populateNodeLUT(in:PrecrawledPathNode, nodeLUT:Array[PrecrawledNode], stringLUT:ArrayBuffer[String], string2Idx:Map[String, Int]): Unit = {
+    // Progress display
+    this.progressCounter += 1
+    if (this.progressCounter % 10000 == 0) {
+      println ("Progress counter: " + this.progressCounter + " / " + nodeLUT.length)
+    }
+
     // Convert this node
-    val converted = PrecrawledNode.mkFromRaw(in, stringLUT)
+    val converted = PrecrawledNode.mkFromRaw(in, stringLUT, string2Idx)
 
     // Store this node
     val nodeIdx = in.id
@@ -178,7 +192,7 @@ object PrecrawledPath {
 
     // Recurse
     for (child <- in.validSteps.values) {
-      this.populateNodeLUT(child, nodeLUT, stringLUT)
+      this.populateNodeLUT(child, nodeLUT, stringLUT, string2Idx)
     }
   }
 
@@ -209,7 +223,7 @@ case class PrecrawledNode(val result:StepResultHashed, val steps:Map[Int, Int]) 
 
 object PrecrawledNode {
 
-  def mkFromRaw(in:PrecrawledPathNode, stringLUT:ArrayBuffer[String]):PrecrawledNode = {
+  def mkFromRaw(in:PrecrawledPathNode, stringLUT:ArrayBuffer[String], string2Idx:Map[String, Int]):PrecrawledNode = {
     val stepResult = in.stepResult
 
     // Convert valid steps to hashes
@@ -218,7 +232,9 @@ object PrecrawledNode {
       val actionStr = step._1
       val resultingNode = step._2
 
-      val actionStrIdx = stringLUT.indexOf(actionStr)
+      //val actionStrIdx = stringLUT.indexOf(actionStr)
+      val actionStrIdx = string2Idx(actionStr)
+
       val nodeIdx = resultingNode.id
       validSteps(actionStrIdx) = nodeIdx
     }

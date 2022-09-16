@@ -248,19 +248,32 @@ class FastObject(val name:String) {
 
   // Make a human-readable contents string (e.g. "a carrot, a cucumber, and an apple")
   def getContentsListStr():String = {
-    val numContainedItems:Int = this.contents.size
     val contentsArray = this.contents.toArray
+    val numContainedItems:Int = contentsArray.length
+    val debugStr2 = contentsArray.length.toString
 
     if (numContainedItems == 0) {
       return "nothing"
     } else if (numContainedItems == 1) {
       return contentsArray(0).getDescription()
     } else {
+      val debugStr3 = contentsArray.length.toString
+
       val os = new StringBuilder
       for (i <- 0 until numContainedItems-1) {
         os.append( contentsArray(i).getDescription() + ", " )
       }
-      os.append("and " + contentsArray.last.getDescription())
+
+      try {
+        os.append("and " + contentsArray.last.getDescription())
+      } catch {
+        case e:Throwable => {
+          throw new RuntimeException("name: " + this.name + "   contentsArray: " + contentsArray.mkString(", ") + " (" + numContainedItems + ") " + debugStr2 + " " + debugStr3)
+        }
+      }
+
+
+      //os.append("and " + contentsArray.last.getDescription())
       return os.toString()
     }
   }

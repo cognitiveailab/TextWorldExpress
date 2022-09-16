@@ -3,7 +3,7 @@ package textworldexpress.pathcrawler
 import textworldexpress.generator.GameGenerator
 import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.{StepResult, TextGame}
-import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC}
+import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC, ModuleSortByQuantity}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -52,7 +52,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
   val paramStr = params.mkString(",")
 
 
-  val precachedGame = this.mkCachedVariations(numVariationsToMake = 1, startSeed, gameFold)(0)
+  //val precachedGame = this.mkCachedVariations(numVariationsToMake = 1, startSeed, gameFold)(0)
   /*
   val precachedInterface = new PythonInterface()
   val precachedInitialStepResult = precachedInterface.load(gameName = SF_GAME_NAME, gameFold, seed = startSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr)
@@ -70,11 +70,11 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
   // TODO: Return
   def crawlGame(maxDepth:Int = 5, pathSoFar:Array[String] = Array.empty[String]): Option[PrecrawledPathNode] = {
-    val result = this.crawlGameHelper(precachedGame._1, pathSoFar, maxDepth)
+    val result = this.crawlGameHelper(pathSoFar, maxDepth)
     return result
   }
 
-  private def crawlGameHelper(precachedGame:TextGame, pathSoFar:Array[String], maxDepth:Int = 5): Option[PrecrawledPathNode] = {
+  private def crawlGameHelper(pathSoFar:Array[String], maxDepth:Int = 5): Option[PrecrawledPathNode] = {
     // Stop case: Check that we haven't crawled too deep
     val curDepth = pathSoFar.length
     if (curDepth >= maxDepth) return None
@@ -98,6 +98,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
     // Step 1: Do actions so far
     // Subsequent steps
+    //println("PathSoFar: " + pathSoFar.mkString(", "))
     for (actionStr <- pathSoFar) {
       stepResult = interface.step(actionStr)
     }
@@ -114,6 +115,8 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     // Step 3: For each action, try and crawl it
     var useThreads:Boolean = false
     //if (pathSoFar.length == 0) useThreads = true    // Use threads for the second path step
+
+    // Comment to make unthreaded
     if ((pathSoFar.length < 1) || ((pathSoFar.length < 2) && (validActions.length < 25))) useThreads = true    // Use threads for the second path step
 
     if (!useThreads) {
@@ -126,7 +129,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
         }
 
         val actionsToTake = pathSoFar ++ Array(validActionStr)
-        val result = this.crawlGameHelper(precachedGame, actionsToTake, maxDepth)      // Recursive call.  TODO: return
+        val result = this.crawlGameHelper(actionsToTake, maxDepth)      // Recursive call.  TODO: return
         if (result.isDefined) {
           validStepResults(validActionStr) = result.get
         }
@@ -196,8 +199,16 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     out.toArray
   }
 
+/*
   def getPrecachedGame():(TextGame, Array[String]) = {
     return (precachedGame._1.deepCopy(), precachedGame._2)
+  }
+*/
+  def getGame():(PythonInterface, Array[String]) = {
+    val interface = new PythonInterface()
+    var stepResult:StepResult = interface.load(gameName = SF_GAME_NAME, gameFold, seed = startSeed, paramStr = this.paramStr, generateGoldPath = false, enabledModulesStr)
+
+    return (interface, interface.goldPath)
   }
 
 }
@@ -206,14 +217,17 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
 object EntryPointPathCrawlerWithModule {
 
-  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String) = {
+  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String, humanReadable:Boolean=false) = {
+    // Clear the string LUT
+    StepResultHashed.resetLUT()
+
     // Create crawler
     val crawler = new EntryPointPathCrawlerWithModule(gameName, gameProps.toMap, variationIdx, gameFold, enabledModulesStr)
 
     println ("Starting crawling...")
     val startTime = System.currentTimeMillis()
 
-    val (game, goldPath) = crawler.getPrecachedGame()
+    val (interface, goldPath) = crawler.getGame()
     val precrawledGameTree = crawler.crawlGame(maxDepth)
 
     val deltaTime = (System.currentTimeMillis() - startTime)
@@ -247,7 +261,8 @@ object EntryPointPathCrawlerWithModule {
 
 
     // Convert
-    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT)
+    println ("Converting to precrawled path...")
+    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT, string2Idx = StepResultHashed.string2IDX.toMap)
     println( precrawled.StringLUTToString() )
 
     // Save
@@ -260,7 +275,7 @@ object EntryPointPathCrawlerWithModule {
 
     val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
     println ("Saving..." )
-    precrawled.saveToJSON(filenameOut)
+    precrawled.saveToJSON(filenameOut, humanReadable)
 
   }
 
@@ -324,7 +339,7 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
-    val maxDepth = 5
+    val maxDepth = 6
     val enabledModulesStr = ModuleCalc.MODULE_NAME
 
 
@@ -368,6 +383,23 @@ object EntryPointPathCrawlerWithModule {
 
   }
 
+  def crawlSortingWithModule(numGamesToCrawl:Int=1): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+
+    val gameName = "sorting"
+    val maxDepth = 7
+    val enabledModulesStr = ModuleSortByQuantity.MODULE_NAME
+
+    for (i <- 0 until numGamesToCrawl) {
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", humanReadable = true)
+    }
+    /*
+    for (i <- 0 until numGamesToCrawl) {
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+    }
+     */
+
+  }
 
   def main(args:Array[String]): Unit = {
 
@@ -378,9 +410,11 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    //crawlArithmeticWithModule(numGamesToCrawl = 50)
+    crawlArithmeticWithModule(numGamesToCrawl = 1)
 
-    crawlTWCWithModule(numGamesToCrawl = 1)
+    //crawlTWCWithModule(numGamesToCrawl = 1)
+
+    //crawlSortingWithModule(numGamesToCrawl = 1)
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")

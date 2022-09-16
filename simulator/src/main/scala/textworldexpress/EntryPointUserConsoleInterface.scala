@@ -2,7 +2,7 @@ package textworldexpress
 
 import textworldexpress.generator.GameGenerator
 import textworldexpress.runtime.PythonInterface
-import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC}
+import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC, ModuleSortByQuantity}
 
 import collection.JavaConverters._
 import scala.collection.mutable
@@ -21,10 +21,10 @@ object EntryPointUserConsoleInterface {
     //val SF_GAME_NAME:String = "cookingworld"
     //val SF_GAME_NAME:String = "mapreader"
     //val SF_GAME_NAME:String = "mapreader-random"
-    val SF_GAME_NAME:String = "arithmetic"
+    //val SF_GAME_NAME:String = "arithmetic"
     //val SF_GAME_NAME:String = "takethisaction"
     //val SF_GAME_NAME:String = "simonsays"
-    //val SF_GAME_NAME:String = "sorting"
+    val SF_GAME_NAME:String = "sorting"
     //val SF_GAME_NAME:String = "simonsays-memory"
     //val seed = Random.nextInt(100)
     val seed = 85
@@ -41,8 +41,9 @@ object EntryPointUserConsoleInterface {
     val paramStr = ""
     //val paramStr = "numLocations=1"
     //val enabledModules = ""
-    val enabledModules = ModuleCalc.MODULE_NAME
+    //val enabledModules = ModuleCalc.MODULE_NAME
     //val enabledModules = ModuleKnowledgeBaseTWC.MODULE_NAME
+    val enabledModules = ModuleSortByQuantity.MODULE_NAME
 
     interface.load(gameName = SF_GAME_NAME, gameFold = fold, seed = seed, paramStr = paramStr, generateGoldPath = true, enabledModulesStr = enabledModules)
     var stepResult = interface.generateNewGame(seed = seed, gameFold = fold, generateGoldPath = true)

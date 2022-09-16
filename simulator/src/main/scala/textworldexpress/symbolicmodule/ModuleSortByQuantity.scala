@@ -8,7 +8,7 @@ import scala.io.Source
 import scala.util.control.Breaks.{break, breakable}
 import ModuleSortByQuantity._
 
-class ModuleSortByQuantity(val properties:Map[String, Int]) extends SymbolicModule(ModuleCalc.MODULE_NAME, properties) {
+class ModuleSortByQuantity(val properties:Map[String, Int]) extends SymbolicModule(ModuleSortByQuantity.MODULE_NAME, properties) {
   var observedObjects = Array.empty[ObservedQuantityObject]
 
   var pregeneratedStrAscending:String = STR_NO_OBSERVED_OBJECTS
@@ -113,6 +113,8 @@ class ObservedQuantityObject(val quantity:Double, val referent:String, val token
 }
 
 object ModuleSortByQuantity {
+  val MODULE_NAME = "sort"
+
   val STR_NO_OBSERVED_OBJECTS = "No objects with quantities have been observed."
 
   val CMD_SORT_ASCENDING = "sort ascending"

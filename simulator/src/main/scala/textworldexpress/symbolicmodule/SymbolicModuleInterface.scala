@@ -20,6 +20,9 @@ class SymbolicModuleInterface(val properties:Map[String, Int]) {
     } else if (moduleNameSanitized == ModuleKnowledgeBaseTWC.MODULE_NAME) {
       this.modules.append(new ModuleKnowledgeBaseTWC(properties))
 
+    } else if (moduleNameSanitized == ModuleSortByQuantity.MODULE_NAME) {
+      this.modules.append(new ModuleSortByQuantity(properties) )
+
     } else {
       // Default
       println ("Cannot add unknown module (" + moduleNameSanitized + ").")

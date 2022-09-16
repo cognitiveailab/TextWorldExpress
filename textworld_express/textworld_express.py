@@ -74,7 +74,7 @@ class TextWorldExpressEnv:
             'properties': self.getGenerationProperties(),
             'finalScore': finalScore,
             'numSteps': len(self.runHistory),
-            'history': self.runHistory,            
+            'history': self.runHistory,
         }
         return packed
 
@@ -99,12 +99,12 @@ class TextWorldExpressEnv:
         time.sleep(5)
 
     # Ask the simulator to load an environment from a script
-    def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False):
+    def load(self, gameName, gameFold, seed, paramStr, generateGoldPath=False, enabledModulesStr=""):
         #print("Load: " + gameName + " (seed: " + str(seed) + ", gameFold: " + str(gameFold) + ")")
         self.clearRunHistory()
 
-        self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath)
-        self.parseJSONResponse()        
+        self.responseStr = self.gateway.loadJSON(gameName, gameFold, seed, paramStr, generateGoldPath, enabledModulesStr)
+        self.parseJSONResponse()
 
         # Reset last step score (used to calculate reward from current-previous score)
         self.lastStepScore = 0
@@ -171,7 +171,7 @@ class TextWorldExpressEnv:
         return list(self.gateway.getGameNames())
 
     # Get the current game's generation properties
-    def getGenerationProperties(self):        
+    def getGenerationProperties(self):
         return orjson.loads(self.gateway.getGenerationPropertiesJSON())
 
     # Get the current game's task description
@@ -251,7 +251,7 @@ class TextWorldExpressEnv:
         reward = score - self.lastStepScore         # Calculate reward (delta score) for this step
         self.lastStepScore = score                  # Store current score for reward calculation on the next step
         self.parsedResponse['reward'] = reward      # Add reward to response
-        
+
         # Step 3: Calculate what move number we're currently at
         numMoves = self.getNumSteps()
         self.parsedResponse['numMoves'] = numMoves

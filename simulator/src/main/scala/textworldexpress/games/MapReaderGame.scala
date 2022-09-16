@@ -183,6 +183,14 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return this.taskDesc
+  }
+
+
+  /*
    *  Action helpers
    */
 

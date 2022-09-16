@@ -144,6 +144,15 @@ class PythonInterface() {
   }
 
   /*
+   * Get task description
+   */
+  def getTaskDescription():String = {
+    if (this.game == null) return "Task description unavailable -- game is not initialized."
+
+    return this.game.getTaskDescription()
+  }
+
+  /*
    * Train/development/test sets
    */
 

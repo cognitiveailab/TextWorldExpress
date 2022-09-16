@@ -18,6 +18,8 @@ abstract class TextGame {
 
   def getGenerationProperties():Map[String, Int]
 
+  def getTaskDescription():String
+
   /*
    * History
    */

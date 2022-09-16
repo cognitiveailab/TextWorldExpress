@@ -177,6 +177,12 @@ class TWCGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject]
 
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
+  /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to pick up objects, then place them in their usual locations in the environment."
+  }
 
   /*
    *  Action helpers

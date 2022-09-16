@@ -54,6 +54,10 @@ def userConsole(args):
     # Initialize a random task variation in this set
     obs = env.resetWithSeed(gameSeed, gameFold, generateGoldPath)
 
+    # Task description
+    print("Task Description: " + env.getTaskDescription())
+    print("")
+    
     # Take action
     curIter = 0
 

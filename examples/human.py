@@ -33,7 +33,7 @@ def userConsole(args):
     gameName = args['game_name']
 
     # Initialize environment
-    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
+    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'])
     gameNames = env.getGameNames()
     print("Supported Game Names: " + str(gameNames))
 
@@ -59,7 +59,7 @@ def userConsole(args):
     print("")
     
     # Take action
-    curIter = 0    
+    curIter = 0
 
     userInputStr = ""
     print("\nType 'exit' to quit.\n")

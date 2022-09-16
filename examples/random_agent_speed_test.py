@@ -21,14 +21,14 @@ def randomModel(args):
 
 
     # Initialize environment
-    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'], threadNum=0)
+    env = TextWorldExpressEnv(args['jar_path'], envStepLimit=args['max_steps'])
     gameNames = env.getGameNames()
     print("Supported Game Names: " + str(gameNames))
 
     # Load the task
     gameFold = "train"
     gameSeed = 0
-    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"    
+    gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = args['gold_paths']
     env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
 

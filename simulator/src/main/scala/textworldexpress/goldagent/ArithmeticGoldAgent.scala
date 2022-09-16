@@ -100,8 +100,6 @@ class ArithmeticGoldAgentWithModule(interface:PythonInterface) {
     }
 
 
-    println ("START###")
-
     // Step 1: read math problem
     interface.step("take math problem")
     interface.step("read math problem")

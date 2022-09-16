@@ -130,6 +130,10 @@ class PythonInterface() {
   // Adds any additional valid actions from the symbolic modules into the action space
   def addValidActionsFromModules(): Unit = {
     if (this.moduleInterface != null) {
+      // Update modules with environment status
+      moduleInterface.giveEnvironmentStatus(this.curStepResult.observationStr, this.curStepResult.inventoryStr, this.curStepResult.freeLookStr)
+
+      // Get valid actions from modules
       val newValidActions = (this.curStepResult.validActions ++ this.moduleInterface.getValidCommands()).toSet.toArray    // Remove any duplicates
       //println ("### ACTIONS FROM MODULE: " + this.moduleInterface.getValidCommands().mkString(", "))
       //println ("### ADDING VALID ACTIONS: " + newValidActions.mkString(", "))

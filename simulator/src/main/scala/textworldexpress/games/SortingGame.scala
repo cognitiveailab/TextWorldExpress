@@ -26,7 +26,9 @@ class SortingGameScoring(val itemsToSort:Array[FastObject], val answerBox:Box) e
       for (taskItem <- itemsToSort) {
         if (cObj.name == taskItem.name) found = true
       }
-      if (!found) taskFailure = true
+      if (!found) {
+        taskFailure = true
+      }
     }
 
     // If task failure, then return

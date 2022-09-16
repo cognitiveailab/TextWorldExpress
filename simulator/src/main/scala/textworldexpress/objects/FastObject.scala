@@ -372,7 +372,7 @@ class Room(name:String) extends FastObject(name) {
 
 }
 
-class Kitchen(r:Random, addKnife:Boolean = true) extends Room("kitchen") {
+class Kitchen(r:Random, addKnife:Boolean = true, addToaster:Boolean = false) extends Room("kitchen") {
   this.prefersConnectingTo = Array("corridor", "pantry", "backyard", "living room")
 
   // Constructor
@@ -382,6 +382,11 @@ class Kitchen(r:Random, addKnife:Boolean = true) extends Room("kitchen") {
     // Required
     this.addObject( new Stove() )
     this.addObject( new Oven() )
+
+    // Optional. Add toaster (i.e., when there's no Backyard)
+    if (addToaster) {
+      this.addObject( new Toaster() )
+    }
 
     val fridge = new Fridge()
     this.addObject(fridge)
@@ -685,6 +690,15 @@ class BBQ() extends FastObject("barbeque") {
 
   override def getDescription():String = {
     return "a barbeque"
+  }
+}
+
+// Toaster
+class Toaster() extends FastObject("toaster") {
+  this.isCookingDevice = true
+
+  override def getDescription():String = {
+    return "a toaster"
   }
 }
 

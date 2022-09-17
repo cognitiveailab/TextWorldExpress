@@ -117,7 +117,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     //if (pathSoFar.length == 0) useThreads = true    // Use threads for the second path step
 
     // Comment to make unthreaded
-    if ((pathSoFar.length < 1) || ((pathSoFar.length < 2) && (validActions.length < 25))) useThreads = true    // Use threads for the second path step
+    //if ((pathSoFar.length < 1) || ((pathSoFar.length < 2) && (validActions.length < 25))) useThreads = true    // Use threads for the second path step
 
     if (!useThreads) {
       // Serialized/Non-threaded
@@ -391,15 +391,16 @@ object EntryPointPathCrawlerWithModule {
     val enabledModulesStr = ModuleSortByQuantity.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", humanReadable = true)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", humanReadable = false)
     }
-    /*
+
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule")
     }
-     */
 
   }
+
+
 
   def main(args:Array[String]): Unit = {
 
@@ -410,11 +411,11 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    crawlArithmeticWithModule(numGamesToCrawl = 1)
+    //crawlArithmeticWithModule(numGamesToCrawl = 25)
 
     //crawlTWCWithModule(numGamesToCrawl = 1)
 
-    //crawlSortingWithModule(numGamesToCrawl = 1)
+    crawlSortingWithModule(numGamesToCrawl = 50)
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")

@@ -101,11 +101,19 @@ case class PrecrawledPath(val nodeLUT:Array[PrecrawledNode], val stringLUT:Array
    */
   def exportToJSONStr(humanReadable:Boolean=false):String = {
     System.gc()
-    if (humanReadable) {
-      return this.asJson.spaces2
-    } else {
-      return this.asJson.noSpaces
+    try {
+      if (humanReadable) {
+        return this.asJson.spaces2
+      } else {
+        return this.asJson.noSpaces
+      }
+    } catch {
+      case e:Throwable => {
+        println ("ERROR: Caught exception during saving: " + e.toString)
+        return e.toString
+      }
     }
+
   }
 
   def saveToJSON(filename:String, humanReadable:Boolean=false) = {

@@ -51,6 +51,24 @@ case class StepResultHashed(val obs:Int, val look:Int, val inv:Int, val acts:Arr
     return new StepResultHashed(obs=obs, look=look, inv=inv, acts=acts, score=score, scoreNorm=score, succ=false, fail=false, valid=true)
   }
 
+  // JSON serialization
+  def toJSON():String = {
+    val os = new StringBuilder
+
+    os.append("{")
+    os.append("\"obs\": " + obs + ", ")
+    os.append("\"look\": " + look + ", ")
+    os.append("\"inv\": " + inv + ", ")
+    os.append("\"acts\": [" + acts.mkString(", ") + "], ")
+    os.append("\"score\": " + score + ", ")
+    os.append("\"scoreNorm\": " + scoreNorm + ", ")
+    os.append("\"succ\": " + succ + ", ")
+    os.append("\"valid\": " + valid)
+    os.append("}")
+
+    return os.toString()
+  }
+
 }
 
 object StepResultHashed {
@@ -59,6 +77,7 @@ object StepResultHashed {
 
   def resetLUT(): Unit = {
     stringLUT.clear()
+    string2IDX.clear()
   }
 
   private def add(strIn:String):Int = synchronized {

@@ -122,6 +122,51 @@ case class PrecrawledPath(val nodeLUT:Array[PrecrawledNode], val stringLUT:Array
     pw.close()
   }
 
+  // This save function should be able to save large files.
+  // TODO: But, it still needs proper sanitization/escaping of the string LUT for JSON
+  def saveToJSONStreaming(filename:String): Unit = {
+    val pw = new PrintWriter(filename)
+
+    // Step 1: Export node look-up table
+    pw.println("{\"nodeLUT\":[")
+    for (i <- 0 until this.nodeLUT.length) {
+      val jsonNode = this.nodeLUT(i).toJSON()
+      if (i < this.nodeLUT.length-1) {
+        pw.println(jsonNode + ",")
+      } else {
+        pw.println(jsonNode)
+      }
+    }
+    pw.println("],")
+
+    // Step 2: Export string look-up table
+    pw.println("\"stringLUT\":[")
+    for (i <- 0 until this.stringLUT.length) {
+      val jsonSanitizedStr = escapeJsonStr( this.stringLUT(i) )
+      if (i < this.stringLUT.length-1) {
+        pw.println("\"" + jsonSanitizedStr + "\",")
+      } else {
+        pw.println("\"" + jsonSanitizedStr + "\"")
+      }
+    }
+    pw.println("]}")
+
+    pw.close()
+  }
+
+  // Escape JSON strings
+  private def escapeJsonStr(strIn:String): String = {
+    var out = strIn
+    out = out.replace("\\", "\\\\")
+    out = out.replace("\"", "\\\"")
+    out = out.replace("\b", "\\b")
+    out = out.replace("\f", "\\f")
+    out = out.replace("\n", "\\n")
+    out = out.replace("\r", "\\r")
+    out = out.replace("\t", "\\t")
+    return out.toString
+  }
+
   /*
    * String methods
    */
@@ -225,6 +270,25 @@ case class PrecrawledNode(val result:StepResultHashed, val steps:Map[Int, Int]) 
     // Step 2: Remake the node
     val out = new PrecrawledNode(result.toScore(0.0), newSteps.toMap)        // NOTE: Also sets the node's score to zero.
     return out
+  }
+
+  // JSON serialization
+  def toJSON():String = {
+    val os = new StringBuilder
+
+    os.append("{")
+    os.append("\"result\": " + result.toJSON() + ", ")
+
+    // Map
+    val elemStrs = new ArrayBuffer[String]
+    for (tuple <- steps) {
+      elemStrs.append("\"" + tuple._1 + "\":" + tuple._2)
+    }
+    os.append("\"steps\": {" + elemStrs.mkString(", ") + "}")
+
+    os.append("}")
+
+    return os.toString()
   }
 
 }

@@ -9,7 +9,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
-class CrawlerRunnerWithModule(id:Int, crawler:EntryPointPathCrawlerWithModule, initialPath:Array[String], maxDepth:Int=5) extends Thread {
+class CrawlerRunnerWithModule(id:Int, crawler:EntryPointPathCrawlerWithModule, initialPath:Array[String], maxDepth:Int=5, onlyKeepPathsWithReward:Boolean = false) extends Thread {
   private var isRunning:Boolean = false
   private var isWinning:Boolean = false
   private var isCompleted:Boolean = false
@@ -29,7 +29,7 @@ class CrawlerRunnerWithModule(id:Int, crawler:EntryPointPathCrawlerWithModule, i
     this.isRunning = true
     //if (verboseDebugOutput) println("Thread " + Thread.currentThread().getName() + " is running.")
 
-    val out = crawler.crawlGame(maxDepth=maxDepth, pathSoFar = initialPath)
+    val out = crawler.crawlGame(maxDepth=maxDepth, pathSoFar = initialPath, onlyKeepPathsWithReward = onlyKeepPathsWithReward)
     this.results = out
 
     //if (verboseDebugOutput) println("Thread " + Thread.currentThread().getName() + " is completed.")
@@ -69,12 +69,12 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
    */
 
   // TODO: Return
-  def crawlGame(maxDepth:Int = 5, pathSoFar:Array[String] = Array.empty[String]): Option[PrecrawledPathNode] = {
-    val result = this.crawlGameHelper(pathSoFar, maxDepth)
+  def crawlGame(maxDepth:Int = 5, pathSoFar:Array[String] = Array.empty[String], onlyKeepPathsWithReward:Boolean = false): Option[PrecrawledPathNode] = {
+    val result = this.crawlGameHelper(pathSoFar, maxDepth, onlyKeepPathsWithReward)
     return result
   }
 
-  private def crawlGameHelper(pathSoFar:Array[String], maxDepth:Int = 5): Option[PrecrawledPathNode] = {
+  private def crawlGameHelper(pathSoFar:Array[String], maxDepth:Int = 5, onlyKeepPathsWithReward:Boolean = false): Option[PrecrawledPathNode] = {
     // Stop case: Check that we haven't crawled too deep
     val curDepth = pathSoFar.length
     if (curDepth >= maxDepth) return None
@@ -128,9 +128,19 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
         }
 
         val actionsToTake = pathSoFar ++ Array(validActionStr)
-        val result = this.crawlGameHelper(actionsToTake, maxDepth)      // Recursive call.  TODO: return
+        val result = this.crawlGameHelper(actionsToTake, maxDepth, onlyKeepPathsWithReward)      // Recursive call.  TODO: return
         if (result.isDefined) {
-          validStepResults(validActionStr) = result.get
+
+          if (onlyKeepPathsWithReward) {
+            // Check to see if there is any reward down this path.  If not, do not store it.
+            if (this.checkForPositiveReward(result.get, baselineScore = stepResult.scoreNormalized)) {
+              // This path contains reward -- continue storing it
+              validStepResults(validActionStr) = result.get
+            }
+          } else {
+            validStepResults(validActionStr) = result.get
+          }
+
         }
 
         verboseIdx += 1
@@ -164,7 +174,17 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
             val validActionStr = validActions(i)
             val result = runners(i).results
             if (result.isDefined) {
-              validStepResults(validActionStr) = runners(i).results.get
+
+              // Check to see if there is any reward down this path.  If not, do not store it.
+              if (onlyKeepPathsWithReward) {
+                if (this.checkForPositiveReward(result.get, baselineScore = stepResult.scoreNormalized)) {
+                  // This path contains reward -- continue storing it
+                  validStepResults(validActionStr) = runners(i).results.get
+                }
+              } else {
+                validStepResults(validActionStr) = runners(i).results.get    // OLD (pre-reward check)
+              }
+
             }
           }
         }
@@ -180,6 +200,25 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     val node = new PrecrawledPathNode(stepResult = stepResultHashed, validSteps = validStepResults.toMap)
     return Some(node)
 
+  }
+
+  /*
+   * Check for reward down paths (so we don't have to store them if they're not helpful)
+   */
+  private def checkForPositiveReward(node:PrecrawledPathNode, baselineScore:Double = 0.0):Boolean = {
+    // Stop case: If this node has a greater score than baseline (i.e. has positive reward relative to the root note), then stop.
+    if (node.stepResult.scoreNorm > baselineScore) return true
+
+    // Stop case: If this node is the last node in a chain, then stop.
+    if (node.validSteps.size == 0) return false
+
+    // Recurse case: Check if there is any reward down through the children.
+    for (newNode <- node.validSteps.values) {
+      if (this.checkForPositiveReward(newNode, baselineScore) == true) return true
+    }
+
+    // If we reach here, none of the child nodes contained positive reward over baseline.
+    return false
   }
 
 
@@ -216,7 +255,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
 object EntryPointPathCrawlerWithModule {
 
-  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String, humanReadable:Boolean=false) = {
+  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String, onlyKeepPathsWithReward:Boolean=false) = {
     // Clear the string LUT
     StepResultHashed.resetLUT()
 
@@ -227,7 +266,7 @@ object EntryPointPathCrawlerWithModule {
     val startTime = System.currentTimeMillis()
 
     val (interface, goldPath) = crawler.getGame()
-    val precrawledGameTree = crawler.crawlGame(maxDepth)
+    val precrawledGameTree = crawler.crawlGame(maxDepth, onlyKeepPathsWithReward = onlyKeepPathsWithReward)
 
     val deltaTime = (System.currentTimeMillis() - startTime)
     println("Finished crawling... (time = " + deltaTime + " msec)")
@@ -272,7 +311,8 @@ object EntryPointPathCrawlerWithModule {
       propsStr += "-" + key + gameProps(key)
     }
 
-    val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + ".json"
+    val onlyRewardPathsStr = if (onlyKeepPathsWithReward) { "-onlyrewardpaths" } else { "" }
+    val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + onlyRewardPathsStr + ".json"
     println ("Saving..." )
     //## precrawled.saveToJSON(filenameOut, humanReadable)
     precrawled.saveToJSONStreaming(filenameOut)
@@ -281,7 +321,7 @@ object EntryPointPathCrawlerWithModule {
   }
 
 
-  def crawlTWC(numGamesToCrawl:Int=1): Unit = {
+  def crawlTWC(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
     gameProps("numLocations") = 1                   // Number of locations
@@ -293,17 +333,17 @@ object EntryPointPathCrawlerWithModule {
     val enabledModulesStr = ""
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest", onlyKeepPathsWithReward)
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest", onlyKeepPathsWithReward)
     }
 
   }
 
 
-  def crawlCoin(numGamesToCrawl:Int=1): Unit = {
+  def crawlCoin(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
     gameProps("numLocations") = 4                   // Number of locations
@@ -316,7 +356,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -324,7 +364,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -336,7 +376,7 @@ object EntryPointPathCrawlerWithModule {
   /*
    * With module
    */
-  def crawlArithmeticWithModule(numGamesToCrawl:Int=1): Unit = {
+  def crawlArithmeticWithModule(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "arithmetic"
@@ -346,7 +386,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -354,7 +394,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest")
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -362,7 +402,7 @@ object EntryPointPathCrawlerWithModule {
 
   }
 
-  def crawlTWCWithModule(numGamesToCrawl:Int=1): Unit = {
+  def crawlTWCWithModule(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
     gameProps("numLocations") = 1                   // Number of locations
@@ -370,21 +410,21 @@ object EntryPointPathCrawlerWithModule {
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
     val gameName = "twc"
-    val maxDepth = 2
+    val maxDepth = 3
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
     }
     /*
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
     }
      */
 
   }
 
-  def crawlSortingWithModule(numGamesToCrawl:Int=1): Unit = {
+  def crawlSortingWithModule(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "sorting"
@@ -392,16 +432,16 @@ object EntryPointPathCrawlerWithModule {
     val enabledModulesStr = ModuleSortByQuantity.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", humanReadable = false)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
 
   }
 
-  def crawlMapReaderRandomWithModule(numGamesToCrawl:Int=1): Unit = {
+  def crawlMapReaderRandomWithModule(numGamesToCrawl:Int=1, onlyKeepPathsWithReward:Boolean=false): Unit = {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "mapreader-random"
@@ -409,11 +449,11 @@ object EntryPointPathCrawlerWithModule {
     val enabledModulesStr = ModuleNavigation.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", humanReadable = false)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule")
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
 
   }
@@ -430,7 +470,7 @@ object EntryPointPathCrawlerWithModule {
 
     //crawlArithmeticWithModule(numGamesToCrawl = 25)
 
-    crawlTWCWithModule(numGamesToCrawl = 1)
+    crawlTWCWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = false)
 
     //crawlSortingWithModule(numGamesToCrawl = 25)
 

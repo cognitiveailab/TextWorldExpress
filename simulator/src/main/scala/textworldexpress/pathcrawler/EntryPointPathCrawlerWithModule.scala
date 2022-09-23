@@ -126,7 +126,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
         // Verbose reporting, for vague progress report
         if (pathSoFar.length == 0) {
           val deltaTime = (System.currentTimeMillis() - startTime) / 1000.0f
-          val deltaTimePer = (deltaTime / validActions.length.toDouble) / 1000.0f
+          val deltaTimePer = (deltaTime / verboseIdx.toDouble)
           val timeRemaining = (validActions.length - verboseIdx) * deltaTimePer
           println(verboseIdx + " / " + validActions.length + "   (" + deltaTime.formatted("%3.1f") + " elapsed, " + timeRemaining.formatted("%3.1f") + " estimated remaining, " + deltaTimePer.formatted("%3.2f") + " per tick)")
         }
@@ -415,11 +415,12 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gameProps("includeDoors") = 0                   // Disable doors
     gameProps("numLocations") = 1                   // Number of locations
-    gameProps("numItemsToPutAway") = 2              // Number of items to put away (TWC)
+    //gameProps("numItemsToPutAway") = 2              // Number of items to put away (TWC)
+    gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
     val gameName = "twc"
-    val maxDepth = 3
+    val maxDepth = 4
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
@@ -430,6 +431,22 @@ object EntryPointPathCrawlerWithModule {
       this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
     }
      */
+
+  }
+
+  def crawlTWCWithModuleSingleGame(variationIdx:Int, gameFold:String, onlyKeepPathsWithReward:Boolean=true): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+    gameProps("includeDoors") = 0                   // Disable doors
+    gameProps("numLocations") = 1                   // Number of locations
+    //gameProps("numItemsToPutAway") = 2              // Number of items to put away (TWC)
+    gameProps("numItemsToPutAway") = 1              // Number of items to put away (TWC)
+    //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
+
+    val gameName = "twc"
+    val maxDepth = 4
+    val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
+
+    this.crawlPath(gameName, gameProps.toMap, variationIdx = variationIdx, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
 
   }
 
@@ -479,14 +496,22 @@ object EntryPointPathCrawlerWithModule {
 
     //crawlArithmeticWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
 
-    crawlTWCWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
+    //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
     //crawlSortingWithModule(numGamesToCrawl = 25)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 
+    if (args.length != 2) {
+      println("Missing command line arguments.")
+      sys.exit(1)
+    }
 
-        val deltaTime = System.currentTimeMillis() - startTime
+    val variationIdx = args(0).toInt
+    val gameFold = args(1)
+    crawlTWCWithModuleSingleGame(variationIdx, gameFold)
+
+    val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")
 
   }

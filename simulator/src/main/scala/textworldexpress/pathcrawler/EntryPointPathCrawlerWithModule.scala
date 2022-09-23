@@ -121,10 +121,14 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     if (!useThreads) {
       // Serialized/Non-threaded
       var verboseIdx:Int = 0
+      val startTime = System.currentTimeMillis()
       for (validActionStr <- validActions) {
         // Verbose reporting, for vague progress report
         if (pathSoFar.length == 0) {
-          println(verboseIdx + " / " + validActions.length)
+          val deltaTime = (System.currentTimeMillis() - startTime) / 1000.0f
+          val deltaTimePer = (deltaTime / validActions.length.toDouble) / 1000.0f
+          val timeRemaining = (validActions.length - verboseIdx) * deltaTimePer
+          println(verboseIdx + " / " + validActions.length + "   (" + deltaTime.formatted("%3.1f") + " elapsed, " + timeRemaining.formatted("%3.1f") + " estimated remaining, " + deltaTimePer.formatted("%3.2f") + " per tick)")
         }
 
         val actionsToTake = pathSoFar ++ Array(validActionStr)
@@ -208,7 +212,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
   private def checkForPositiveReward(node:PrecrawledPathNode, baselineScore:Double = 0.0):Boolean = {
     // Stop case: If this node has a greater score than baseline (i.e. has positive reward relative to the root note), then stop.
     if (node.stepResult.scoreNorm > baselineScore) {
-      println ("Node score better: " + node.stepResult.scoreNorm + " vs " + baselineScore)
+      //println ("Node score better: " + node.stepResult.scoreNorm + " vs " + baselineScore)
       return true
     }
 
@@ -415,7 +419,7 @@ object EntryPointPathCrawlerWithModule {
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
     val gameName = "twc"
-    val maxDepth = 5
+    val maxDepth = 3
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {

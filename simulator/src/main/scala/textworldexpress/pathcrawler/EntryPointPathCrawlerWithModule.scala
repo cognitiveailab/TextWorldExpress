@@ -114,7 +114,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
     // Step 3: For each action, try and crawl it
     var useThreads:Boolean = false
-    if (pathSoFar.length == 0) useThreads = true    // Use threads for the second path step
+    //if (pathSoFar.length == 0) useThreads = true    // Use threads for the second path step
     // Comment to make unthreaded
     //if ((pathSoFar.length < 1) || ((pathSoFar.length < 2) && (validActions.length < 25))) useThreads = true    // Use threads for the second path step
 
@@ -207,7 +207,10 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
    */
   private def checkForPositiveReward(node:PrecrawledPathNode, baselineScore:Double = 0.0):Boolean = {
     // Stop case: If this node has a greater score than baseline (i.e. has positive reward relative to the root note), then stop.
-    if (node.stepResult.scoreNorm > baselineScore) return true
+    if (node.stepResult.scoreNorm > baselineScore) {
+      println ("Node score better: " + node.stepResult.scoreNorm + " vs " + baselineScore)
+      return true
+    }
 
     // Stop case: If this node is the last node in a chain, then stop.
     if (node.validSteps.size == 0) return false
@@ -301,7 +304,9 @@ object EntryPointPathCrawlerWithModule {
     // Convert
     println ("Converting to precrawled path...")
     val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT, string2Idx = StepResultHashed.string2IDX.toMap)
-    println( precrawled.StringLUTToString() )
+    println ("Number of strings in LUT: " + precrawled.stringLUT.size)
+
+    //println( precrawled.StringLUTToString() )
 
     // Save
 
@@ -410,7 +415,7 @@ object EntryPointPathCrawlerWithModule {
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
 
     val gameName = "twc"
-    val maxDepth = 3
+    val maxDepth = 5
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
@@ -468,9 +473,9 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    //crawlArithmeticWithModule(numGamesToCrawl = 25)
+    //crawlArithmeticWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
 
-    crawlTWCWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = false)
+    crawlTWCWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
 
     //crawlSortingWithModule(numGamesToCrawl = 25)
 

@@ -43,7 +43,7 @@ class ModuleCalc(val properties:Map[String, Int]) extends SymbolicModule(ModuleC
       return "The result of adding " + arg1 + " and " + arg2 + " is " + result
     } else if (opStr == "sub") {
       val result = arg1 - arg2
-      return "The result of subtracting " + arg2 + " from " + arg2 + " is " + result
+      return "The result of subtracting " + arg2 + " from " + arg1 + " is " + result
     } else if (opStr == "mul") {
       val result = arg1 * arg2
       return "The result of multiplying " + arg1 + " and " + arg2 + " is " + result

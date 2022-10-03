@@ -498,7 +498,7 @@ object EntryPointPathCrawlerWithModule {
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
-    crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    //crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 

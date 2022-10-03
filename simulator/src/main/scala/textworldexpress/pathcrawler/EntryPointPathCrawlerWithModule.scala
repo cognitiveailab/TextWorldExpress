@@ -395,7 +395,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest", onlyKeepPathsWithReward)
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -403,7 +403,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule-speedtest", onlyKeepPathsWithReward)
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -462,7 +462,7 @@ object EntryPointPathCrawlerWithModule {
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
 
   }
@@ -494,14 +494,15 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    //crawlArithmeticWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
+    crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
-    //crawlSortingWithModule(numGamesToCrawl = 25)
+    crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 
+    /*
     if (args.length != 2) {
       println("Missing command line arguments.")
       sys.exit(1)
@@ -510,6 +511,7 @@ object EntryPointPathCrawlerWithModule {
     val variationIdx = args(0).toInt
     val gameFold = args(1)
     crawlTWCWithModuleSingleGame(variationIdx, gameFold)
+    */
 
     val deltaTime = System.currentTimeMillis() - startTime
     println ("Runtime: " + (deltaTime / 1000) + " seconds")

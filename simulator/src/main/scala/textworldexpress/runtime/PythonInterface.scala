@@ -309,6 +309,16 @@ class PythonInterface() {
     return this.goldPath.toList.asJava
   }
 
+  /*
+   * Get history
+   */
+  def getHistoryJSON():String = {
+    val os = new StringBuilder()
+    os.append("[\n")
+    os.append( "\t" + this.history.map(_.toJSON()).mkString(", \n\t") )
+    os.append("]")
+    return os.toString()
+  }
 
   /*
    * Take action steps and get observations/scores

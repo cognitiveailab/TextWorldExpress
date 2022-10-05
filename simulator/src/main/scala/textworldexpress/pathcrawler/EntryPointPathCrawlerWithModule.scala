@@ -1,5 +1,7 @@
 package textworldexpress.pathcrawler
 
+import java.io.PrintWriter
+
 import textworldexpress.generator.GameGenerator
 import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.{StepResult, TextGame}
@@ -7,6 +9,8 @@ import textworldexpress.symbolicmodule.{ModuleCalc, ModuleKnowledgeBaseTWC, Modu
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
+import collection.JavaConverters._
 
 
 class CrawlerRunnerWithModule(id:Int, crawler:EntryPointPathCrawlerWithModule, initialPath:Array[String], maxDepth:Int=5, onlyKeepPathsWithReward:Boolean = false) extends Thread {
@@ -484,6 +488,50 @@ object EntryPointPathCrawlerWithModule {
 
   }
 
+  /*
+   * Gold paths
+   */
+
+  def mkGoldJSONWithModule(variationIdxStart:Int, variationIdxEnd:Int, gameFold:String = "train", gameName:String, enabledModulesStr:String, gameProps:mutable.Map[String, Int] = mutable.Map[String, Int]()): Unit = {
+    val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+    val interface = new PythonInterface()
+
+    //val gameName = "arithmetic"
+    //val enabledModulesStr = ModuleCalc.MODULE_NAME
+    val paramStr = ""
+
+    val jsons = new ArrayBuffer[String]
+
+    // For each variation, generate its gold path
+    for (i <- variationIdxStart until variationIdxEnd) {
+      println ("VariationIdx: " + i)
+
+      interface.load(gameName = gameName, gameFold = gameFold, seed = i, paramStr = paramStr, generateGoldPath = true, enabledModulesStr = enabledModulesStr)
+      var stepResult = interface.generateNewGame(seed = i, gameFold = gameFold, generateGoldPath = true)
+
+      val game = interface.game
+      val goldPath = interface.getGoldActionSequence().asScala.toArray
+
+      for (stepStr <- goldPath) {
+        interface.step(stepStr)
+      }
+
+      val goldJSON = interface.getHistoryJSON()
+      val keyedGoldJSON = "\"" + i + "\": " + goldJSON
+      jsons.append(keyedGoldJSON)
+    }
+
+    // Write to file
+    val filenamePrefix = "/data-ssd1/twx-pathsout-sept16-2022/"
+    val filename = filenamePrefix + "goldpaths-" + gameName + "-" + gameFold + "-var" + variationIdxStart + "-to-" + variationIdxEnd + ".json"
+    println ("Writing: " + filename)
+    val pw = new PrintWriter(filename)
+    pw.println("{" + jsons.mkString(",\n ") + "}")
+    pw.close()
+
+  }
+
+
 
   def main(args:Array[String]): Unit = {
 
@@ -494,7 +542,29 @@ object EntryPointPathCrawlerWithModule {
 
     val startTime = System.currentTimeMillis()
 
-    crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+
+    // Gold paths
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
+
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "sorting", enabledModulesStr = ModuleSortByQuantity.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "sorting", enabledModulesStr = ModuleSortByQuantity.MODULE_NAME)
+
+    val gamePropsTWC = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
+    gamePropsTWC("includeDoors") = 0                   // Disable doors
+    gamePropsTWC("numLocations") = 1                   // Number of locations
+    gamePropsTWC("numItemsToPutAway") = 1              // Number of items to put away (TWC)
+    //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "twc", enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME, gameProps = gamePropsTWC)
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "twc", enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME, gameProps = gamePropsTWC)
+
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
+
+
+    // Path crawling
+
+    //crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 

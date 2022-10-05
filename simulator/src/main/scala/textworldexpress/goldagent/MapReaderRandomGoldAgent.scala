@@ -212,7 +212,7 @@ class MapReaderRandomGoldAgentWithModule(interface:PythonInterface) {
     // Ensure that we're running on the correct game type (MapReaderRandomGame)
     if (game == null) return false
     // Ensure that the appropriate modules have been enabled
-    if (!interface.enabledModuleStrs.contains(ModuleCalc.MODULE_NAME)) {
+    if (!interface.enabledModuleStrs.contains(ModuleNavigation.MODULE_NAME)) {
       println ("MapReaderRandomGoldAgentWithModule: ERROR: " + ModuleNavigation.MODULE_NAME + " is not enabled -- can not generate gold path.")
     }
 

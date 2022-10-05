@@ -48,7 +48,7 @@ class ModuleCalc(val properties:Map[String, Int]) extends SymbolicModule(ModuleC
       val result = arg1 * arg2
       return "The result of multiplying " + arg1 + " and " + arg2 + " is " + result
     } else if (opStr == "div") {
-      val result = arg1 / arg2
+      val result = arg2 / arg1
       return "The result of dividing " + arg2 + " by " + arg1 + " is " + result
     }
 

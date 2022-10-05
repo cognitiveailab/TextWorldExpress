@@ -564,7 +564,7 @@ object EntryPointPathCrawlerWithModule {
 
     // Path crawling
 
-    //crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 

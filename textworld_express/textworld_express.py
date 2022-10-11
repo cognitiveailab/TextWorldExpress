@@ -218,18 +218,6 @@ class TextWorldExpressEnv:
         self.parsedResponse['done'] = False
         self.parsedResponse['numMoves'] = 0
 
-        # Convert success/failure variables from strings to Booleans
-        # Success
-        if (self.parsedResponse['tasksuccess'] == "true"):
-            self.parsedResponse['tasksuccess'] = True
-        else:
-            self.parsedResponse['tasksuccess'] = False
-        # Failure
-        if (self.parsedResponse['taskfailure'] == "true"):
-            self.parsedResponse['taskfailure'] = True
-        else:
-            self.parsedResponse['taskfailure'] = False
-
         # Also add the task description to the observation (feature request)
         self.parsedResponse['taskDescription'] = self.getTaskDescription()
 

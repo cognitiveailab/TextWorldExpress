@@ -454,7 +454,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     var conditionsMet:Boolean = true
     for (ingredient <- this.taskObjects) {
       // Check in correct location (inventory)
-      if ((ingredient.currentContainer != null) && (ingredient.currentContainer.name != "inventory")) {
+      if ((ingredient.currentContainer == null) || (ingredient.currentContainer.name != "inventory")) {
         //println("Ingredient (" + ingredient.name + ") not in inventory")
         conditionsMet = false
       }
@@ -477,7 +477,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     // Remove ingredients
     for (ingredient <- this.taskObjects) {
       ingredient.removeFromCurrentContainer()
-      ingredient.isDeleted
+      ingredient.isDeleted = true
     }
 
     // Step 3: Create 'meal'

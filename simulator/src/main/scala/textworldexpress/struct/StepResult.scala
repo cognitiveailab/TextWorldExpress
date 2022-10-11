@@ -14,8 +14,8 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
     os.append("\"validActions\":[\"" + validActions.mkString("\",\"") + "\"],")
     os.append("\"scoreRaw\":" + scoreRaw + ",")
     os.append("\"score\":" + scoreNormalized + ",")
-    os.append("\"tasksuccess\":\"" + taskSuccess + "\",")
-    os.append("\"taskfailure\":\"" + taskFailure + "\"")
+    os.append("\"tasksuccess\": " + taskSuccess + ",")
+    os.append("\"taskfailure\": " + taskFailure)
     os.append("}")
 
     os.toString()
@@ -23,8 +23,8 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
 
 
   def sanitizeJSON(in:String):String = {
-    var out = in.replace("\"", "\\\"")
-    out = out.replace("\\", "\\\\")
+    var out = in.replace("\\", "\\\\")
+    out = out.replace("\"", "\\\"")
     out = out.replace("\n", "\\n")
     out = out.replace("\r", "\\r")
     out = out.replace("\t", "\\t")

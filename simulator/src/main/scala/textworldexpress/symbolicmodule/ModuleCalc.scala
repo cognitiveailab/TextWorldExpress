@@ -48,8 +48,22 @@ class ModuleCalc(val properties:Map[String, Int]) extends SymbolicModule(ModuleC
       val result = arg1 * arg2
       return "The result of multiplying " + arg1 + " and " + arg2 + " is " + result
     } else if (opStr == "div") {
-      val result = arg1 / arg2
-      return "The result of dividing " + arg2 + " by " + arg1 + " is " + result
+      val result = math.round(arg2.toFloat / arg1.toFloat).toInt
+      /*
+      val resultFloat = arg2.toFloat / arg1.toFloat
+      // Show zero decimal places if an integer, and 1 if a float.
+      var resultStr = ""
+      if (result.toFloat == resultFloat) {
+        // Integer
+        resultStr = result.toString
+      } else {
+        // Float result
+        resultStr = resultFloat.formatted("%3.1f")
+      }
+
+      return "The result of dividing " + arg2 + " by " + arg1 + " is " + resultStr
+       */
+      return "The result of dividing " + arg2 + " by " + arg1 + " is " + result     // Always round to int
     }
 
     // Default return

@@ -545,10 +545,10 @@ object EntryPointPathCrawlerWithModule {
 
     // Gold paths
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
-    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
 
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "sorting", enabledModulesStr = ModuleSortByQuantity.MODULE_NAME)
-    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "sorting", enabledModulesStr = ModuleSortByQuantity.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "sorting", enabledModulesStr = ModuleSortByQuantity.MODULE_NAME)
 
     val gamePropsTWC = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
     gamePropsTWC("includeDoors") = 0                   // Disable doors
@@ -556,10 +556,10 @@ object EntryPointPathCrawlerWithModule {
     gamePropsTWC("numItemsToPutAway") = 1              // Number of items to put away (TWC)
     //gameProps("numDistractorItems") = 0             // Number of distractor items (should be 0 for TWC?)
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "twc", enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME, gameProps = gamePropsTWC)
-    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "twc", enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME, gameProps = gamePropsTWC)
+    mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "twc", enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME, gameProps = gamePropsTWC)
 
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
-    mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "dev", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
+    mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
 
 
     // Path crawling

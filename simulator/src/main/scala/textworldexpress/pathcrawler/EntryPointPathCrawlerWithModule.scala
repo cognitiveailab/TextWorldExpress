@@ -399,7 +399,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-oct20-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -407,7 +407,7 @@ object EntryPointPathCrawlerWithModule {
 
     for (i <- 0 until numGamesToCrawl) {
       try {
-        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
+        this.crawlPath(gameName, gameProps.toMap, variationIdx = i + 10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-oct20-2022/savetest-withmodule-speedtest", onlyKeepPathsWithReward)
       } catch {
         case e:Throwable => { println ("ERROR: " + e.toString) }
       }
@@ -544,6 +544,7 @@ object EntryPointPathCrawlerWithModule {
 
 
     // Gold paths
+    /*
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
     mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "arithmetic", enabledModulesStr = ModuleCalc.MODULE_NAME)
 
@@ -560,7 +561,7 @@ object EntryPointPathCrawlerWithModule {
 
     mkGoldJSONWithModule(variationIdxStart = 0, variationIdxEnd = 100, gameFold = "train", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
     mkGoldJSONWithModule(variationIdxStart = 10000, variationIdxEnd = 10100, gameFold = "dev", gameName = "mapreader-random", enabledModulesStr = ModuleNavigation.MODULE_NAME)
-
+    */
 
     // Path crawling
 

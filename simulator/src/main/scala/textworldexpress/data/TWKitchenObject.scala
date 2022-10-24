@@ -16,7 +16,6 @@ case class TWKitchenObject(name:String, indefinite:String, properties:Set[String
     out.isMovable = true                    // Make the object movable
     if (indefinite.length > 0) out.indefinite = indefinite
 
-
     if (properties.contains("edible")) out.isEdible = true
     if (properties.contains("inedible")) out.isEdible = false
     if (properties.contains("cookable")) out.isCookable = true
@@ -25,14 +24,6 @@ case class TWKitchenObject(name:String, indefinite:String, properties:Set[String
     if (properties.contains("cuttable")) out.isCuttable = true
     if (properties.contains("raw")) out.isRaw = true
     if (properties.contains("uncut")) out.isCut = false
-
-    // TODO: Properties
-    // edible, inedible,
-    // cookable, needs_cooking,
-    // drinkable,
-    // cuttable, uncut
-    // raw
-
 
     return out
   }
@@ -133,7 +124,7 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
 
   // Load the JSON file, and convert to storage classes referenced by look-up-tables.
   def load(filenameIn:String):(Array[TWKitchenObject], Map[String, TWKitchenObject], Map[String, ArrayBuffer[TWKitchenObject]], Set[String], Set[String], Set[String], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]]) = {
-    // Step 1: Load the TextWorld Common Sense object file
+    // Step 1: Load the TextWorld Cooking World object file
     val jsonString = Source.fromFile(filenameIn).getLines.mkString
     val dataRaw = ujson.read(jsonString).value.asInstanceOf[mutable.LinkedHashMap[String, Any]]
 

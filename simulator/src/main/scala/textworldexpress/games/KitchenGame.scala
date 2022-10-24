@@ -103,7 +103,7 @@ class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjec
 
 }
 
-class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val cookbook:Cookbook, val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -135,7 +135,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
   def deepCopy():TextGame = {
     println ("TODO: Cloning not implemented -- creating shallow copy.")
 
-    return new KitchenGame(locations, recipe, taskObjects, this.limitInventorySize, seed=this.seed, this.generationProperties)
+    return new KitchenGame(locations, recipe, cookbook, taskObjects, this.limitInventorySize, seed=this.seed, this.generationProperties)
     /*
     val clonedTaskObjects = new ArrayBuffer[FastObject]
 
@@ -231,6 +231,10 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
    */
   def getTaskDescription():String = {
     return "You are hungry! Let's cook a delicious meal. Check the cookbook in the kitchen for the recipe. Once done, enjoy your meal!"
+  }
+
+  def getRecipeText():String = {
+    return cookbook.readText
   }
 
 
@@ -379,7 +383,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     if (obj.isReadable) {
       return this.actionRead(obj)
     }
-    
+
     return obj.getDescription()
   }
 
@@ -690,7 +694,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     this.history.append( new ActionHistory(actionStr, observationStr, curScores) )
 
     // Return
-    val result = new StepResult(observationStr=observationStr, freeLookStr=freeLookStr, inventoryStr=inventoryStr, validActions = validActionStrs.toArray, scoreRaw=curScores.scoreRaw, scoreNormalized=curScores.scoreNormalized, taskSuccess=curScores.taskSuccess, taskFailure=curScores.taskFailure, wasValidAction = wasValidAction)
+    val result = new StepResult(observationStr=cookbook.readText + "\n---\n" + observationStr, freeLookStr=freeLookStr, inventoryStr=inventoryStr, validActions = validActionStrs.toArray, scoreRaw=curScores.scoreRaw, scoreNormalized=curScores.scoreNormalized, taskSuccess=curScores.taskSuccess, taskFailure=curScores.taskFailure, wasValidAction = wasValidAction)
     return result
   }
 
@@ -703,7 +707,7 @@ class KitchenGameGenerator {
   val doorMaker = new DoorMaker()
 
 
-  def mkEnvironment(r:Random, numLocations:Int, numDistractorItems:Int, numIngredients:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[RecipeIngredient], ArrayBuffer[FastObject]) = {
+  def mkEnvironment(r:Random, numLocations:Int, numDistractorItems:Int, numIngredients:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[RecipeIngredient], Cookbook, ArrayBuffer[FastObject]) = {
     val locations = new ArrayBuffer[Room]()
 
     val kitchen = new Kitchen(r, addToaster=numLocations < 3)
@@ -781,10 +785,10 @@ class KitchenGameGenerator {
 
     //sys.exit(1)
 
-    return (locations, recipeIngredients, taskObjects)
+    return (locations, recipeIngredients, cookbook, taskObjects)
   }
 
-  def mkCookbook(recipeIngredients:ArrayBuffer[RecipeIngredient]):FastObject = {
+  def mkCookbook(recipeIngredients:ArrayBuffer[RecipeIngredient]):Cookbook = {
     val os = new StringBuilder
 
     os.append("Gather all following ingredients and follow the directions to prepare this tasty meal.\n\n")
@@ -1165,8 +1169,8 @@ class KitchenGameGenerator {
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, recipe, taskObjects) = mkEnvironment(r, numLocations, numDistractorItems, numIngredients, includeDoors, fold)
-    val game = new KitchenGame( locations.toArray, recipe, taskObjects, limitInventorySize, generationProperties = props.toMap )
+    val (locations, recipe, cookbook, taskObjects) = mkEnvironment(r, numLocations, numDistractorItems, numIngredients, includeDoors, fold)
+    val game = new KitchenGame( locations.toArray, recipe, cookbook, taskObjects, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }
@@ -1200,6 +1204,3 @@ class KitchenGameGenerator {
 
 
 }
-
-
-

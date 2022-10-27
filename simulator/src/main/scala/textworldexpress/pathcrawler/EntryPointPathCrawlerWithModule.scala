@@ -428,11 +428,11 @@ object EntryPointPathCrawlerWithModule {
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-oct27-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
     /*
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+100, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-oct27-2022/savetest-withmodule", onlyKeepPathsWithReward)
     }
      */
 
@@ -450,7 +450,7 @@ object EntryPointPathCrawlerWithModule {
     val maxDepth = 4
     val enabledModulesStr = ModuleKnowledgeBaseTWC.MODULE_NAME
 
-    this.crawlPath(gameName, gameProps.toMap, variationIdx = variationIdx, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
+    this.crawlPath(gameName, gameProps.toMap, variationIdx = variationIdx, gameFold, maxDepth, enabledModulesStr, filenameOutPrefix = "savetest-withmodule", onlyKeepPathsWithReward)
 
   }
 
@@ -565,11 +565,11 @@ object EntryPointPathCrawlerWithModule {
 
     // Path crawling
 
-    crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    //crawlArithmeticWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
-    //crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 

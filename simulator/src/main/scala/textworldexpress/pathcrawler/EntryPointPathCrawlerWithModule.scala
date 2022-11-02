@@ -341,7 +341,7 @@ object EntryPointPathCrawlerWithModule {
     }
 
     val onlyRewardPathsStr = if (onlyKeepPathsWithReward) { "-onlyrewardpaths" } else { "" }
-    val limitedCrawlStepsStr = if (stopCrawlingIfNoRewardAfterNSteps > 0) { "-crawlLimitNoReward" + limitedCrawlStepsStr } else { "" }
+    val limitedCrawlStepsStr = if (stopCrawlingIfNoRewardAfterNSteps > 0) { "-crawlLimitNoReward" + stopCrawlingIfNoRewardAfterNSteps } else { "" }
     val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + onlyRewardPathsStr + limitedCrawlStepsStr + ".json"
     println ("Saving..." )
     //## precrawled.saveToJSON(filenameOut, humanReadable)
@@ -587,7 +587,7 @@ object EntryPointPathCrawlerWithModule {
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
     //crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
-    crawlSortingWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
+    crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 

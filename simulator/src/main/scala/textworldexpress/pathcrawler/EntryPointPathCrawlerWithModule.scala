@@ -341,7 +341,8 @@ object EntryPointPathCrawlerWithModule {
     }
 
     val onlyRewardPathsStr = if (onlyKeepPathsWithReward) { "-onlyrewardpaths" } else { "" }
-    val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + onlyRewardPathsStr + ".json"
+    val limitedCrawlStepsStr = if (stopCrawlingIfNoRewardAfterNSteps > 0) { "-crawlLimitNoReward" + limitedCrawlStepsStr } else { "" }
+    val filenameOut = filenameOutPrefix + "-game" + gameName + "-var" + variationIdx + "-fold" + gameFold + "-maxDepth" + maxDepth + propsStr + onlyRewardPathsStr + limitedCrawlStepsStr + ".json"
     println ("Saving..." )
     //## precrawled.saveToJSON(filenameOut, humanReadable)
     precrawled.saveToJSONStreaming(filenameOut)
@@ -474,7 +475,7 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "sorting"
-    val maxDepth = 11
+    val maxDepth = 12
     val enabledModulesStr = ModuleSortByQuantity.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {

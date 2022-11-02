@@ -73,12 +73,12 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
    */
 
   // TODO: Return
-  def crawlGame(maxDepth:Int = 5, pathSoFar:Array[String] = Array.empty[String], onlyKeepPathsWithReward:Boolean = false): Option[PrecrawledPathNode] = {
-    val result = this.crawlGameHelper(pathSoFar, maxDepth, onlyKeepPathsWithReward)
+  def crawlGame(maxDepth:Int = 5, pathSoFar:Array[String] = Array.empty[String], onlyKeepPathsWithReward:Boolean = false, stopCrawlingIfNoRewardAfterNSteps:Int = -1): Option[PrecrawledPathNode] = {
+    val result = this.crawlGameHelper(pathSoFar, maxDepth, onlyKeepPathsWithReward, stopCrawlingIfNoRewardAfterNSteps, numStepsSinceReward = 0)
     return result
   }
 
-  private def crawlGameHelper(pathSoFar:Array[String], maxDepth:Int = 5, onlyKeepPathsWithReward:Boolean = false): Option[PrecrawledPathNode] = {
+  private def crawlGameHelper(pathSoFar:Array[String], maxDepth:Int = 5, onlyKeepPathsWithReward:Boolean = false, stopCrawlingIfNoRewardAfterNSteps:Int = -1, numStepsSinceReward:Int): Option[PrecrawledPathNode] = {
     // Stop case: Check that we haven't crawled too deep
     val curDepth = pathSoFar.length
     if (curDepth >= maxDepth) return None
@@ -103,7 +103,9 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
     // Step 1: Do actions so far
     // Subsequent steps
     //println("PathSoFar: " + pathSoFar.mkString(", "))
+    var lastStepResult:StepResult = stepResult
     for (actionStr <- pathSoFar) {
+      lastStepResult = stepResult
       stepResult = interface.step(actionStr)
     }
     val stepResultHashed = StepResultHashed.mkFromStepResult(stepResult)
@@ -136,7 +138,21 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
         }
 
         val actionsToTake = pathSoFar ++ Array(validActionStr)
-        val result = this.crawlGameHelper(actionsToTake, maxDepth, onlyKeepPathsWithReward)      // Recursive call.  TODO: return
+
+        // Check to see how many steps it's been since we have reward
+        var stepsSinceReward = numStepsSinceReward + 1    // Default case: assume no reward
+        val rewardThisStep:Double = stepResult.scoreNormalized - lastStepResult.scoreNormalized
+        // Check to see if we have reward this step -- if so, reset the counter
+        if (rewardThisStep > 0) {
+          stepsSinceReward = 0
+        }
+        // Check to see if we've reached the maximum number of iterations without reward -- if so, return
+        if ((stopCrawlingIfNoRewardAfterNSteps > 0) && (numStepsSinceReward > stopCrawlingIfNoRewardAfterNSteps)) {
+          return None
+        }
+
+        // Recurse
+        val result = this.crawlGameHelper(actionsToTake, maxDepth, onlyKeepPathsWithReward, stopCrawlingIfNoRewardAfterNSteps, stepsSinceReward)      // Recursive call.  TODO: return
         if (result.isDefined) {
 
           if (onlyKeepPathsWithReward) {
@@ -266,7 +282,7 @@ class EntryPointPathCrawlerWithModule(SF_GAME_NAME:String = "coin", gameProps:Ma
 
 object EntryPointPathCrawlerWithModule {
 
-  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String, onlyKeepPathsWithReward:Boolean=false) = {
+  def crawlPath(gameName:String, gameProps:Map[String, Int], variationIdx:Int, gameFold:String, maxDepth:Int, enabledModulesStr:String, filenameOutPrefix:String, onlyKeepPathsWithReward:Boolean=false, stopCrawlingIfNoRewardAfterNSteps:Int = -1) = {
     // Clear the string LUT
     StepResultHashed.resetLUT()
 
@@ -277,7 +293,7 @@ object EntryPointPathCrawlerWithModule {
     val startTime = System.currentTimeMillis()
 
     val (interface, goldPath) = crawler.getGame()
-    val precrawledGameTree = crawler.crawlGame(maxDepth, onlyKeepPathsWithReward = onlyKeepPathsWithReward)
+    val precrawledGameTree = crawler.crawlGame(maxDepth, onlyKeepPathsWithReward = onlyKeepPathsWithReward, stopCrawlingIfNoRewardAfterNSteps = stopCrawlingIfNoRewardAfterNSteps)
 
     val deltaTime = (System.currentTimeMillis() - startTime)
     println("Finished crawling... (time = " + deltaTime + " msec)")
@@ -458,15 +474,15 @@ object EntryPointPathCrawlerWithModule {
     val gameProps = mutable.Map[String, Int]()      // Game properties. Leave blank for default.
 
     val gameName = "sorting"
-    val maxDepth = 7
+    val maxDepth = 11
     val enabledModulesStr = ModuleSortByQuantity.MODULE_NAME
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i, gameFold = "train", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward, stopCrawlingIfNoRewardAfterNSteps = 2)
     }
 
     for (i <- 0 until numGamesToCrawl) {
-      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward)
+      this.crawlPath(gameName, gameProps.toMap, variationIdx = i+10000, gameFold = "dev", maxDepth, enabledModulesStr, filenameOutPrefix = "/data-ssd1/twx-pathsout-sept16-2022/savetest-withmodule", onlyKeepPathsWithReward, stopCrawlingIfNoRewardAfterNSteps = 2)
     }
 
   }
@@ -569,7 +585,8 @@ object EntryPointPathCrawlerWithModule {
 
     //crawlTWCWithModule(numGamesToCrawl = 2, onlyKeepPathsWithReward = true)
 
-    crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    //crawlSortingWithModule(numGamesToCrawl = 100, onlyKeepPathsWithReward = true)
+    crawlSortingWithModule(numGamesToCrawl = 1, onlyKeepPathsWithReward = true)
 
     //crawlMapReaderRandomWithModule(numGamesToCrawl = 25)
 

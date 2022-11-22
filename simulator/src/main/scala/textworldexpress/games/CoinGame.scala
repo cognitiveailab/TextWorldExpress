@@ -170,6 +170,13 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
   def getGenerationProperties():Map[String, Int] = return this.generationProperties
 
   /*
+   * Task Description
+   */
+  def getTaskDescription():String = {
+    return "Your task is to search the environment and find the coin.  Once you find the coin, take it."
+  }
+
+  /*
    *  Action helpers
    */
 

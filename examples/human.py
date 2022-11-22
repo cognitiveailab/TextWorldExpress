@@ -48,6 +48,10 @@ def userConsole(args):
     print("Selected Seed: " + str(gameSeed))
     print("Generation properties: " + str(env.getGenerationProperties()) )
 
+    # Task description
+    print("Task Description: " + env.getTaskDescription())
+    print("")
+
     # Initialize a random `gameName` game.
     obs, infos = env.reset(seed=gameSeed, gameFold=gameFold, generateGoldPath=generateGoldPath)
 

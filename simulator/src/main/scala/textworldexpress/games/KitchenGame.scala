@@ -14,6 +14,7 @@ import scala.util.control.Breaks._
 // 'recipe' and 'taskObjects' are parallel arrays representing the same objects
 class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject]) extends Scorer {
   var maxScoreFromPrep:Double = 0.0
+  var ingredientsFound:Array[Boolean] = Array.fill(taskObjects.length) { false }
 
   var preparedMeal:Option[FastObject] = None
   def doScoring(preparedMeal:Option[FastObject]): Unit = {
@@ -45,9 +46,10 @@ class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjec
           taskFailure = true
         }
 
-        // Step 3: Check that the task object is in the agent's inventory (success)
-        if ((taskObjects(i).currentContainer != null) && (taskObjects(i).currentContainer.name == "inventory")) {
+        // Step 3: Check that the task object has been in the agent's inventory at least once (success)
+        if (ingredientsFound(i) || ((taskObjects(i).currentContainer != null) && (taskObjects(i).currentContainer.name == "inventory"))) {
           curScore += 1.0
+          ingredientsFound(i) = true
         }
 
         // Step 4: Check that the task object was prepared correctly (success)
@@ -228,7 +230,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
    * Task Description
    */
   def getTaskDescription():String = {
-    return "Your task is to prepare a meal according to the recipe described in the cookbook."
+    return "You are hungry! Let's cook a delicious meal. Check the cookbook in the kitchen for the recipe. Once done, enjoy your meal!"
   }
 
 
@@ -374,6 +376,10 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
 
   def actionExamine(params:Array[FastObject]):String = this.actionExamine(params(0))
   def actionExamine(obj:FastObject):String = {
+    if (obj.isReadable) {
+      return this.actionRead(obj)
+    }
+    
     return obj.getDescription()
   }
 
@@ -448,7 +454,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     var conditionsMet:Boolean = true
     for (ingredient <- this.taskObjects) {
       // Check in correct location (inventory)
-      if ((ingredient.currentContainer != null) && (ingredient.currentContainer.name != "inventory")) {
+      if ((ingredient.currentContainer == null) || (ingredient.currentContainer.name != "inventory")) {
         //println("Ingredient (" + ingredient.name + ") not in inventory")
         conditionsMet = false
       }
@@ -471,7 +477,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     // Remove ingredients
     for (ingredient <- this.taskObjects) {
       ingredient.removeFromCurrentContainer()
-      ingredient.isDeleted
+      ingredient.isDeleted = true
     }
 
     // Step 3: Create 'meal'
@@ -599,6 +605,8 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
 
     // Inventory objects
     for (iObj <- this.agentInventory.contents) {
+      // Examine object
+      actionsOut.append( ("examine " + iObj.name, ACTION_EXAMINE, Array(iObj)) )
 
       // For each environment object
       for (eObj <- visibleObjects) {
@@ -631,10 +639,6 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     return actionsOut
   }
 
-
-  /*
-   * Step
-   */
 
   /*
    * Step

@@ -50,7 +50,7 @@ object BenchmarkOnline {
     val properties = Map[String, Int]()   // Use default properties
 
     println ("Starting Benchmark...")
-    val env = twx.load(gameName, gameFold, seed = 0, paramStr, generateGoldPath=generateGoldPath)
+    val env = twx.loadAndMake(gameName, gameFold, seed = 0, paramStr, generateGoldPath=generateGoldPath)
 
     var totalSteps:Long = 0
     val startTime = System.currentTimeMillis()

@@ -1,0 +1,6 @@
+py4j
+orjson
+prompt_toolkit
+build
+twine
+pytest

@@ -23,7 +23,7 @@ class PythonInterface() {
   /*
    * Load/reset/shutdown server
    */
-  def load(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):StepResult = {
+  def load(gameName:String, paramStr:String):String = {
     // Clear variables
     this.game = null
     this.goldPath = Array.empty[String]
@@ -33,7 +33,7 @@ class PythonInterface() {
 
     // Step 1: Parse any properties passed in through the string
     val (_props, propErrorStr) = PythonInterface.parseParamStr(paramStr)
-    if (propErrorStr.length > 0) return StepResult.mkErrorMessage(errorStr)
+    if (propErrorStr.length > 0) return errorStr
     this.properties = _props
 
     // Step 2: Create the Game Generator
@@ -42,9 +42,17 @@ class PythonInterface() {
       println ("ERROR creating Game Generator: ")
       println (gameGenerator.errorStr)
       errorStr = gameGenerator.errorStr
-      return StepResult.mkErrorMessage(errorStr)
+      return errorStr
     }
     this.gameGenerator = gameGenerator
+    return ""
+  }
+
+  def loadAndMake(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):StepResult = {
+    // Step 1: Parse any properties passed in through the string
+    // Step 2: Create the Game Generator
+    val errMsg = this.load(gameName, paramStr)
+    if (errMsg != "") return StepResult.mkErrorMessage(errMsg)
 
     // Step 3: Generate new game
     return this.generateNewGame(seed, gameFold, generateGoldPath)
@@ -52,7 +60,7 @@ class PythonInterface() {
 
   // Mirror with JSON output
   def loadJSON(gameName:String, gameFold:String, seed:Int, paramStr:String, generateGoldPath:Boolean):String = {
-    val stepResult = this.load(gameName, gameFold, seed, paramStr, generateGoldPath)
+    val stepResult = this.loadAndMake(gameName, gameFold, seed, paramStr, generateGoldPath)
     stepResult.toJSON()
   }
 

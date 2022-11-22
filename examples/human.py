@@ -42,17 +42,17 @@ def userConsole(args):
     gameSeed = args['seed']
     gameParams = args['game_params']  # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = True
-    env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
+    env.load(gameName, gameParams)
 
     print("Selected Game: " + str(gameName))
     print("Selected Seed: " + str(gameSeed))
     print("Generation properties: " + str(env.getGenerationProperties()) )
 
+    # Initialize a random `gameName` game.
+    obs, infos = env.reset(seed=gameSeed, gameFold=gameFold, generateGoldPath=generateGoldPath)
+
     if (generateGoldPath == True):
         print("Gold path: " + str(env.getGoldActionSequence()))
-
-    # Initialize a random task variation in this set
-    obs = env.resetWithSeed(gameSeed, gameFold, generateGoldPath)
 
     # Take action
     curIter = 0
@@ -62,18 +62,18 @@ def userConsole(args):
     while (userInputStr not in exitCommands):
 
         # Select a random action
-        validActions = obs['validActions']
+        validActions = infos['validActions']
 
         # Verbose output mode
         print("")
         print("Step " + str(curIter))
-        print(str(obs['observation']))
-        print("Score: " + str(obs['scoreRaw']) + " (raw)    " + str(obs['score']) + " (normalized)")
+        print(str(obs))
+        print("Score: " + str(infos['scoreRaw']) + " (raw)    " + str(infos['score']) + " (normalized)")
         #print("Valid Actions: " + str(validActions))
 
-        if (obs['tasksuccess'] == True):
+        if (infos['tasksuccess'] == True):
             print("Task Success!")
-        if (obs['taskfailure'] == True):
+        if (infos['taskfailure'] == True):
             print("Task Failure!")
 
         # Get user input
@@ -89,18 +89,11 @@ def userConsole(args):
         userInputStr = userInputStr.lower().strip()
 
         # Take action
-        obs = env.step(userInputStr)
+        obs, reward, done, infos = env.step(userInputStr)
 
         curIter += 1
 
     print("Completed.")
-
-    #print("Run History:")
-    #print(env.getRunHistory())
-
-    print("Shutting down server...")
-    env.shutdown()
-
 
 
 #

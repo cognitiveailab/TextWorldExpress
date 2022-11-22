@@ -3,6 +3,8 @@ gen_games/
 roms/
 dist/
 *.egg-info
+__pycache__/
+build/
 precrawledpaths/
 simulator/target/
 simulator/project

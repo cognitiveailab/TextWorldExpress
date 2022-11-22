@@ -107,13 +107,10 @@ def app():
     gameFold = "train"
     gameParams = ""
     generateGoldPath = False
-    env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
+    env.load(gameName, gameParams)
 
     # Initialize the game with a seed.
-    if gameSeed:
-        obs = env.resetWithSeed(gameSeed, gameFold, generateGoldPath)
-    else:
-        obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
+    obs, infos = env.reset(seed=gameSeed, gameFold=gameFold, generateGoldPath=generateGoldPath)
 
     pywebio_out.put_table([
         ["Benchmark", gameName],
@@ -135,12 +132,12 @@ def app():
         htmlLog.addSubheading("Move " + str(consoleMoveCount))
 
         # Send user input, get response
-        obs = env.step(userInputStr)
-        observation = obs['observation']
-        score = obs['score']
-        reward = obs['reward']
-        isCompleted = obs['tasksuccess'] or obs['taskfailure']
-        validActions = sorted(obs['validActions'])
+        obs, reward, done, infos = env.step(userInputStr)
+        observation = infos['observation']
+        score = infos['score']
+        reward = infos['reward']
+        isCompleted = infos['tasksuccess'] or infos['taskfailure']
+        validActions = sorted(infos['validActions'])
 
         # Output (server)
         pywebio_out.put_text(observation)

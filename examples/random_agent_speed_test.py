@@ -30,7 +30,7 @@ def randomModel(args):
     gameSeed = 0
     gameParams = ""     # e.g. "numLocations=5, includeDoors=1"
     generateGoldPath = args['gold_paths']
-    env.load(gameName, gameFold, gameSeed, gameParams, generateGoldPath)
+    env.load(gameName=gameName, gameParams=gameParams)
 
 
     time.sleep(2)
@@ -49,7 +49,7 @@ def randomModel(args):
                 print("Gold path: " + str(env.getGoldActionSequence()))
 
         # Initialize a random task variation in this set
-        obs = env.resetWithRandomSeed(gameFold, generateGoldPath)
+        obs, infos = env.reset(gameFold=gameFold, generateGoldPath=generateGoldPath)
 
         # Take action
         curIter = 0
@@ -57,8 +57,8 @@ def randomModel(args):
         for stepIdx in range(0, args['max_steps']):
 
             # Select a random action
-            validActions = obs['validActions']
-            randomAction = random.choice( validActions )
+            validActions = infos['validActions']
+            randomAction = random.choice(validActions)
 
             # Verbose output mode
             if (args['verbose'] == True):
@@ -67,7 +67,7 @@ def randomModel(args):
                 print("Next random action: " + str(randomAction))
 
             # Take action
-            obs = env.step(randomAction)
+            obs, _, _, infos = env.step(randomAction)
 
             curIter += 1
 
@@ -81,13 +81,7 @@ def randomModel(args):
             print("History:")
             print(env.getRunHistory())
 
-        #time.sleep(1)
-
     print("Completed.")
-
-    print("Shutting down server...")
-    env.shutdown()
-
 
 
 

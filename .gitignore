@@ -1,4 +1,6 @@
 .idea/**
+gen_games/
+roms/
 dist/
 *.egg-info
 __pycache__/
@@ -10,4 +12,5 @@ simulator/project/build.properties
 simulator/project/project/
 simulator/project/target/
 simulator/target/
+simulator/project
 precrawledpaths/

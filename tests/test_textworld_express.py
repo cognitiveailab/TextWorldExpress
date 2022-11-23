@@ -75,3 +75,22 @@ def test_generate_goldpath():
         print(game_name)
         _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name], generateGoldPath=True)
         print(env.getGoldActionSequence())
+
+def test_object_tree():
+    env = TextWorldExpressEnv()
+    obs, infos = env.reset(gameName="cookingworld", seed=20221120, gameFold="train")
+
+    obj_tree = env.getObjectTree()
+
+    def _extract_contents(root):
+        objs = list(root["contents"])
+        for node in root["contents"]:
+            objs += _extract_contents(node)
+
+        return objs
+
+    # collect all objects in the game
+    objs = _extract_contents(obj_tree["inventory"])
+    for loc in obj_tree["locations"]:
+        objs += _extract_contents(loc)
+

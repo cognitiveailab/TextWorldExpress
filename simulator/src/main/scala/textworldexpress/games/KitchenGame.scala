@@ -266,6 +266,36 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
    */
   def getScore():GameScore = this.scorer.getCurrentScore()
 
+  override def getObjectTree():String = {
+
+    val os = new StringBuilder()
+    os.append("{")
+    os.append("\"player_location\":\"" + this.agentLocation.name + "\",")
+    os.append("\"inventory\": " + this.agentInventory.toJSON() + ",")
+
+    val locations_json = new ArrayBuffer[String]()
+    for (loc <- this.locations) {
+      locations_json.append(loc.toJSON())
+    }
+
+    os.append("\"locations\": " + locations_json.mkString("[", ",", "],"))
+
+    val recipeJSON = new ArrayBuffer[String]()
+    for (ingredient <- this.recipe) {
+      recipeJSON.append("{\"name\": \"" + ingredient.name + "\", \"preparation\": \"" + ingredient.preparation.mkString(", ") + "\"}")
+    }
+    os.append("\"recipe\": " + recipeJSON.mkString("[", ",", "],"))
+
+    val deletedObjectsJSON = new ArrayBuffer[String]()
+    for (obj <- this.deletedObjects) {
+      deletedObjectsJSON.append(obj.toJSON())
+    }
+    os.append("\"deleted_objects\": " + deletedObjectsJSON.mkString("[", ",", "]"))
+
+    os.append("}")
+    return os.toString()
+  }
+
   /*
    * Actions
    */
@@ -778,18 +808,6 @@ class KitchenGameGenerator {
         }
       }
     }
-
-
-    /*
-    for (i <- 0 until locations.length) {
-      println(i + ": " + locations(i).name)
-      println(locations(i).getDescription())
-
-      println("")
-    }
-     */
-
-    //sys.exit(1)
 
     return (locations, recipeIngredients, taskObjects)
   }

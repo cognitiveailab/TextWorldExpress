@@ -1030,6 +1030,3 @@ class TWCGameGenerator {
   }
 
 }
-
-
-

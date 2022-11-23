@@ -1,9 +1,10 @@
 package textworldexpress.objects
 
+import textworldexpress.JSON
+
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
-
 
 /*
  * Base object
@@ -229,8 +230,6 @@ class FastObject(val name:String) {
     return false
   }
 
-
-
   def getFoodAdjectives():String = {
     val os = new mutable.StringBuilder()
 
@@ -267,6 +266,47 @@ class FastObject(val name:String) {
 
   def getDescription():String = {
     return this.indefinite + " " + this.getFoodAdjectives() + this.name
+  }
+
+  def toJSON():String = {
+    val os = new StringBuilder()
+    os.append("{")
+    os.append("\"name\":\"" + this.name + "\",")
+    os.append("\"isContainer\":" + this.isContainer + ",")
+    os.append("\"isOpen\":" + this.isOpen + ",")
+    os.append("\"isOpenable\":" + this.isOpenable + ",")
+    os.append("\"isLocation\":" + this.isLocation + ",")
+    os.append("\"isCookingDevice\":" + this.isCookingDevice + ",")
+    os.append("\"isMovable\":" + this.isMovable + ",")
+    os.append("\"isEdible\":" + this.isEdible + ",")
+    os.append("\"isDrinkable\":" + this.isDrinkable + ",")
+    os.append("\"isCuttable\":" + this.isCuttable + ",")
+    os.append("\"isCut\":" + this.isCut + ",")
+    os.append("\"isChopped\":" + this.isChopped + ",")
+    os.append("\"isSliced\":" + this.isSliced + ",")
+    os.append("\"isDiced\":" + this.isDiced + ",")
+    os.append("\"isCookable\":" + this.isCookable + ",")
+    os.append("\"needsCooking\":" + this.needsCooking + ",")
+    os.append("\"isRaw\":" + this.isRaw + ",")
+    os.append("\"isFried\":" + this.isFried + ",")
+    os.append("\"isRoasted\":" + this.isRoasted + ",")
+    os.append("\"isGrilled\":" + this.isGrilled + ",")
+    os.append("\"isReadable\":" + this.isReadable + ",")
+    os.append("\"readText\":\"" + JSON.sanitize(this.readText) + "\",")
+    os.append("\"isDeleted\":" + this.isDeleted + ",")
+    os.append("\"isEaten\":" + this.isEaten + ",")
+
+    // Contents
+    val contents_json = new ArrayBuffer[String]()
+    for (obj <- this.contents) {
+      // contents_json.append(obj.toJSON())
+      contents_json.append("\"" + obj.name + "\": " + obj.toJSON())
+    }
+
+    // os.append("\"contents\": " + contents_json.mkString("[", ",", "]"))
+    os.append("\"contents\": " + contents_json.mkString("{", ",", "}"))
+    os.append("}")
+    return os.toString()
   }
 }
 
@@ -367,6 +407,54 @@ class Room(name:String) extends FastObject(name) {
     os.append( this.mkDirectionDescription(locationEast, doorEast, "East") )
     os.append( this.mkDirectionDescription(locationWest, doorWest, "West") )
 
+    return os.toString()
+  }
+
+  override def toJSON():String = {
+    val os = new StringBuilder(super.toJSON())
+    os.update(os.length()-1, ',')  // replace '}' with ','
+
+    if (this.locationNorth != null)
+      os.append("\"locationNorth\": \"" + this.locationNorth.name + "\",")
+    else
+      os.append("\"locationNorth\": null,")
+
+    if (this.locationSouth != null)
+      os.append("\"locationSouth\": \"" + this.locationSouth.name + "\",")
+    else
+      os.append("\"locationSouth\": null,")
+
+    if (this.locationEast != null)
+      os.append("\"locationEast\": \"" + this.locationEast.name + "\",")
+    else
+      os.append("\"locationEast\": null,")
+
+    if (this.locationWest != null)
+      os.append("\"locationWest\": \"" + this.locationWest.name + "\",")
+    else
+      os.append("\"locationWest\": null,")
+
+    if (this.doorNorth != null)
+      os.append("\"doorNorth\":" + this.doorNorth.toJSON() + ",")
+    else
+      os.append("\"doorNorth\": null,")
+
+    if (this.doorSouth != null)
+      os.append("\"doorSouth\":" + this.doorSouth.toJSON() + ",")
+    else
+      os.append("\"doorSouth\": null,")
+
+    if (this.doorEast != null)
+      os.append("\"doorEast\":" + this.doorEast.toJSON() + ",")
+    else
+      os.append("\"doorEast\": null,")
+
+    if (this.doorWest != null)
+      os.append("\"doorWest\":" + this.doorWest.toJSON())
+    else
+      os.append("\"doorWest\": null")
+
+    os.append("}")
     return os.toString()
   }
 

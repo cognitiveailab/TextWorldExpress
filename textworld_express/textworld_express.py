@@ -166,6 +166,9 @@ class TextWorldExpressEnv:
     def getTaskDescription(self):
         return self.server.getTaskDescription()
 
+    def getObjectTree(self):
+        return orjson.loads(self.server.getObjectTree())
+
     #
     # Train/development/test sets
     #

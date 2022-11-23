@@ -899,6 +899,3 @@ class CoinGameGenerator {
 
 
 }
-
-
-

@@ -160,6 +160,12 @@ class PythonInterface() {
     return this.game.getTaskDescription()
   }
 
+  def getObjectTree():String = {
+    if (this.game == null) return "Object tree unavailable -- game is not initialized."
+
+    return this.game.getObjectTree()
+  }
+
   /*
    * Train/development/test sets
    */
@@ -239,9 +245,6 @@ class PythonInterface() {
     val stepResult = this.step(userInputString)
     stepResult.toJSON()
   }
-
-
-
 
 }
 

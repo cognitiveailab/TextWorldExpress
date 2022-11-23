@@ -1,5 +1,7 @@
 package textworldexpress.struct
 
+import textworldexpress.JSON
+
 /*
  * Storage class for the result of an environment step
  */
@@ -8,9 +10,9 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
   def toJSON():String = {
     val os = new StringBuilder()
     os.append("{")
-    os.append("\"observation\":\"" + sanitizeJSON(observationStr) + "\",")
-    os.append("\"look\":\"" + sanitizeJSON(freeLookStr) + "\",")
-    os.append("\"inventory\":\"" + sanitizeJSON(inventoryStr) + "\",")
+    os.append("\"observation\":\"" + JSON.sanitize(observationStr) + "\",")
+    os.append("\"look\":\"" + JSON.sanitize(freeLookStr) + "\",")
+    os.append("\"inventory\":\"" + JSON.sanitize(inventoryStr) + "\",")
     os.append("\"validActions\":[\"" + validActions.mkString("\",\"") + "\"],")
     os.append("\"scoreRaw\":" + scoreRaw + ",")
     os.append("\"score\":" + scoreNormalized + ",")
@@ -20,18 +22,6 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
 
     os.toString()
   }
-
-
-  def sanitizeJSON(in:String):String = {
-    var out = in.replace("\\", "\\\\")
-    out = out.replace("\"", "\\\"")
-    out = out.replace("\n", "\\n")
-    out = out.replace("\r", "\\r")
-    out = out.replace("\t", "\\t")
-
-    return out
-  }
-
 
 }
 

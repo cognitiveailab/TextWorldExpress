@@ -1,6 +1,7 @@
 from py4j.java_gateway import launch_gateway
 from py4j.java_gateway import JavaGateway, GatewayParameters, CallbackServerParameters
 
+import sys
 import os
 import orjson  # faster json serialization
 
@@ -142,6 +143,10 @@ class TextWorldExpressEnv:
     # Get the current game's task description
     def getTaskDescription(self):
         return self.server.getTaskDescription()
+
+    # Get the current game's task description
+    def getObjectTree(self):
+        return orjson.loads(self.server.getObjectTree())
 
     #
     # Train/development/test sets

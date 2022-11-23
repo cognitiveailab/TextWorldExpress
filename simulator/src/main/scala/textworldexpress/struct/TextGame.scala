@@ -1,11 +1,10 @@
 package textworldexpress.struct
 
-import textworldexpress.objects.FastObject
+import textworldexpress.objects.{FastObject, Room}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class TextGame {
-
 
   /*
    * Cloning
@@ -19,6 +18,10 @@ abstract class TextGame {
   def getGenerationProperties():Map[String, Int]
 
   def getTaskDescription():String
+
+  def getObjectTree():String = {
+    return "{}"
+  }
 
   /*
    * History
@@ -43,5 +46,3 @@ abstract class TextGame {
   def step(actionStr: String, actionNumber: Int, actionParams: Array[FastObject]):StepResult
 
 }
-
-

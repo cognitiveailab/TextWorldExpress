@@ -977,6 +977,3 @@ class ArithmeticGameGenerator {
 
 
 }
-
-
-

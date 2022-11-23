@@ -1127,6 +1127,3 @@ class MapReaderGameGenerator {
 
 
 }
-
-
-

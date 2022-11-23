@@ -98,8 +98,8 @@ class TextWorldExpressEnv:
     #
     def reset(self, seed=None, gameFold=None, gameName=None, gameParams=None, generateGoldPath=False):
         self.gameName = gameName or self.gameName
-        self.gameParams = gameParams or self.gameParams
-        if gameName or gameParams:
+        self.gameParams = gameParams if gameParams is not None else self.gameParams
+        if gameName is not None or gameParams is not None:
             self.load(self.gameName, self.gameParams)
 
         self.gameFold = gameFold or self.gameFold

@@ -1,13 +1,19 @@
 from textworld_express import TextWorldExpressEnv
 
 
+GAME_PARAMS = {
+    "cookingworld": "numLocations=1, numIngredients=2, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+    "twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
+    "coin": "numLocations=1, numDistractorItems=5, limitInventorySize=0",
+    "arithmetic": "",
+    "mapreader": "numLocations=2, maxDistanceApart=1, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+}
+
+
 def test_observation_is_deterministic():
     env = TextWorldExpressEnv()
     for game_name in env.getGameNames():
-        if game_name in ("arithmetic",): continue  # TODO: check why those games are not reproducible.
-
-        #env.load(game_name, gameFold="train", seed=20221120, paramStr="")
-        obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name)#, paramStr="")
+        obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name])
 
         for i in range(30):
             obs, _ = env.reset()#seed=20221120, gameFold="train")

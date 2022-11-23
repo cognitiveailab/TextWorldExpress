@@ -379,7 +379,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     if (obj.isReadable) {
       return this.actionRead(obj)
     }
-    
+
     return obj.getDescription()
   }
 
@@ -444,8 +444,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     }
   }
 
-  def actionPrepareMeal(params:Array[FastObject]):String = this.actionPrepareMeal()
-  def actionPrepareMeal():String = {
+  def canPrepareMeal():String = {
     if (agentLocation.name != "kitchen") {
       return "Can only prepare meal in the -= kitchen =-."
     }
@@ -455,7 +454,6 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     for (ingredient <- this.taskObjects) {
       // Check in correct location (inventory)
       if ((ingredient.currentContainer == null) || (ingredient.currentContainer.name != "inventory")) {
-        //println("Ingredient (" + ingredient.name + ") not in inventory")
         conditionsMet = false
       }
 
@@ -464,13 +462,22 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
       for (r <- this.recipe) if (r.name == ingredient.name) recipeItem = r      // Note, not even adding the break since the number of cycles here is very low (1-5)
 
       if (!ingredient.isPreparedCorrectly(recipeItem.preparation)) {
-        //println("Ingredient (" + ingredient.name + ") not prepared correctly.")
         conditionsMet = false
       }
     }
 
     if (!conditionsMet) {
       return "You are unable to prepare the meal right now."
+    }
+
+    return ""
+  }
+
+  def actionPrepareMeal(params:Array[FastObject]):String = this.actionPrepareMeal()
+  def actionPrepareMeal():String = {
+    var errMsg = this.canPrepareMeal()
+    if (errMsg != "") {
+      return errMsg
     }
 
     // Step 2: Consume ingredients, create 'meal'
@@ -549,7 +556,10 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     // Generic action
     actionsOut.append( ("look around", ACTION_LOOKAROUND, Array.empty[FastObject]) )
     actionsOut.append( ("inventory", ACTION_INVENTORY, Array.empty[FastObject]) )
-    actionsOut.append( ("prepare meal", ACTION_PREPAREMEAL, Array.empty[FastObject]) )
+
+    if (this.canPrepareMeal() == "") {
+      actionsOut.append( ("prepare meal", ACTION_PREPAREMEAL, Array.empty[FastObject]) )
+    }
 
     // Move actions, based on current location
     if (this.agentLocation.locationNorth != null) actionsOut.append( ("move north", ACTION_MOVE, Array(this.agentLocation.doorNorth, this.agentLocation.locationNorth)) )
@@ -1200,6 +1210,3 @@ class KitchenGameGenerator {
 
 
 }
-
-
-

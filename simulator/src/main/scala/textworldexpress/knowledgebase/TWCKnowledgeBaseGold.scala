@@ -12,7 +12,8 @@ import scala.util.control.Breaks._
 /*
  * A gold object -> location knowledge graph for the TWC data
  */
-class TWCKnowledgeBaseGold(database:LoadTWCDataJSON = new LoadTWCDataJSON()) extends KnowledgeBase {
+class TWCKnowledgeBaseGold() extends KnowledgeBase {
+  val database = LoadTWCDataJSON
   val rows = this.mkObjectLocationTable()
   val numColumns = rows(0).length
 

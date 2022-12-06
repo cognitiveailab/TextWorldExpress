@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
+import textworldexpress.data.{LoadTWCDataJSON}
 import textworldexpress.goldagent.TWCGoldAgent
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Pantry, Room, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -563,7 +563,6 @@ class TWCGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject]
 
 class TWCGameGenerator {
   val TWCObjectDatabase = new LoadTWCDataJSON()
-  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -712,8 +711,7 @@ class TWCGameGenerator {
 
         //println("location: " + location.name)
 
-        val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
+        val item = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         if (item.isDefined) {
           //println ("Item: " + item.get.name)
 
@@ -1030,6 +1028,3 @@ class TWCGameGenerator {
   }
 
 }
-
-
-

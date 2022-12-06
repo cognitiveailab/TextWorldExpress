@@ -1,6 +1,7 @@
 package textworldexpress.goldagent
 
 import textworldexpress.games.TWCGame
+import textworldexpress.runtime.PythonInterface
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -115,4 +116,3 @@ class TWCGoldAgent(game:TWCGame) {
   }
 
 }
-

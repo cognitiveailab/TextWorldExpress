@@ -104,11 +104,14 @@ def userConsole(args):
 #   Parse command line arguments
 #
 def parse_args():
+    env = TextWorldExpressEnv()
+    game_names = env.getGameNames()
+
     desc = "Run a model that chooses random actions until successfully reaching the goal."
     parser = argparse.ArgumentParser(desc)
     parser.add_argument("--jar_path", type=str,
                         help="Path to the TextWorldExpress jar file. Default: use builtin.")
-    parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader'], default='cookingworld',
+    parser.add_argument("--game-name", type=str, choices=game_names, default=game_names[0],
                         help="Specify the game to play. Default: %(default)s")
     parser.add_argument("--game-params", type=str, default='',
                         help="Change game generation properties, e.g. 'numLocations=5, includeDoors=1'.")

@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
+import textworldexpress.data.{LoadTWCDataJSON}
 import textworldexpress.goldagent.{CoinGoldAgent, MapReaderGoldAgent}
 import textworldexpress.objects.{Alley, Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Foyer, Garage, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Sideyard, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -86,7 +86,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   // Internal game random number generator -- primarily for randomizing valid action list.
   val random = new Random(seed)
 
-  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the starting location."
+  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the " + startLocation.name + ". A map is provided, that you may find helpful."
 
 
   /*
@@ -94,27 +94,9 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
    */
 
   // TODO: Still not working (needs location map cloning)
-  def deepCopy():CoinGame = {
-    val clonedTaskObjects = new ArrayBuffer[FastObject]
-
-    // Step 1: Clone locations
-    val locationsClone = new Array[Room](locations.length)
-    for (i <- 0 until locations.length) {
-      locationsClone(i) = locations(i).deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
-    }
-
-    // Step 2: Connect rooms
-    this.connectClonedMap(locationsClone)
-
-    // Step 3: Create new game
-    val game = new CoinGame(locationsClone, clonedTaskObjects, this.limitInventorySize, seed = this.seed, this.generationProperties)
-
-    // Also clone the agent inventory
-    game.agentInventory = this.agentInventory.deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
-
-
+  def deepCopy():MapReaderGame = {
     // Return
-    game
+    new MapReaderGame(locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, seed, generationProperties)
   }
 
   // Connect a cloned array of locations in the same way as this map
@@ -517,10 +499,6 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
    * Step
    */
 
-  /*
-   * Step
-   */
-
   def initalStep():StepResult = {
     return this.step("look around", ACTION_LOOKAROUND, Array.empty[FastObject])
   }
@@ -576,8 +554,6 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
 
 
 class MapReaderGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -818,7 +794,7 @@ class MapReaderGameGenerator {
 
         //println("location: " + location.name)
 
-        val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
+        val item = LoadTWCDataJSON.mkRandomObjectByLocation(r, container.name, fold)
         //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (item.isDefined) {
           //println ("Item: " + item.get.name)

@@ -58,11 +58,19 @@ Text game agents frequently learn the dynamics of environment -- such as the nee
 Agents frequently find tasks such as object search, environment navigation, or pick-and-place tasks challenging. The [Coin Collector](https://github.com/xingdi-eric-yuan/TextWorld-Coin-Collector) distills these into a single benchmark where an agent must explore a series of rooms to locate and pick up a single coin. In the original implementation, the game map typically takes the form of a connected loop or chain, such that continually moving to new locations means the agent will eventually discover the coin -- while including medium and hard modes that add in one or more "dead-end" paths.  To control for environment difficulty across games, the TextWorldExpress reimplementation uses the same map generator across environments, and generates arbitrary home environments rather than connected loops. The user maintains control of other measures of difficulty, including the total number of rooms, and the number of distractor objects placed in the environment.
 
 ### Arithmetic ("arithmetic")
-The Arithmetic environment requires agents to first solve a math problem, then to pick up the item with the same quantity as the math problem answer, and place it in the box. At the moment, task complexity cannot be controlled yet.
+The Arithmetic environment requires agents to first solve a math problem, then to pick up the item with the same quantity as the math problem answer, and place it in the box. At the moment, the task complexity cannot be controlled.
+
+### Sorting ("sorting")
+The Sorting environment requires agents to sort objects by quantity. They have to place the object with the smallest quantity in the box first, then place the next one, and so on until all objects have been placed in the box. At the moment, the task complexity cannot be controlled.
 
 ### Map Reader ("mapreader")
-The Map Reader environment requires agents to retrieve a coin from a particular location, and put it into the box found in the starting location. Task complexity can be controlled by varying the number of locations in the environment, the distance from the starting location and where the coin is located, and the number of distractor objects randomly placed in the environment that are not required for the task.
+The Map Reader environment requires agents to retrieve a coin from a particular location, and put it into the box found in the starting location. A map is provided, that can be helpful. Task complexity can be controlled by varying the number of locations in the environment, the distance from the starting location and where the coin is located, and the number of distractor objects randomly placed in the environment that are not required for the task.
 
+### Simon Says ("simonsays")
+The Simon Says environment is rather simple and it is mainly used as a sanity check for learning agents. The task is to repeat exactly the action requested of you. Task complexity can be controlled by varying the game length, the number of distractor actions, and whether the agent has to memorize the action sequence at the first step.
+
+### Pecking Order ("peckingorder")
+The Pecking Order environment is rather simple and it is mainly used as a sanity check for learning agents. The task is to read and follow the instructions presented in the environment until game completion. At the moment, the task complexity cannot be controlled.
 
 # Usage
 
@@ -125,21 +133,34 @@ Environments initialize with default parameters.  To change the parameters, supp
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
 | numLocations        | The number of locations in the environment  | 1-11 |
-| numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
+| numDistractorItems  | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
 
 **Arithmetic:**
 This environment has no tweakable parameters yet.
 
+**Sorting:**
+This environment has no tweakable parameters yet.
+
 **Map Reader:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
 | numLocations        | The number of locations in the environment  | 1-11 |
-| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-4 |
-| numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
+| maxDistanceApart    | The number of locations to go through before finding the coin    | 1-4 |
+| numDistractorItems  | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+
+**Simon Says:**
+| Parameter      | Description | Valid range |
+| ----------- | ----------- |  ----------- |
+| gameLength      | The number of actions to repeat in order  | 1-10 |
+| numDistractors  | The number of irrelevant actions    | 0-10 |
+| memorization    | Whether the entire sequence of actions is shown at the first step (and only then)     | 0 or 1 |
+
+**Pecking Order:**
+This environment has no tweakable parameters yet.
 
 **Querying current game parameters:** Sometimes you may want to know what parameters the current game is generated with.  These can be queried using the `getGenerationProperties()` method:
 ```python

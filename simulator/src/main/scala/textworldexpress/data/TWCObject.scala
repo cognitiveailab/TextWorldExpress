@@ -27,10 +27,15 @@ case class TWCObject(name:String, locations:Array[String]) {
 // Loader
 class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
 
-  val (allObjsTrain, lutObjTrain, lutLocationTrain) = this.load(filename, "train")
-  val (allObjsDev, lutObjDev, lutLocationDev) = this.load(filename, "valid")
-  val (allObjsTest, lutObjTest, lutLocationTest) = this.load(filename, "test")
+}
 
+
+object LoadTWCDataJSON {
+  val DEFAULT_FILENAME = "twc_objects.folds.json"
+
+  val (allObjsTrain, lutObjTrain, lutLocationTrain) = this.load(DEFAULT_FILENAME, "train")
+  val (allObjsDev, lutObjDev, lutLocationDev) = this.load(DEFAULT_FILENAME, "valid")
+  val (allObjsTest, lutObjTest, lutLocationTest) = this.load(DEFAULT_FILENAME, "test")
 
   /*
    * Getters
@@ -54,6 +59,21 @@ class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
     if (fold == "dev")    return this.mkRandomObjectByLocation(r, location, lutLocationDev)
     if (fold == "test")   return this.mkRandomObjectByLocation(r, location, lutLocationTest)
     throw new RuntimeException("ERROR: Unknown fold (" + fold + ")")
+  }
+
+  // Make a random object from a specific set (train/dev/test), but do not respect the location constraints.
+  def mkRandomObject(r:Random, fold:String):Option[FastObject] = {
+    if (!Array("train", "dev", "test").contains(fold)) {
+      throw new RuntimeException("ERROR: Unknown fold (" + fold + ")")
+    }
+
+    val objs = if (fold == "train") { allObjsTrain } else if (fold == "dev") { allObjsDev } else if (fold == "test") { allObjsTest } else { allObjsTrain }
+    if (objs.length == 0) return None
+
+    val randObjIdx = r.nextInt(objs.length)
+    val randObj = objs(randObjIdx).toFastObject()
+
+    return Some(randObj)
   }
 
   private def mkRandomObjectByLocation(r:Random, location:String, lutLocation:Map[String, ArrayBuffer[TWCObject]]):Option[FastObject] = {
@@ -118,15 +138,8 @@ class LoadTWCDataJSON(filename:String = LoadTWCDataJSON.DEFAULT_FILENAME) {
     return (out.toArray, lutObj.toMap, lutLocation.toMap)
   }
 
-}
-
-
-object LoadTWCDataJSON {
-  val DEFAULT_FILENAME = "twc_objects.folds.json"
-
   def main(args:Array[String]): Unit = {
-    val d = new LoadTWCDataJSON()
-    val allObjs = d.allObjsTrain ++ d.allObjsDev ++ d.allObjsTest
+    val allObjs = this.allObjsTrain ++ this.allObjsDev ++ this.allObjsTest
     println ("Loaded " + allObjs.length + " objects")
   }
 

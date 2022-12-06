@@ -1,7 +1,8 @@
 package textworldexpress.goldagent
 
-import textworldexpress.games.{CoinGame, MapReaderGame}
+import textworldexpress.games.{ArithmeticGame, CoinGame, MapReaderGame}
 import textworldexpress.objects.Room
+import textworldexpress.runtime.PythonInterface
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -211,4 +212,3 @@ class TreeNode(val location:Room, val parent:Option[TreeNode] = None, val childr
     return Array(location.name) ++ this.parent.get.getPathToRoot()
   }
 }
-

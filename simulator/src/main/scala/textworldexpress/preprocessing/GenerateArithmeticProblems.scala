@@ -106,7 +106,7 @@ class ArithmeticProblem(val num1:Int, val num2:Int, val operation:String, val ma
   def generateText():String = {
     if (operation == "+") return "add " + num1 + " and " + num2
     if (operation == "-") return "subtract " + num2 + " from " + num1
-    if (operation == "*") return "multipy " + num1 + " and " + num2
+    if (operation == "*") return "multiply " + num1 + " and " + num2
     if (operation == "/") return "divide " + num2 + " by " + num1
 
     // If we reach here, unknown operation

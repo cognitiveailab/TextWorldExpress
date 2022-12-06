@@ -1,7 +1,10 @@
 package textworldexpress.generator
 
-import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
+import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, SimonSaysGameGenerator, SortingGameGenerator, TWCGameGenerator, PeckingOrderGameGenerator}
+import textworldexpress.runtime.PythonInterface
 import textworldexpress.struct.TextGame
+
+import scala.util.Random
 
 /*
  * Abstract class for game generators
@@ -28,7 +31,7 @@ abstract class GameGenerator {
 /*
  * Kitchen
  */
-class GameGeneratorKitchen(val numLocations:Int=11, val numDistractorItems:Int = 10, val numIngredients:Int=3, val includeDoors:Boolean=true, val limitInventorySize:Boolean=true) extends GameGenerator {
+class GameGeneratorKitchen(numLocations:Int=11, numDistractorItems:Int = 10, numIngredients:Int=3, includeDoors:Boolean=true, limitInventorySize:Boolean=true) extends GameGenerator {
   val generator = new KitchenGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
@@ -278,12 +281,145 @@ class GameGeneratorArithmetic() extends GameGenerator {
 }
 
 
+/*
+ * Pecking Order Game
+ */
+class GameGeneratorPeckingOrder() extends GameGenerator {
+  val generator = new PeckingOrderGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Pecking Order\n")
+    os.append("This game has no parameters other than seed, and game fold (train/dev/test).\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+}
+
+
+/*
+ * Simon Says Game
+ */
+class GameGeneratorSimonSays(gameLength:Int = 1, numDistractors:Int = 0, memorization:Boolean = false) extends GameGenerator {
+  val generator = new SimonSaysGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    if (gameLength < 1) os.append("Number of distractor actions must be greater than or equal to one (specified value = " + gameLength + "). ")
+    if (gameLength > 10) os.append("Game length must be less than or equal to 10 (specified value = " + gameLength + "). ")
+
+    if (numDistractors < 0) os.append("Number of distractor actions must be greater than or equal to zero (specified value = " + numDistractors + "). ")
+    if (numDistractors > 10) os.append("Number of distractor actions must be less than or equal to 10 (specified value = " + numDistractors + "). ")
+
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Simon Says\n")
+    os.append("gameLength: " + gameLength + "\n")
+    os.append("numDistractors: " + numDistractors + "\n")
+    os.append("memorization: " + memorization + "\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed, fold, gameLength, numDistractors, memorization)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed, fold, gameLength, numDistractors, memorization)
+  }
+
+}
+
+
+/*
+ * Sorting Game
+ */
+class GameGeneratorSorting() extends GameGenerator {
+  val generator = new SortingGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Sorting\n")
+    os.append("This game has no parameters other than seed, and game fold (train/dev/test).\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+}
+
 
 /*
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic")
+
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -356,8 +492,8 @@ object GameGenerator {
     val numLocations:Int            = properties.getOrElse("numLocations", 15)
     val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 4)
     val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
-    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
-    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }
+    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 0) == 1) { true } else { false }
+    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 0) == 1) { true } else { false }
 
     // Make game
     val game = new GameGeneratorMapReader(numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
@@ -385,10 +521,62 @@ object GameGenerator {
     return game
   }
 
+  // Make the 'peckingorder' game
+  private def mkPeckingOrder(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array()
+
+    // Make game
+    val game = new GameGeneratorPeckingOrder()
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
+    }
+
+    return game
+  }
+
+  // Make the 'simon says' game
+  private def mkSimonSays(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames = Array("gameLength", "numDistractors", "memorization")
+
+    val gameLength:Int       = properties.getOrElse("gameLength", 3)
+    val numDistractors:Int   = properties.getOrElse("numDistractors", 3)
+    val memorization:Boolean = if(properties.getOrElse("memorization", 1) == 1) { true } else { false }
+
+    // Make game
+    val game = new GameGeneratorSimonSays(gameLength, numDistractors, memorization)
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
+    }
+
+    return game
+  }
+
+  // Make the 'sorting' game
+  private def mkSorting(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array()
+
+    // Make game
+    val game = new GameGeneratorSorting()
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
+    }
+
+    return game
+  }
+
+
   /*
    * The main generator.
    * Returns (success, GameGenerator)
    */
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "peckingorder", "simonsays", "sorting")
+
   def mkGameGenerator(gameName:String, properties:Map[String, Int] = Map[String, Int]()):(Boolean, GameGenerator) = {
 
     gameName.toLowerCase match {
@@ -410,6 +598,18 @@ object GameGenerator {
       }
       case "arithmetic" => {
         val game = this.mkArithmetic(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "peckingorder" => {
+        val game = this.mkPeckingOrder(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "simonsays" => {
+        val game = this.mkSimonSays(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "sorting" => {
+        val game = this.mkSorting(properties)
         return (!game.isInvalid(), game)
       }
       // Unknown case: Game not recognized.

@@ -61,9 +61,11 @@ case class RecipeIngredient(name:String, preparation:Set[String]) {
 }
 
 // Loads the data from TWC Kitchen
-class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILENAME) {
+object LoadTWKitchenDataJSON {
+  val DEFAULT_FILENAME = "cooking_world.json"
 
-  val (allObjs, lutObj, lutLocation, foodSplitsTrain, foodSplitsDev, foodSplitsTest, foodPrepTrain, foodPrepDev, foodPrepTest) = this.load(filename)
+
+  val (allObjs, lutObj, lutLocation, foodSplitsTrain, foodSplitsDev, foodSplitsTest, foodPrepTrain, foodPrepDev, foodPrepTest) = this.load(DEFAULT_FILENAME)
 
   /*
    * Getters
@@ -262,15 +264,9 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
     return (out.toArray, lutObj.toMap, lutLocation.toMap, foodSplitsTrain, foodSplitsDev, foodSplitsTest, foodPrepsTrain.toMap, foodPrepsDev.toMap, foodPrepsTest.toMap)
   }
 
-}
-
-
-object LoadTWKitchenDataJSON {
-  val DEFAULT_FILENAME = "cooking_world.json"
 
   def main(args:Array[String]): Unit = {
-    val d = new LoadTWKitchenDataJSON()
-    println ("Loaded " + d.allObjs.length + " objects")
+    println ("Loaded " + this.allObjs.length + " objects")
   }
 
 }

@@ -1,6 +1,7 @@
 package textworldexpress.goldagent
 
 import textworldexpress.games.{ArithmeticGame, CoinGame}
+import textworldexpress.runtime.PythonInterface
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -30,9 +31,8 @@ class ArithmeticGoldAgent(game:ArithmeticGame) {
     return success
   }
 
-
   def mkGoldPath(r:Random):(Boolean, Array[String]) = {
-    val success = this.mkGoldPathArithmetic(r)
+    var success = this.mkGoldPathArithmetic(r)
     if (!success) return (false, Array.empty[String])
 
     // Success
@@ -41,4 +41,3 @@ class ArithmeticGoldAgent(game:ArithmeticGame) {
   }
 
 }
-

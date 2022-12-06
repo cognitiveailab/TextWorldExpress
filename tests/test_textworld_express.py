@@ -6,7 +6,11 @@ GAME_PARAMS = {
     "twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
     "coin": "numLocations=1, numDistractorItems=5, limitInventorySize=0",
     "arithmetic": "",
-    "mapreader": "numLocations=2, maxDistanceApart=1, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+    "map-reader": "numLocations=2, maxDistanceApart=1, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+    # "mapreader-random": "numLocations=2, maxDistanceApart=1, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+    "simon-says": "",
+    "treasure-hunter": "",
+    "sorting": "",
 }
 
 

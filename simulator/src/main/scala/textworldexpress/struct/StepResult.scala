@@ -21,6 +21,37 @@ class StepResult(val observationStr:String, val freeLookStr:String, val inventor
     os.toString()
   }
 
+  // Clone this StepResult, but replace the observation with an externally supplied observation.
+  // This is useful for the Symbolic Modules, that generally output only the observation.
+  def cloneButReplaceObservation(newObservationStr:String): StepResult = {
+    return new StepResult(
+      observationStr = newObservationStr,
+      freeLookStr = freeLookStr,
+      inventoryStr = inventoryStr,
+      validActions = validActions,
+      scoreRaw = scoreRaw,
+      scoreNormalized = scoreNormalized,
+      taskSuccess = taskSuccess,
+      taskFailure = taskFailure,
+      wasValidAction = wasValidAction
+    )
+  }
+
+  // Clone, but replace the valid actions.
+  // This is useful for the symbolic modules, that add new valid actions to the action space.
+  def cloneButReplaceValidActions(newValidActions:Array[String]): StepResult = {
+    return new StepResult(
+      observationStr = observationStr,
+      freeLookStr = freeLookStr,
+      inventoryStr = inventoryStr,
+      validActions = newValidActions,
+      scoreRaw = scoreRaw,
+      scoreNormalized = scoreNormalized,
+      taskSuccess = taskSuccess,
+      taskFailure = taskFailure,
+      wasValidAction = wasValidAction
+    )
+  }
 
   def sanitizeJSON(in:String):String = {
     var out = in.replace("\\", "\\\\")

@@ -1,8 +1,7 @@
 .idea/**
-gen_games/
-roms/
 dist/
 *.egg-info
+*.class
 __pycache__/
 build/
 

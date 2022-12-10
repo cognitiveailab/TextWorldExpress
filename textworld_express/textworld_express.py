@@ -1,6 +1,9 @@
 
 import os
+import sys
+import time
 import logging
+import tempfile
 
 try:
     import orjson  # faster json serialization
@@ -28,7 +31,6 @@ class TextWorldExpressEnv:
         # Launch Java side with dynamic port and get back the port on which the
         # server was bound to.
         if DEBUG_MODE:
-            import sys, time
             port = launch_gateway(
                 classpath=serverPath, die_on_exit=True, cwd=BASEPATH,
                 javaopts=['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005,quiet=y'],
@@ -36,7 +38,7 @@ class TextWorldExpressEnv:
             print("Attach debugger within the next 10 seconds")
             time.sleep(10)  # Give time for user to attach debugger
         else:
-            port, proc = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH, return_proc=True)
+            port, proc = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH, javaopts=['-Xverify:none'], return_proc=True)
 
         # Connect python side to Java side with Java dynamic port and start python
         # callback server with a dynamic port
@@ -76,6 +78,8 @@ class TextWorldExpressEnv:
         self.gameParams = ""
         self.gameFold = None
         self.generateGoldPath = False
+
+        self._obj_tree_tempfile = tempfile.NamedTemporaryFile()
 
     #
     #   Run History
@@ -167,7 +171,14 @@ class TextWorldExpressEnv:
         return self.server.getTaskDescription()
 
     def getObjectTree(self):
-        return orjson.loads(self.server.getObjectTree())
+        msg = self.server.getObjectTree(self._obj_tree_tempfile.name)
+        if msg:
+            # Game is not initialized.
+            raise RuntimeError(msg)
+
+        self._obj_tree_tempfile.file.seek(0)
+        payload = self._obj_tree_tempfile.file.read()
+        return orjson.loads(payload)
 
     #
     # Train/development/test sets

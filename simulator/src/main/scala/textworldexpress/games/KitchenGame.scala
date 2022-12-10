@@ -271,14 +271,22 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     val os = new StringBuilder()
     os.append("{")
     os.append("\"player_location\":\"" + this.agentLocation.name + "\",")
-    os.append("\"inventory\": " + this.agentInventory.toJSON() + ",")
+    //os.append("\"inventory\": " + this.agentInventory.toJSON() + ",")
+
+    val inventoryJSON = new ArrayBuffer[String]()
+    for (obj <- this.agentInventory.contents) {
+      inventoryJSON.append("\"" + obj.name + "\": " + obj.toJSON)
+    }
+    os.append("\"inventory\": " + inventoryJSON.mkString("{", ",", "},"))
 
     val locations_json = new ArrayBuffer[String]()
     for (loc <- this.locations) {
-      locations_json.append(loc.toJSON())
+      //locations_json.append(loc.toJSON())
+      locations_json.append("\"" + loc.name + "\": " + loc.toJSON())
     }
 
-    os.append("\"locations\": " + locations_json.mkString("[", ",", "],"))
+    //os.append("\"locations\": " + locations_json.mkString("[", ",", "],"))
+    os.append("\"locations\": " + locations_json.mkString("{", ",", "},"))
 
     val recipeJSON = new ArrayBuffer[String]()
     for (ingredient <- this.recipe) {
@@ -288,9 +296,11 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
 
     val deletedObjectsJSON = new ArrayBuffer[String]()
     for (obj <- this.deletedObjects) {
-      deletedObjectsJSON.append(obj.toJSON())
+      //deletedObjectsJSON.append(obj.toJSON())
+      deletedObjectsJSON.append("\"" + obj.name + "\": " + obj.toJSON())
     }
-    os.append("\"deleted_objects\": " + deletedObjectsJSON.mkString("[", ",", "]"))
+    //os.append("\"deleted_objects\": " + deletedObjectsJSON.mkString("[", ",", "]"))
+    os.append("\"deleted_objects\": " + deletedObjectsJSON.mkString("{", ",", "}"))
 
     os.append("}")
     return os.toString()

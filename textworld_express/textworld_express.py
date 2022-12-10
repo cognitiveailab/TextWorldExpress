@@ -1,8 +1,11 @@
 from py4j.java_gateway import launch_gateway
 from py4j.java_gateway import JavaGateway, GatewayParameters, CallbackServerParameters
 
-import sys
 import os
+import sys
+import time
+import tempfile
+
 import orjson  # faster json serialization
 
 import textworld_express
@@ -24,7 +27,16 @@ class TextWorldExpressEnv:
 
         # Launch Java side with dynamic port and get back the port on which the
         # server was bound to.
-        port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH)
+        if bool(os.environ.get("SCIENCEWORLD_DEBUG")):
+            port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH,
+                                javaopts=['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005,quiet=y'],
+                                redirect_stdout=sys.stdout, redirect_stderr=sys.stderr)
+            print("Attach debugger")
+            time.sleep(30)  # Give time for user to attach debugger
+        else:
+            port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH,
+                                javaopts=['-Xverify:none'],
+            )
 
         # Connect python side to Java side with Java dynamic port and start python
         # callback server with a dynamic port
@@ -66,6 +78,8 @@ class TextWorldExpressEnv:
         self.gameParams = ""
         self.gameFold = None
         self.generateGoldPath = False
+
+        self._obj_tree_tempfile = tempfile.NamedTemporaryFile()
 
     #
     #   Run History
@@ -146,7 +160,14 @@ class TextWorldExpressEnv:
 
     # Get the current game's task description
     def getObjectTree(self):
-        return orjson.loads(self.server.getObjectTree())
+        msg = self.server.getObjectTree(self._obj_tree_tempfile.name)
+        if msg:
+            # Game is not initialized.
+            raise RuntimeError(msg)
+
+        self._obj_tree_tempfile.file.seek(0)
+        payload = self._obj_tree_tempfile.file.read()
+        return orjson.loads(payload)
 
     #
     # Train/development/test sets

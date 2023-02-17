@@ -1,20 +1,24 @@
+import re
+import zipfile
 import os.path, sys
 from os.path import join as pjoin
 
 from setuptools import setup
 
-# Check if all required files are there.
-with open(pjoin("textworld_express", "version.py")) as f:
-    VERSION = f.readlines()[0].split("=")[-1].strip("' \n")
 
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
-JAR_FILE = 'textworld-express-{version}.jar'.format(version=VERSION)
+JAR_FILE = 'textworld-express.jar'
 JAR_PATH = pjoin(BASEPATH, 'textworld_express', JAR_FILE)
 OBJECTS_TWC_FILE = "twc_objects.folds.json"
 OBJECTS_TWC_PATH = pjoin(BASEPATH, 'textworld_express', OBJECTS_TWC_FILE)
 COOKING_WORLD_FILE = "cooking_world.json"
 COOKING_WORLD_PATH = pjoin(BASEPATH, 'textworld_express', COOKING_WORLD_FILE)
 
+# Extract TextWorldExpress version from JAR file metadata
+contents = zipfile.ZipFile(JAR_PATH).open('META-INF/MANIFEST.MF').read().decode('utf-8')
+VERSION = re.search(r'\bSpecification-Version: (.*)\b', contents).group(1)
+
+# Check if all required files are there.
 missing_file = False
 for required_file in [JAR_PATH, OBJECTS_TWC_PATH, COOKING_WORLD_PATH]:
     if not os.path.isfile(required_file):
@@ -23,6 +27,9 @@ for required_file in [JAR_PATH, OBJECTS_TWC_PATH, COOKING_WORLD_PATH]:
 
 if missing_file:
     sys.exit(1)  # Do not move forward with the installation.
+
+with open(os.path.join('textworld_express', 'version.py'), 'w') as f:
+    f.write(f'__version__ = {VERSION!r}\n')
 
 setup(name='textworld_express',
     version=VERSION,

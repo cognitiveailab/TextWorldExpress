@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-#sbt assembly
-#cp target/scala-2.13/textworldexpress-assembly-1.0.3.jar ../textworld_express/textworld-express-1.0.3.jar
+set -euo pipefail
+
+pushd "$(dirname "$(readlink -f "$0")")"
 
 sbt proguard
-version=`cat build.sbt | grep version | cut -d '"' -f2`
+version=$(grep version build.sbt | cut -d '"' -f2)
+mv -f "target/scala-2.13/proguard/textworldexpress_2.13-${version}.jar" ../textworld_express/textworld-express.jar
 
-cp target/scala-2.13/proguard/textworldexpress_2.13-${version}.jar ../textworld_express/textworld-express-${version}.jar
+popd

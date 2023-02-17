@@ -1,6 +1,6 @@
 name := "textworldexpress"
 
-version := "1.0.3"
+version := "1.0.4"
 
 //scalaVersion := "2.12.9"
 scalaVersion := "2.13.8"
@@ -24,6 +24,8 @@ libraryDependencies ++= Seq(
 // PY4J (Java <-> Python Interoperability)
 libraryDependencies += "net.sf.py4j" % "py4j" % "0.10.3"
 
+exportJars := true
+
 // Set main class to be the Python Interface
 mainClass in Compile := Some("textworldexpress.runtime.PythonInterface")
 
@@ -31,7 +33,17 @@ mainClass in Compile := Some("textworldexpress.runtime.PythonInterface")
 // Proguard
 //
 
+val regex = "textworldexpress_2.13-.*\\.jar".r
 enablePlugins(SbtProguard)
+proguardMerge in Proguard := true
 proguardOptions in Proguard ++= Seq("-dontoptimize", "-dontobfuscate", "-dontnote", "-dontwarn", "-ignorewarnings")
 proguardOptions in Proguard += "-keepclasseswithmembers class textworldexpress.runtime.PythonInterface {*;}"
+proguardOptions in Proguard += "-adaptresourcefilecontents **.MF"
+proguardInputFilter in Proguard := { file =>
+  file.name match {
+    case regex() => Some("META-INF/**")
+    case _                   => Some("!META-INF/**")
+  }
+}
+proguardMergeStrategies in Proguard += ProguardMerge.first("META-INF/MANIFEST.MF")
 javaOptions in (Proguard, proguard) := Seq("-Xmx1G")

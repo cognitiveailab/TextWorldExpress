@@ -1,9 +1,13 @@
-gen_games/
-roms/
+.idea/**
 dist/
 *.egg-info
 __pycache__/
 build/
-precrawledpaths/
+
+# Project-specific
+textworld_express/version.py
+simulator/project/build.properties
+simulator/project/project/
+simulator/project/target/
 simulator/target/
-simulator/project
+precrawledpaths/

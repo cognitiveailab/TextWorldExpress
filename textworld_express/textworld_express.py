@@ -1,14 +1,15 @@
+
+import os
+import logging
+
+import orjson  # faster json serialization
+
 from py4j.java_gateway import launch_gateway
 from py4j.java_gateway import JavaGateway, GatewayParameters, CallbackServerParameters
 
-import os
-import orjson  # faster json serialization
+from textworld_express.constants import BASEPATH, DEBUG_MODE, JAR_PATH
 
-import textworld_express
-
-BASEPATH = os.path.dirname(os.path.abspath(__file__))
-JAR_FILE = 'textworld-express-{version}.jar'.format(version=textworld_express.__version__)
-JAR_PATH = os.path.join(BASEPATH, JAR_FILE)
+logger = logging.getLogger(__name__)
 
 
 class TextWorldExpressEnv:
@@ -23,7 +24,16 @@ class TextWorldExpressEnv:
 
         # Launch Java side with dynamic port and get back the port on which the
         # server was bound to.
-        port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH)
+        if DEBUG_MODE:
+            import sys, time
+            port = launch_gateway(
+                classpath=serverPath, die_on_exit=True, cwd=BASEPATH,
+                javaopts=['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005,quiet=y'],
+                redirect_stdout=sys.stdout, redirect_stderr=sys.stderr)
+            print("Attach debugger within the next 10 seconds")
+            time.sleep(10)  # Give time for user to attach debugger
+        else:
+            port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH)
 
         # Connect python side to Java side with Java dynamic port and start python
         # callback server with a dynamic port

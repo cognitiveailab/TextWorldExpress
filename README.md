@@ -46,7 +46,7 @@ TextWorldExpress is written in Scala (2.12.9), and compiles using `sbt` into a J
 
 ## Environments
 
-TextWorldExpress includes high-speed versions of three popular benchmark environments for text-game research.
+TextWorldExpress includes high-speed versions of three popular benchmark environments for text-game research. Additionally, it also includes 4 exclusive environments to study arithmetic, navigation, and neurosymbolic reasoning.
 
 ### CookingWorld ("cookingworld")
 The CookingWorld environment tasks agents with preparing meals by following the instructions in a recipe that is provided in the environment. Agents must first collect required food ingredients (e.g., milk, bell pepper, flour, salt) that can be found in the environment in canonical locations (e.g., kitchen, pantry, supermarket, garden) and containers (e.g., fridge, cupboard). Randomly generated recipes require agents to first use a knife to prepare food by *slicing*, *dicing*, or *chopping* a subset of ingredients, then additionally using an appropriate heating appliance to *fry*, *roast*, or *grill* the ingredients. If all ingredients are prepared according to the recipe, the agent can use an action to *prepare the meal*, and finally *eat the meal* to complete the task successfully. Task complexity can be controlled by varying the number of locations in the environment, the number of ingredients required for the recipe, and the number of distractor ingredients randomly placed in the environment that are not required for the recipe. The recipes and environments are parametrically generated, with subsets of ingredients and specific preparations held out between training, development, and test sets to prevent overfitting. CookingWorld was originally created for the [First TextWorld Problems competition](https://aka.ms/ftwp) and later named by [[Madotto etal., 2020]](https://www.ijcai.org/proceedings/2020/207).
@@ -56,6 +56,13 @@ Text game agents frequently learn the dynamics of environment -- such as the nee
 
 ### Coin Collector ("coin")
 Agents frequently find tasks such as object search, environment navigation, or pick-and-place tasks challenging. The [Coin Collector](https://github.com/xingdi-eric-yuan/TextWorld-Coin-Collector) distills these into a single benchmark where an agent must explore a series of rooms to locate and pick up a single coin. In the original implementation, the game map typically takes the form of a connected loop or chain, such that continually moving to new locations means the agent will eventually discover the coin -- while including medium and hard modes that add in one or more "dead-end" paths.  To control for environment difficulty across games, the TextWorldExpress reimplementation uses the same map generator across environments, and generates arbitrary home environments rather than connected loops. The user maintains control of other measures of difficulty, including the total number of rooms, and the number of distractor objects placed in the environment.
+
+### Arithmetic ("arithmetic")
+The Arithmetic environment requires agents to first solve a math problem, then to pick up the item with the same quantity as the math problem answer, and place it in the box. At the moment, task complexity cannot be controlled yet.
+
+### Map Reader ("mapreader")
+The Map Reader environment requires agents to retrieve a coin from a particular location, and put it into the box found in the starting location. Task complexity can be controlled by varying the number of locations in the environment, the distance from the starting location and where the coin is located, and the number of distractor objects randomly placed in the environment that are not required for the task.
+
 
 # Usage
 
@@ -118,6 +125,18 @@ Environments initialize with default parameters.  To change the parameters, supp
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
 | numLocations        | The number of locations in the environment  | 1-11 |
+| numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
+| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
+| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+
+**Arithmetic:**
+This environment has no tweakable parameters yet.
+
+**Map Reader:**
+| Parameter      | Description | Valid range |
+| ----------- | ----------- |  ----------- |
+| numLocations        | The number of locations in the environment  | 1-11 |
+| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-4 |
 | numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |

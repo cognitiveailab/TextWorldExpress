@@ -1,7 +1,7 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator}
-import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent}
+import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator, SortingProblemGenerator}
+import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent, SortingGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -12,9 +12,7 @@ import scala.util.Random
 import scala.util.control.Breaks.{break, breakable}
 
 
-
-// 'taskObjects' just contains the reference to any coin(s) to be collected in the agent's inventory
-class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, val correctObject:FastObject) extends Scorer {
+class SortingGameScoring(val itemsToSort:Array[FastObject], val answerBox:Box) extends Scorer {
 
   def doScoring(): Unit = {
     // Check status of each object
@@ -22,34 +20,46 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
     var taskFailure:Boolean = false
     var taskSuccess:Boolean = false
 
-    // If the book (math problem) has been read, increase the score.
-    if (mathProblemObj.hasBeenRead) {
-      curScore += 1
-    }
-
-    // NOTE: No longer give partial scores for picking up the correct object -- otherwise the agent could just try all the objects until it gets the right score.
-    /*
-    if ((correctObject.currentContainer != null) && (correctObject.currentContainer.name == "inventory")) {
-      // If the correct object is picked up, increase score
-      curScore += 1
-    }
-     */
-
-    // If anything other than the correct object is in the answer box, task failure
-    for (obj <- answerBox.contents) {
-      if (obj.name == correctObject.name) {
-        // Correct object -- set to win
-        curScore += 1
-      } else {
-        // An incorrect object, set to task failure
+    // First, make sure that the only objects in the answerBox are task items.  If not, then task failure.
+    for (cObj <- answerBox.contents) {
+      var found:Boolean = false
+      for (taskItem <- itemsToSort) {
+        if (cObj.name == taskItem.name) found = true
+      }
+      if (!found) {
         taskFailure = true
       }
     }
 
-    // If we failued the task, then set the score to -1, regardless of progress
+    // If task failure, then return
     if (taskFailure) {
-      curScore = -2
+      val scores = new GameScore(scoreRaw = -1, scoreNormalized = -1, taskSuccess = false, taskFailure = true)
+      this.curScore = scores
+      return
     }
+
+
+    // If we reach here, we know that the only objects contained within the answer box are task items.
+    // Next, we'll make sure they're in order.
+    val numItemsInBox = answerBox.contents.size
+    for (i <- 0 until numItemsInBox) {
+      val taskItemN = itemsToSort(i)
+      if ((taskItemN.currentContainer != null) && (taskItemN.currentContainer.name == answerBox.name)) {
+        // Good
+      } else {
+        taskFailure = true
+      }
+    }
+
+    // If task failure, then return
+    if (taskFailure) {
+      val scores = new GameScore(scoreRaw = -1, scoreNormalized = -1, taskSuccess = false, taskFailure = true)
+      this.curScore = scores
+      return
+    }
+
+    // If we reach here, then 'numItemsInBox' have been successfully sorted.
+    curScore = numItemsInBox
 
     // If we're at the maximum score, set the task success to be true
     if (curScore >= this.calculateMaxScore()) {
@@ -64,7 +74,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
 
   // Calculate the maximum possible score for this recipe
   def calculateMaxScore():Double = {
-    var maxScore:Double = 2.0
+    var maxScore:Double = this.itemsToSort.size
     return maxScore
   }
 
@@ -72,7 +82,7 @@ class ArithmeticGameScoring(val mathProblemObj:MathProblem, val answerBox:Box, v
 
 
 
-class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, val answerBox:Box, val correctObject:FastObject, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class SortingGame(val locations:Array[Room], val itemsToSort:Array[FastObject], val answerBox:Box, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -84,7 +94,7 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer:Scorer = new ArithmeticGameScoring(mathProblemObj, answerBox, correctObject)
+  val scorer:Scorer = new SortingGameScoring(itemsToSort, answerBox)
 
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]
@@ -103,10 +113,10 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
    */
 
   // TODO: Not implemented
-  def deepCopy():ArithmeticGame = {
+  def deepCopy():SortingGame = {
     println ("NOTE: deepCopy() not implemented -- returning a shallow copy")
     // Return
-    return new ArithmeticGame(locations, mathProblemObj, answerBox, correctObject, seed, generationProperties)
+    return new SortingGame(locations, itemsToSort, answerBox, seed, generationProperties)
   }
 
   // Connect a cloned array of locations in the same way as this map
@@ -178,7 +188,7 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
    * Task Description
    */
   def getTaskDescription():String = {
-    return "Your first task is to solve the math problem. Then, pick up the item with the same quantity as the math problem answer, and place it in the box."
+    return "Your task is to sort objects by quantity.  First, place the object with the smallest quantity in the box.  Then, place the objects with the next smallest quantity in the box, and repeat until all objects have been placed in the box."
   }
 
   /*
@@ -554,13 +564,9 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
 }
 
 
-class ArithmeticGameGenerator {
-  val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
-  val doorMaker = new DoorMaker()
+class SortingGameGenerator {
 
-
-  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], ArithmeticProblem, MathProblem, Box, FastObject) = {
+  def mkEnvironment(r:Random, seed:Int, fold:String):(ArrayBuffer[Room], Array[FastObject], Box) = {
     val locations = new ArrayBuffer[Room]()
 
     // Add only a single location for this game (no map/multiple locations).
@@ -577,21 +583,23 @@ class ArithmeticGameGenerator {
     if (randLocationIdx == 9) locations.append(new Street(r))
     if (randLocationIdx == 10) locations.append(new Supermarket(r))
 
+    /*
     // Generate the arithmetic problem (abstract), and the math problem object.
     val (mathProblemObj, arithmeticProblem) = this.mkArithmeticProblem(seed, fold)
 
     // Add the math problem object to the location
     locations(0).addObject(mathProblemObj)
-
+*/
     // Add an answer box
     val answerBox = new Box()
     locations(0).addObject( answerBox )
 
-    // Make correct and distractor objects
-    val (correctObject, distractorObjects) = mkCorrectAndDistractorObjects(r, arithmeticProblem, fold)
+    // Get sorting problem
+    val sortingProblem = SortingProblemGenerator.getProblem(seed, fold)
+    val itemsToSortInOrder = sortingProblem.get.orderedItems
 
     // Place objects
-    val objectsToPlace = r.shuffle( (Array(correctObject) ++ distractorObjects).toList ).toArray
+    val objectsToPlace = r.shuffle( itemsToSortInOrder.toList ).toArray
     // Find possible containers for objects
     val visibleObjects = locations(0).collectVisibleObjects()
     val validContainers = new ArrayBuffer[FastObject]
@@ -612,326 +620,12 @@ class ArithmeticGameGenerator {
     }
 
 
-    return (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject)
-  }
-
-
-  def mkArithmeticProblem(seed:Int, gameFold:String): (MathProblem, ArithmeticProblem) = {
-    val arithmeticProblem = MathProblemGenerator.getProblem(seed, gameFold)
-    if (arithmeticProblem.isEmpty) throw new RuntimeException("ERROR: Unable to generate arithmetic problem.")
-
-    val mathproblem = new MathProblem
-    // TODO: Make description more complicated/task specific (e.g. place the item with the same quantity as the answer in the answer box...)
-    mathproblem.readText = "Your task is to solve the following math problem: " + arithmeticProblem.get.generateText() + " . \n"
-    mathproblem.readText += "Then, pick up the item with the same quantity as the answer, and place it in the box. "
-
-    return (mathproblem, arithmeticProblem.get)
-  }
-
-  // Make correct and distractor objects
-  def mkCorrectAndDistractorObjects(r:Random, arithmeticProblem: ArithmeticProblem, gameFold:String):(FastObject, Array[FastObject]) = {
-    val objectNamesTrain  = Array(("apple", "apples"), ("orange", "oranges"), ("grape", "grapes"), ("tangerine", "tangerines"), ("banana", "bananas"), ("pineapple", "pineapples"), ("papaya", "papayas"), ("peach", "peaches"), ("strawberry", "strawberries"), ("grapefruit", "grapefruits") )
-    val objectNamesDev    = Array(("broccoli", "brocollis"), ("onion", "onions"), ("cucumber", "cucumbers"), ("potato", "potatoes"), ("cucumber", "cucumbers"), ("coconut", "coconuts"), ("watermelon", "watermelons"), ("mango", "mangos"), ("olive", "olives"), ("lime", "limes"), ("pear", "pears") )
-    val objectNamesTest   = Array(("pepper", "peppers"), ("tomato", "tomatoes"), ("eggplant", "eggplants"), ("squash", "squashes"), ("pumpkin", "pumpkins"), ("pea", "peas"), ("avocado", "avocados"), ("cabbage", "cabbages"), ("prune", "prunes"), ("blueberry", "blueberries") )
-
-    // Find appropriate set, and shuffle order
-    val objectNames:Array[(String, String)] = if (gameFold == "train") { objectNamesTrain } else if (gameFold == "dev") { objectNamesDev } else if (gameFold == "test") { objectNamesTest } else { Array.empty[(String, String)] }
-    val shuffled = r.shuffle(objectNames.toList).toArray
-
-    // Get correct object name, and distractor object names
-    val trueObjectName = shuffled(0)
-    val distractorObjectNames = shuffled.slice(1, shuffled.length)
-
-    // True object
-    val trueObject = this.mkBundledObject(trueObjectName, arithmeticProblem.generateResult().get)
-
-    // Distractor objects
-    val distractorObjects = new ArrayBuffer[BundleOfObjects]
-    val distractorQuantities = arithmeticProblem.generateDistractors()
-    for (i <- 0 until distractorQuantities.length) {
-      distractorObjects.append( this.mkBundledObject(distractorObjectNames(i), distractorQuantities(i)) )
-    }
-
-    // Return
-    return (trueObject, distractorObjects.toArray)
-  }
-
-
-
-  // Make a bundle of objects (e.g. a bundle of 5 oranges), with correct singular/plural name based on quantity.
-  def mkBundledObject(names:(String, String), quantity:Int):BundleOfObjects = {
-    // Get the singular or plural name
-    val nameStr = if (quantity == 1) names._1 else names._2
-    // Assemble full name string, with quantities
-    val fullNameStr = quantity.toString + " " + nameStr
-    // Create object
-    val obj = new BundleOfObjects(fullNameStr)
-
-    return obj
-  }
-
-  // Randomly add some number of distractor items to the environment, in their canonical locations, using the TWC database.
-  def addDistractorItems(r:Random, locations:ArrayBuffer[Room], numToAdd:Int, taskObjects:ArrayBuffer[FastObject], fold:String): ArrayBuffer[String] = {
-    val objectNamesAdded = new ArrayBuffer[String]()
-    for (taskObject <- taskObjects) objectNamesAdded.append(taskObject.name)
-
-    var attempts:Int = 0
-    while ((objectNamesAdded.length < numToAdd+taskObjects.length) && (attempts < 100)) {
-      // Step 1: Pick a random location
-      val randLocIdx:Int = r.nextInt(locations.length)
-      val location = locations(randLocIdx)
-      val objects = location.contents.toArray
-      if (objects.length > 0) {
-        val randObjIdx = r.nextInt(objects.length)
-        val container = objects(randObjIdx)
-
-        //println("location: " + location.name)
-
-        val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
-        if (distractorItem.isDefined) {
-          if (!objectNamesAdded.contains(distractorItem.get.name)) {
-            container.addObject(distractorItem.get)
-            objectNamesAdded.append(distractorItem.get.name)
-            //println ("Added " + distractorItem.get.name + " to " + container.name + " in " + location.name)
-          }
-        } else {
-          //println ("distractor not defined")
-        }
-      }
-
-      attempts += 1
-      //println ("Attempts: " + attempts)
-    }
-
-    return objectNamesAdded
-  }
-
-
-  // Connects rooms (adds pointers to other locations in the Room storage classes) based on a given connection map
-  def connectRoomsFromMap(r:Random, map:Array[Array[Room]], includeDoors:Boolean): Unit = {
-    for (i <- 0 until map.length) {
-      for (j <- 0 until map(i).length) {
-
-        val cell = map(i)(j)
-
-        if (cell != null) {
-          // Step 1: Check north
-          if (i < map.length-1) {
-            val queryLoc = map(i+1)(j)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationNorth = queryLoc
-                queryLoc.locationSouth = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorNorth = door.get
-                    queryLoc.doorSouth = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 2: Check south
-          if (i >= 1) {
-            val queryLoc = map(i-1)(j)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationSouth = queryLoc
-                queryLoc.locationNorth = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorSouth = door.get
-                    queryLoc.doorNorth = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 3: Check east
-          if (j >= 1) {
-            val queryLoc = map(i)(j-1)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationEast = queryLoc
-                queryLoc.locationWest = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorEast = door.get
-                    queryLoc.doorWest = door.get
-                  }
-                }
-              }
-            }
-          }
-
-          // Step 4: Check west
-          if (j < map(i).length-1) {
-            val queryLoc = map(i)(j+1)
-            if (queryLoc != null) {
-              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                // Do connection
-                cell.locationWest = queryLoc
-                queryLoc.locationEast = cell
-                if (includeDoors) {
-                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                  if (door.isDefined) {
-                    cell.doorWest = door.get
-                    queryLoc.doorEast = door.get
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-  }
-
-  def displayMap(map:Array[Array[Room]]):String = {
-    val os = new mutable.StringBuilder()
-
-    for (i <- 0 until map.size) {
-      for (j <- 0 until map(i).size) {
-        var cellStr = "--"
-        val cell = map(i)(j)
-        if (cell != null) cellStr = cell.name
-
-        os.append( cellStr.formatted("%20s") + " ")
-      }
-      os.append("\n")
-    }
-
-    os.toString()
-  }
-
-
-  // Find an empty direction
-  def findEmptyDirection(r:Random, map:Array[Array[Room]], locX:Int, locY:Int):(Int, Int) = {
-    // Step 1: Randomly shuffle the order of directions to evaluate first
-    val orderToCheck = r.shuffle( ArrayBuffer(0, 1, 2, 3) )   // Randomly generate the order to check
-
-    // Step 2: Iterate through the direction order, finding the first available direction
-    for (directionRef <- orderToCheck) {
-      if (directionRef == 0) {
-        // Left
-        if ((locX - 1) >= 0) {
-          if (map(locX - 1)(locY) == null) return (locX - 1, locY)
-        }
-      } else if (directionRef == 1) {
-        // Right
-        if ((locX + 1) < map.length) {
-          if (map(locX + 1)(locY) == null) return (locX + 1, locY)
-        }
-      } else if (directionRef == 2) {
-        // Up
-        if ((locY - 1) >= 0) {
-          if (map(locX)(locY - 1) == null) return (locX, locY - 1)
-        }
-      } else if (directionRef == 3) {
-        // Down
-        if ((locY + 1) < map.length) {
-          if (map(locX)(locY + 1) == null) return (locX, locY + 1)
-        }
-      }
-    }
-
-    // If no available directions were found, then return (-1, -1)
-    return (-1, -1)
-  }
-
-
-  def mkConnections(r:Random, locations:ArrayBuffer[Room]): Option[Array[Array[Room]]] = {
-    val GRID_SIZE = 7
-    val map = Array.ofDim[Room](GRID_SIZE, GRID_SIZE)
-
-    // Initialize blank map
-    for (i <- 0 until GRID_SIZE) {
-      for (j <- 0 until GRID_SIZE) {
-        map(i)(j) = null
-      }
-    }
-
-    // Keep track of locations yet to place
-    val locationsLeft = new ArrayBuffer[Room]
-    locationsLeft.insertAll(0, r.shuffle(locations))     // Randomly shuffle locations in
-
-    // Place the first location in the center
-    var lastX = 3
-    var lastY = 3
-    map(lastX)(lastY) = locationsLeft.last
-    locationsLeft.remove(locationsLeft.size-1)      // Remove from the back
-    var lastLocation = map(lastX)(lastY)
-
-
-    var attempts:Int = 0
-    val populatedLocations = new ArrayBuffer[(Int, Int)]()
-    populatedLocations.append( (lastX, lastY) )
-
-    breakable {
-      while (locationsLeft.length > 0) {
-        // Pick a random reference point
-        val refIdx = r.nextInt(populatedLocations.length)
-        lastX = populatedLocations(refIdx)._1
-        lastY = populatedLocations(refIdx)._2
-        lastLocation = map(lastX)(lastY)
-
-
-        // Pick a random location
-        val locationIdx = r.nextInt(locationsLeft.length)
-        val location = locationsLeft(locationIdx)
-
-        //println (attempts + ": Trying to place: " + location.name )
-
-        // If these locations prefer connecting to each other
-        if (location.prefersConnectingTo.contains(lastLocation.name)) {
-          // Find an empty direction
-          val (newX, newY) = findEmptyDirection(r, map, lastX, lastY)
-          if (newX != -1) {
-            // Set new location
-            map(newX)(newY) = location
-            // Remove from generation
-            locationsLeft.remove(locationIdx)
-
-            // Store that this location has been populated
-            populatedLocations.append( (newX, newY) )
-
-            //println ("\tPlaced at: " + newX + ", " + newY)
-          } else {
-            //println ("\tCan't find location")
-          }
-
-
-
-        } else {
-          //println ("\tDoesn't connect to last")
-        }
-
-
-        attempts += 1
-        if (attempts > 100) break()
-      }
-    }
-
-
-    //println( displayMap(map) )
-
-    if (locationsLeft.length > 0) return None
-    return Some(map)
+    return (locations, itemsToSortInOrder, answerBox)
   }
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, fold:String = "train"):ArithmeticGame = {
+  def mkGame(seed:Long, fold:String = "train"):SortingGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -939,18 +633,17 @@ class ArithmeticGameGenerator {
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, arithmeticProblem, mathProblemObj, answerBox, correctObject) = mkEnvironment(r, seed.toInt, fold)
+    val (locations, itemsToSort, answerBox) = mkEnvironment(r, seed.toInt, fold)
     // Add artithmetic problem properties to the properties
-    props("hidden_num1") = arithmeticProblem.num1
-    props("hidden_num2") = arithmeticProblem.num2
-    props("hidden_op") = if (arithmeticProblem.operation == "+") { 0 } else if (arithmeticProblem.operation == "-") { 1 } else if (arithmeticProblem.operation == "*") { 2 } else if (arithmeticProblem.operation == "/") { 3 } else { -1 }
-    val game = new ArithmeticGame( locations.toArray, mathProblemObj, answerBox, correctObject, generationProperties = props.toMap )
+    props("hidden_problemsize") = itemsToSort.length
+
+    val game = new SortingGame( locations.toArray, itemsToSort, answerBox, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(ArithmeticGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(SortingGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -959,7 +652,7 @@ class ArithmeticGameGenerator {
     breakable {
       while (attempts < MAX_ATTEMPTS) {
         val game = this.mkGame(seed, fold)
-        val goldAgent = new ArithmeticGoldAgent(game)
+        val goldAgent = new SortingGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 

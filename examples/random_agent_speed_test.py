@@ -2,6 +2,7 @@ import time
 import random
 import argparse
 
+import textworld_express as twx
 from textworld_express import TextWorldExpressEnv
 
 
@@ -93,7 +94,7 @@ def parse_args():
     parser = argparse.ArgumentParser(desc)
     parser.add_argument("--jar_path", type=str,
                         help="Path to the TextWorldExpress jar file. Default: use builtin.")
-    parser.add_argument("--game-name", type=str, choices=['cookingworld', 'coin', 'twc', 'mapreader'], default='cookingworld',
+    parser.add_argument("--game-name", type=str, choices=twx.GAME_NAMES, default=twx.GAME_NAMES[0],
                         help="Specify the game to play. Default: %(default)s")
     parser.add_argument("--game-fold", type=str, choices=['train', 'dev', 'test'], default='train',
                         help="Specify the game set to use (train, dev, test). Default: %(default)s")

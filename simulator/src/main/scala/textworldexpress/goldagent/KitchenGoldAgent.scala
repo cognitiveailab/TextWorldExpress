@@ -149,9 +149,6 @@ class KitchenGoldAgent(game:KitchenGame) {
         randIdx = r.nextInt(validDirections.length)
       }
       game.step("move " + validDirections(randIdx))
-    } else if (validDirections.length == 0) {
-      // There are no locations to move to
-      //return false
     } else {
       game.step("move " + validDirections(0))
     }

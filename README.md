@@ -57,11 +57,15 @@ Text game agents frequently learn the dynamics of environment -- such as the nee
 ### Coin Collector ("coin")
 Agents frequently find tasks such as object search, environment navigation, or pick-and-place tasks challenging. The [Coin Collector](https://github.com/xingdi-eric-yuan/TextWorld-Coin-Collector) distills these into a single benchmark where an agent must explore a series of rooms to locate and pick up a single coin. In the original implementation, the game map typically takes the form of a connected loop or chain, such that continually moving to new locations means the agent will eventually discover the coin -- while including medium and hard modes that add in one or more "dead-end" paths.  To control for environment difficulty across games, the TextWorldExpress reimplementation uses the same map generator across environments, and generates arbitrary home environments rather than connected loops. The user maintains control of other measures of difficulty, including the total number of rooms, and the number of distractor objects placed in the environment.
 
-### Arithmetic ("arithmetic")
-The Arithmetic environment requires agents to first solve a math problem, then to pick up the item with the same quantity as the math problem answer, and place it in the box. At the moment, task complexity cannot be controlled yet.
-
 ### Map Reader ("mapreader")
-The Map Reader environment requires agents to retrieve a coin from a particular location, and put it into the box found in the starting location. Task complexity can be controlled by varying the number of locations in the environment, the distance from the starting location and where the coin is located, and the number of distractor objects randomly placed in the environment that are not required for the task.
+The Map Reader environment requires agents to retrieve a coin from a particular location, and put it into the box found in the starting location. In contrast to Coin Collector, this environment provides a map of the environment that can be used by the agent to more efficiently navigate. The score is 0.5 for retrieving the coin, and 1.0 for placing the coin in the box at the start location. Task complexity can be controlled by varying the number of locations in the environment, the distance from the starting location and where the coin is located, and the number of distractor objects randomly placed in the environment that are not required for the task.
+
+### Arithmetic ("arithmetic")
+The Arithmetic environment requires agents to first solve a math problem, then to pick up the item with the same quantity as the math problem answer, and place it in the box. For example, the agent may read the math problem (“Take the bundle of objects that is equal to 3 multiplied by 6, and place
+them in the box”), and must then perform the arithmetic then take 18 apples and place them in the answer box. Distractor objects are populated corresponding to performing the arithmetic incorrectly (for example, including 3 oranges, corresponding to subtracting 3 from 6, and 2 pears, corresponding to 6 divided by 3), with the constraint that results have to be positive integer values. The score is 0.5 for picking up the correct object, and 1.0 for completing the task successfully. At the moment, task complexity cannot be controlled yet.
+
+### Sorting ("sorting")
+The Sorting environment requires agents to pick objects and place them in an answer box one at a time based on order of increasing quantity. To add complexity to the game, quantities optionally include units (e.g. 5kg of copper, 8mg of steel, 2g of iron) across measures of volume, mass, or length. The score is the normalized proportion of objects sorted in the correct order, where perfect sorts receive a score of 1.0, and errors cause the score to revert to zero and the game to end. The number of objects to sort is between 3 and 5. At the moment, task complexity cannot be controlled yet.
 
 
 # Usage
@@ -129,17 +133,20 @@ Environments initialize with default parameters.  To change the parameters, supp
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
 
-**Arithmetic:**
-This environment has no tweakable parameters yet.
-
 **Map Reader:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| numLocations        | The number of locations in the environment  | 1-11 |
-| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-4 |
-| numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
+| numLocations        | The number of locations in the environment  | 1-50 |
+| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-8 |
+| maxDistractorItemsPerLocation   | The maximum number of distractor (i.e. non-coin) items per location  | 0-3 |
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+
+**Arithmetic:**
+This environment has no tweakable parameters yet.
+
+**Sorting:**
+This environment has no tweakable parameters yet.
 
 **Querying current game parameters:** Sometimes you may want to know what parameters the current game is generated with.  These can be queried using the `getGenerationProperties()` method:
 ```python

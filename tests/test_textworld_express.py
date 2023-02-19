@@ -6,7 +6,8 @@ GAME_PARAMS = {
     "twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
     "coin": "numLocations=1, numDistractorItems=5, limitInventorySize=0",
     "arithmetic": "",
-    "mapreader": "numLocations=2, maxDistanceApart=1, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
+    "mapreader": "numLocations=2, maxDistanceApart=1, maxDistractorItemsPerLocation=2, includeDoors=0, limitInventorySize=0",
+    "sorting": "",
 }
 
 
@@ -16,7 +17,7 @@ def test_observation_is_deterministic():
         obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name])
 
         for i in range(30):
-            obs, _ = env.reset()#seed=20221120, gameFold="train")
+            obs, _ = env.reset()
             assert obs == obs_orig
 
             obs, _, _, _ = env.step("look around")

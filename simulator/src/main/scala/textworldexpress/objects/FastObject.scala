@@ -133,13 +133,11 @@ class FastObject(val name:String) {
     }
 
     // Put in new container
-    //this.contents.add(obj)
     this.contents.append(obj)
     obj.currentContainer = this
   }
 
   def removeObject(obj:FastObject): Unit = {
-    //val result = this.contents.remove(obj)
     val result = this.contents -= obj
     //println ("Removing " + obj.name + " from " + this.name + " (" + result + ")")
 

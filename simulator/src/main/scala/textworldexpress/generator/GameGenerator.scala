@@ -1,6 +1,6 @@
 package textworldexpress.generator
 
-import textworldexpress.games.{ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
+import textworldexpress.games.{SortingGameGenerator, ArithmeticGameGenerator, CoinGameGenerator, KitchenGameGenerator, MapReaderGameGenerator, TWCGameGenerator}
 import textworldexpress.struct.TextGame
 
 /*
@@ -185,7 +185,7 @@ class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, inclu
 /*
  * Map Reader
  */
-class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
+class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, maxDistractorItemsPerLocation:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
   val generator = new MapReaderGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
@@ -195,13 +195,13 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
   private def checkValidConfiguration():String = {
     val os = new StringBuilder
     if (numLocations < 1) os.append("Number of locations must be greater than one (specified value = " + numLocations + "). ")
-    if (numLocations > 15) os.append("Number of locations must be less than or equal to 15 (specified value = " + numLocations + "). ")
+    if (numLocations > 50) os.append("Number of locations must be less than or equal to 50 (specified value = " + numLocations + "). ")
 
     if (maxDistanceApart < 1) os.append("Maximum distance apart must be at least 1 (specified value = " + maxDistanceApart + ").")
-    if (maxDistanceApart > 4) os.append("Maximum distance apart must be less than or equal to 4 (specified value = " + maxDistanceApart + ").")
+    if (maxDistanceApart > 8) os.append("Maximum distance apart must be less than or equal to 8 (specified value = " + maxDistanceApart + ").")
 
-    if (numDistractorItems < 0) os.append("Number of distractor objects must be greater than or equal to zero (specified value = " + numDistractorItems + "). ")
-    if (numDistractorItems > 10) os.append("Number of distractor objects must be less than or equal to 10 (specified value = " + numDistractorItems + "). ")
+    if (maxDistractorItemsPerLocation < 0) os.append("Maximum number of distractor objects per location must be greater than or equal to zero (specified value = " + maxDistractorItemsPerLocation + "). ")
+    if (maxDistractorItemsPerLocation > 3) os.append("Maximum number of distractor objects per location must be less than or equal to 3 (specified value = " + maxDistractorItemsPerLocation + "). ")
 
     return os.toString()
   }
@@ -216,7 +216,7 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
     val os = new StringBuilder()
     os.append("Game: Map Reader\n")
     os.append("numLocations: " + numLocations + "\n")
-    os.append("numDistractorItems: " + numDistractorItems + "\n")
+    os.append("maxDistractorItemsPerLocation: " + maxDistractorItemsPerLocation + "\n")
     os.append("includeDoors: " + includeDoors + "\n")
     os.append("limitInventorySize: " + limitInventorySize + "\n")
     return os.toString()
@@ -226,11 +226,11 @@ class GameGeneratorMapReader(numLocations:Int = 11, maxDistanceApart:Int = 3, nu
    * Game generation
    */
   def mkGame(seed:Long, fold:String):TextGame = {
-    return generator.mkGame(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+    return generator.mkGame(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, maxDistractorItemsPerLocation=maxDistractorItemsPerLocation, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
-    return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
+    return generator.mkGameWithGoldPath(seed=seed, numLocations=numLocations, maxDistanceApart=maxDistanceApart, maxDistractorItemsPerLocation=maxDistractorItemsPerLocation, includeDoors=includeDoors, limitInventorySize=limitInventorySize, fold=fold)
   }
 
 }
@@ -278,12 +278,54 @@ class GameGeneratorArithmetic() extends GameGenerator {
 }
 
 
+/*
+ * Sorting Game
+ */
+class GameGeneratorSorting() extends GameGenerator {
+  val generator = new SortingGameGenerator()
+  this.errorStr = this.checkValidConfiguration()
+
+  /*
+   * Error checking
+   */
+  private def checkValidConfiguration():String = {
+    val os = new StringBuilder
+    return os.toString()
+  }
+
+  def isInvalid():Boolean = {
+    if (errorStr.length > 0) return true
+    // Otherwise
+    return false
+  }
+
+  def getConfigStr():String = {
+    val os = new StringBuilder()
+    os.append("Game: Sorting\n")
+    os.append("This game has no parameters other than seed, and game fold (train/dev/test).\n")
+    return os.toString()
+  }
+
+  /*
+   * Game generation
+   */
+  def mkGame(seed:Long, fold:String):TextGame = {
+    return generator.mkGame(seed=seed, fold=fold)
+  }
+
+  def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
+    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+  }
+
+}
+
+
 
 /*
  * Generic generator
  */
 object GameGenerator {
-  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic")
+  val VALID_GAME_NAMES = Array("cookingworld", "twc", "coin", "mapreader", "arithmetic", "sorting")
 
   // Make the kitchen game
   private def mkKitchen(properties:Map[String, Int]):GameGenerator = {
@@ -350,17 +392,16 @@ object GameGenerator {
 
   // Make the map reader game
   private def mkMapReader(properties:Map[String, Int]):GameGenerator = {
-    val knownPropertyNames          = Array("numLocations", "numDistractorItems", "includeDoors", "limitInventorySize", "maxDistanceApart")
-    // class GameGeneratorCoin(numLocations:Int = 11, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false) extends GameGenerator {
+    val knownPropertyNames          = Array("numLocations", "maxDistractorItemsPerLocation", "includeDoors", "limitInventorySize", "maxDistanceApart")
 
     val numLocations:Int            = properties.getOrElse("numLocations", 15)
     val maxDistanceApart:Int        = properties.getOrElse("maxDistanceApart", 4)
-    val numDistractorItems:Int      = properties.getOrElse("numDistractorItems", 0)
-    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 1) == 1) { true } else { false }
-    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 1) == 1) { true } else { false }
+    val maxDistractorItemsPerLocation:Int      = properties.getOrElse("maxDistractorItemsPerLocation", 0)
+    val includeDoors:Boolean        = if(properties.getOrElse("includeDoors", 0) == 1) { true } else { false }
+    val limitInventorySize:Boolean  = if(properties.getOrElse("limitInventorySize", 0) == 1) { true } else { false }
 
     // Make game
-    val game = new GameGeneratorMapReader(numLocations=numLocations, maxDistanceApart=maxDistanceApart, numDistractorItems=numDistractorItems, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
+    val game = new GameGeneratorMapReader(numLocations=numLocations, maxDistanceApart=maxDistanceApart, maxDistractorItemsPerLocation=maxDistractorItemsPerLocation, includeDoors=includeDoors, limitInventorySize=limitInventorySize)
 
     // Check for unrecognized properties
     for (propName <- properties.keySet) {
@@ -376,6 +417,21 @@ object GameGenerator {
 
     // Make game
     val game = new GameGeneratorArithmetic()
+
+    // Check for unrecognized properties
+    for (propName <- properties.keySet) {
+      if (!knownPropertyNames.contains(propName)) game.errorStr += ("Unrecognized property name (" + propName + ").  Known properties: " + knownPropertyNames.mkString(", ") + "None. ")
+    }
+
+    return game
+  }
+
+  // Make the sorting game
+  private def mkSorting(properties:Map[String, Int]):GameGenerator = {
+    val knownPropertyNames          = Array()
+
+    // Make game
+    val game = new GameGeneratorSorting()
 
     // Check for unrecognized properties
     for (propName <- properties.keySet) {
@@ -410,6 +466,10 @@ object GameGenerator {
       }
       case "arithmetic" => {
         val game = this.mkArithmetic(properties)
+        return (!game.isInvalid(), game)
+      }
+      case "sorting" => {
+        val game = this.mkSorting(properties)
         return (!game.isInvalid(), game)
       }
       // Unknown case: Game not recognized.

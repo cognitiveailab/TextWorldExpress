@@ -1,9 +1,8 @@
 package textworldexpress.games
 
-
 import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
-import textworldexpress.goldagent.{MapReaderGoldAgent}
-import textworldexpress.objects.{Box, Coin, DoorMaker, FastObject, Mapbook, Room}
+import textworldexpress.goldagent.{CoinGoldAgent, MapReaderConstraintsGoldAgent}
+import textworldexpress.objects.{Alley, Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Foyer, Garage, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Sideyard, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
 import scala.collection.mutable
@@ -13,7 +12,7 @@ import scala.util.control.Breaks.{break, breakable}
 
 
 // 'taskObjects' just contains the reference to any coin(s) to be collected in the agent's inventory
-class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject], box:Box) extends Scorer {
+class MapReaderConstraintsGameScoring(val taskObjects:ArrayBuffer[FastObject], box:Box) extends Scorer {
 
   def doScoring(): Unit = {
     // Check status of each object
@@ -59,7 +58,7 @@ class MapReaderGameScoring(val taskObjects:ArrayBuffer[FastObject], box:Box) ext
 
 
 
-class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], val mapbook:Mapbook, val box:Box, val startLocation:Room, val endLocation:Room, val actualDistanceApart:Int, val limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class MapReaderConstraintsGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject], val mapbook:Mapbook, val box:Box, val startLocation:Room, val endLocation:Room, val actualDistanceApart:Int, val limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -73,7 +72,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer:Scorer = new MapReaderGameScoring(taskObjects, box)
+  val scorer:Scorer = new MapReaderConstraintsGameScoring(taskObjects, box)
 
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]
@@ -87,7 +86,7 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
   // Internal game random number generator -- primarily for randomizing valid action list.
   val random = new Random(seed)
 
-  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the " + startLocation.name + ". A map is provided, that you may find helpful."
+  val taskDesc = "Your task is to take the coin that is located in the " + endLocation.name + ", and put it into the box found in the starting location."
 
 
   /*
@@ -95,10 +94,9 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
    */
 
   // TODO: Still not working (needs location map cloning)
-  def deepCopy():MapReaderGame = {
-
+  def deepCopy():MapReaderConstraintsGame = {
     // Return
-    new MapReaderGame(locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, seed, generationProperties)
+    new MapReaderConstraintsGame(locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, seed, generationProperties)
   }
 
   /*
@@ -500,37 +498,36 @@ class MapReaderGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastO
 }
 
 
-class MapReaderGameGenerator {
+class MapReaderConstraintsGameGenerator {
   val TWCObjectDatabase = new LoadTWCDataJSON()
   val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
   val doorMaker = new DoorMaker()
 
 
-  def mkEnvironment(r:Random, numLocations:Int, maxDistanceApart:Int, maxDistractorItemsPerLocation:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[FastObject], Mapbook, Box, Room, Room, Int) = {
+  def mkEnvironment(r:Random, numLocations:Int, maxDistanceApart:Int, numDistractorItems:Int, includeDoors:Boolean, fold:String):(ArrayBuffer[Room], ArrayBuffer[FastObject], Mapbook, Box, Room, Room, Int) = {
     val locations = new ArrayBuffer[Room]()
 
-    // Randomly generate locations (blank rooms)
-    val locationNames = Set("washroom", "bathroom", "cupboard", "pantry", "basement", "closet", "kitchen", "kitchenette", "launderette", "laundromat", "laundry place", "shower", "sauna", "steam room", "pantry", "attic", "garage", "vault", "cellar", "spare room", "canteen", "cookery", "scullery", "cookhouse", "bedroom", "bedchamber", "chamber", "lounge", "bar", "parlor", "salon", "playroom", "recreation zone", "office", "studio", "workshop", "cubicle", "study", "greenhouse", "outside", "street", "driveway", "supermarket", "alley", "side yard", "living room", "library", "storage room", "backyard")
-    val shuffledLocationNames = r.shuffle(locationNames.toList)
+    val kitchen = new Kitchen(r, addKnife = false)
+    locations.append(kitchen)
 
-    for (i <- 0 until numLocations) {
-      val room = new Room(name = shuffledLocationNames(i))
+    if (numLocations >= 2) locations.append( new Pantry(r) )
+    if (numLocations >= 3) locations.append( new Corridor(r) )
+    if (numLocations >= 4) locations.append( new Bedroom(r) )
+    if (numLocations >= 5) locations.append( new Backyard(r) )
+    if (numLocations >= 6) locations.append( new LivingRoom(r) )
+    if (numLocations >= 7) locations.append( new Bathroom(r) )
+    if (numLocations >= 8) locations.append( new LaundryRoom(r) )
+    if (numLocations >= 9) locations.append( new Driveway(r) )
+    if (numLocations >= 10) locations.append( new Street(r) )
+    if (numLocations >= 11) locations.append( new Supermarket(r) )
+    if (numLocations >= 12) locations.append( new Sideyard(r) )
+    if (numLocations >= 13) locations.append( new Alley(r) )
+    if (numLocations >= 14) locations.append( new Foyer(r) )
+    if (numLocations >= 15) locations.append( new Garage(r) )
 
-      // Add some number of random distractor objects
-      val numDistractors = r.nextInt(maxDistractorItemsPerLocation)
-      for (j <- 0 until numDistractors) {
-        val randObj = TWCObjectDatabase.mkRandomObject(r, fold)
-        if (randObj.isDefined) {
-          room.addObject(randObj.get)
-        }
-      }
-
-      locations.append(room)
-    }
 
     // Create connection map
     var map:Option[Array[Array[Room]]] = None
-
     var attempts:Int = 0
     while ((map.isEmpty) && (attempts < 50)) {
       map = this.mkConnections(r, locations)
@@ -541,33 +538,6 @@ class MapReaderGameGenerator {
 
     // Connect rooms/add doors
     this.connectRoomsFromMap(r, map.get, includeDoors)
-
-    // Check that the map is fully connected
-    attempts = 0
-    var passes:Boolean = false
-    while (!passes && (attempts < 10)) {
-      // Note: This is pretty hacky
-      val foundRooms = mutable.Set[Room]()
-      for (i <- 0 until 10) {
-        val roomsAtDistance = getRoomsAtDistance(locations, startLocation = locations(0), distance = i)
-        for (room <- roomsAtDistance) foundRooms.add(room)
-      }
-      //println("Locations: " + locations.map(_.name).mkString(", "))
-      //println("Found rooms: " + foundRooms.map(_.name).mkString(", "))
-
-      if (locations.length == foundRooms.size) {
-        passes = true
-      } else {
-        // Try to do more connections, just to the rooms that are inaccessible
-        val allRooms = locations.map(_.name).toSet
-        val accessibleRooms = foundRooms.map(_.name).toSet
-        val inaccessibleRooms = allRooms.diff(accessibleRooms)
-        //println ("Trying to reconnect inaccessible rooms (pass " + attempts + ").  Inaccessible rooms: " + inaccessibleRooms.mkString(", "))
-        this.connectRoomsFromMap(r, map.get, includeDoors, inaccessibleRooms.toArray)
-
-      }
-      attempts += 1
-    }
 
     // Find start/end locations
     val distanceApart = r.nextInt(maxDistanceApart)+1
@@ -589,6 +559,9 @@ class MapReaderGameGenerator {
     // Put a box in the start location
     val box = new Box()
     startLocation.addObject(box)
+
+    // Add distractor items
+    val addedDistractorNames = this.addTWCItems(r, locations, numToAdd = numDistractorItems, fold)
 
     // Create environment map (to be added to the agent inventory later)
     val mapbook = this.mkMap(r, locations, segmentMode = SEGMENT_MODE_GROUPED)
@@ -806,108 +779,89 @@ class MapReaderGameGenerator {
   }
 
   // Connects rooms (adds pointers to other locations in the Room storage classes) based on a given connection map
-  def connectRoomsFromMap(r:Random, map:Array[Array[Room]], includeDoors:Boolean, forceRooms:Array[String] = Array.empty[String]): Unit = {
-    val CONNECTION_PROBABILITY = 0.50
-
+  def connectRoomsFromMap(r:Random, map:Array[Array[Room]], includeDoors:Boolean): Unit = {
     for (i <- 0 until map.length) {
       for (j <- 0 until map(i).length) {
 
-        breakable {
-          val cell = map(i)(j)
-          // Check to see how many possible neighbours this cell has
-          var numNeighbours: Int = 0
-          if ((i < map.length - 1) && (map(i + 1)(j) != null)) numNeighbours += 1
-          if ((i >= 1) && (map(i - 1)(j) != null)) numNeighbours += 1
-          if ((j < map(i).length - 1) && (map(i)(j + 1) != null)) numNeighbours += 1
-          if ((j >= 1) && (map(i)(j - 1) != null)) numNeighbours += 1
+        val cell = map(i)(j)
 
-
-          if (cell != null) {
-
-            // connectRoomsFromMap can be run in two modes.
-            // First pass mode: forceRooms is empty -- run on every room.
-            // Second pass mode: forceRooms is non-emtpy -- only run on those rooms mentioned.
-            if ((!forceRooms.isEmpty) && (!forceRooms.contains(cell.name))) break()
-
-            // Step 1: Check north
-            if (i < map.length - 1) {
-              val queryLoc = map(i + 1)(j)
-              if (queryLoc != null) {
-                //if (cell.prefersConnectingTo.contains(queryLoc.name)) {
-                if ((numNeighbours == 1) || (r.nextDouble() < CONNECTION_PROBABILITY)) {
-                  // Do connection
-                  cell.locationNorth = queryLoc
-                  queryLoc.locationSouth = cell
-                  if (includeDoors) {
-                    val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                    if (door.isDefined) {
-                      cell.doorNorth = door.get
-                      queryLoc.doorSouth = door.get
-                    }
+        if (cell != null) {
+          // Step 1: Check north
+          if (i < map.length-1) {
+            val queryLoc = map(i+1)(j)
+            if (queryLoc != null) {
+              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
+                // Do connection
+                cell.locationNorth = queryLoc
+                queryLoc.locationSouth = cell
+                if (includeDoors) {
+                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
+                  if (door.isDefined) {
+                    cell.doorNorth = door.get
+                    queryLoc.doorSouth = door.get
                   }
                 }
               }
             }
+          }
 
-            // Step 2: Check south
-            if (i >= 1) {
-              val queryLoc = map(i - 1)(j)
-              if (queryLoc != null) {
-                if ((numNeighbours == 1) || (r.nextDouble() < CONNECTION_PROBABILITY)) {
-                  // Do connection
-                  cell.locationSouth = queryLoc
-                  queryLoc.locationNorth = cell
-                  if (includeDoors) {
-                    val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                    if (door.isDefined) {
-                      cell.doorSouth = door.get
-                      queryLoc.doorNorth = door.get
-                    }
+          // Step 2: Check south
+          if (i >= 1) {
+            val queryLoc = map(i-1)(j)
+            if (queryLoc != null) {
+              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
+                // Do connection
+                cell.locationSouth = queryLoc
+                queryLoc.locationNorth = cell
+                if (includeDoors) {
+                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
+                  if (door.isDefined) {
+                    cell.doorSouth = door.get
+                    queryLoc.doorNorth = door.get
                   }
                 }
               }
             }
+          }
 
-            // Step 3: Check east
-            if (j >= 1) {
-              val queryLoc = map(i)(j - 1)
-              if (queryLoc != null) {
-                if ((numNeighbours == 1) || (r.nextDouble() < CONNECTION_PROBABILITY)) {
-                  // Do connection
-                  cell.locationEast = queryLoc
-                  queryLoc.locationWest = cell
-                  if (includeDoors) {
-                    val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                    if (door.isDefined) {
-                      cell.doorEast = door.get
-                      queryLoc.doorWest = door.get
-                    }
+          // Step 3: Check east
+          if (j >= 1) {
+            val queryLoc = map(i)(j-1)
+            if (queryLoc != null) {
+              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
+                // Do connection
+                cell.locationEast = queryLoc
+                queryLoc.locationWest = cell
+                if (includeDoors) {
+                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
+                  if (door.isDefined) {
+                    cell.doorEast = door.get
+                    queryLoc.doorWest = door.get
                   }
                 }
               }
             }
+          }
 
-            // Step 4: Check west
-            if (j < map(i).length - 1) {
-              val queryLoc = map(i)(j + 1)
-              if (queryLoc != null) {
-                if ((numNeighbours == 1) || (r.nextDouble() < CONNECTION_PROBABILITY)) {
-                  // Do connection
-                  cell.locationWest = queryLoc
-                  queryLoc.locationEast = cell
-                  if (includeDoors) {
-                    val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
-                    if (door.isDefined) {
-                      cell.doorWest = door.get
-                      queryLoc.doorEast = door.get
-                    }
+          // Step 4: Check west
+          if (j < map(i).length-1) {
+            val queryLoc = map(i)(j+1)
+            if (queryLoc != null) {
+              if (cell.prefersConnectingTo.contains(queryLoc.name)) {
+                // Do connection
+                cell.locationWest = queryLoc
+                queryLoc.locationEast = cell
+                if (includeDoors) {
+                  val door = doorMaker.mkDoor(r, cell.name, queryLoc.name, isOpen = false)
+                  if (door.isDefined) {
+                    cell.doorWest = door.get
+                    queryLoc.doorEast = door.get
                   }
                 }
               }
             }
           }
         }
-
       }
     }
 
@@ -967,7 +921,7 @@ class MapReaderGameGenerator {
 
 
   def mkConnections(r:Random, locations:ArrayBuffer[Room]): Option[Array[Array[Room]]] = {
-    val GRID_SIZE = 10
+    val GRID_SIZE = 7
     val map = Array.ofDim[Room](GRID_SIZE, GRID_SIZE)
 
     // Initialize blank map
@@ -982,8 +936,8 @@ class MapReaderGameGenerator {
     locationsLeft.insertAll(0, r.shuffle(locations))     // Randomly shuffle locations in
 
     // Place the first location in the center
-    var lastX = 5
-    var lastY = 5
+    var lastX = 3
+    var lastY = 3
     map(lastX)(lastY) = locationsLeft.last
     locationsLeft.remove(locationsLeft.size-1)      // Remove from the back
     var lastLocation = map(lastX)(lastY)
@@ -1008,27 +962,36 @@ class MapReaderGameGenerator {
 
         //println (attempts + ": Trying to place: " + location.name )
 
-        // NOTE: For MapReader, removed constraint that rooms must prefer to connect to each other
-        // Find an empty direction
-        val (newX, newY) = findEmptyDirection(r, map, lastX, lastY)
-        if (newX != -1) {
-          // Set new location
-          map(newX)(newY) = location
-          // Remove from generation
-          locationsLeft.remove(locationIdx)
+        // If these locations prefer connecting to each other
+        if (location.prefersConnectingTo.contains(lastLocation.name)) {
+          // Find an empty direction
+          val (newX, newY) = findEmptyDirection(r, map, lastX, lastY)
+          if (newX != -1) {
+            // Set new location
+            map(newX)(newY) = location
+            // Remove from generation
+            locationsLeft.remove(locationIdx)
 
-          // Store that this location has been populated
-          populatedLocations.append((newX, newY))
+            // Store that this location has been populated
+            populatedLocations.append( (newX, newY) )
 
-          //println ("\tPlaced at: " + newX + ", " + newY)
+            //println ("\tPlaced at: " + newX + ", " + newY)
+          } else {
+            //println ("\tCan't find location")
+          }
+
+
+
         } else {
-          //println ("\tCan't find location")
+          //println ("\tDoesn't connect to last")
         }
+
 
         attempts += 1
         if (attempts > 100) break()
       }
     }
+
 
     //println( displayMap(map) )
 
@@ -1037,28 +1000,29 @@ class MapReaderGameGenerator {
   }
 
 
-  def mkGame(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
+  //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
+  def mkGame(seed:Long, numLocations:Int = 15, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderConstraintsGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
     props("numLocations") = numLocations
     props("maxDistanceApart") = maxDistanceApart
-    props("maxDistractorItemsPerLocation") = maxDistractorItemsPerLocation
+    props("numDistractorItems") = numDistractorItems
     props("includeDoors") = if (includeDoors) { 1 } else { 0 }
     props("limitInventorySize") = if (limitInventorySize) { 1 } else { 0 }
     props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
     val r = new Random(seed)
-    val (locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart) = mkEnvironment(r, numLocations, maxDistanceApart, maxDistractorItemsPerLocation, includeDoors, fold)
+    val (locations, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart) = mkEnvironment(r, numLocations, maxDistanceApart, numDistractorItems, includeDoors, fold)
     props("actualDistanceApart") = actualDistanceApart
-    val game = new MapReaderGame( locations.toArray, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, generationProperties = props.toMap )
+    val game = new MapReaderConstraintsGame( locations.toArray, taskObjects, mapbook, box, startLocation, endLocation, actualDistanceApart, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 15, maxDistanceApart:Int = 1, numDistractorItems:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderConstraintsGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 1
     val rg = new Random()
 
@@ -1066,8 +1030,8 @@ class MapReaderGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, numLocations, maxDistanceApart, maxDistractorItemsPerLocation, includeDoors, limitInventorySize, fold)
-        val goldAgent = new MapReaderGoldAgent(game)
+        val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize, fold)
+        val goldAgent = new MapReaderConstraintsGoldAgent(game)   //## TODO
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 
@@ -1080,7 +1044,7 @@ class MapReaderGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, numLocations, maxDistanceApart, maxDistractorItemsPerLocation, includeDoors, limitInventorySize, fold)
+    val game = this.mkGame(seed, numLocations, maxDistanceApart, numDistractorItems, includeDoors, limitInventorySize, fold)
     return (game, goldPath)
   }
 

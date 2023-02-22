@@ -13,8 +13,20 @@ GAME_PARAMS = {
 
 def test_observation_is_deterministic():
     env = TextWorldExpressEnv()
+    # Test all games with some fixed params.
     for game_name in env.getGameNames():
         obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name])
+
+        for i in range(30):
+            obs, _ = env.reset()
+            assert obs == obs_orig
+
+            obs, _, _, _ = env.step("look around")
+            assert obs == obs_orig
+
+    # Test all games with their default params.
+    for game_name in env.getGameNames():
+        obs_orig, _ = env.reset(seed=0, gameFold="train", gameName=game_name, gameParams="")
 
         for i in range(30):
             obs, _ = env.reset()

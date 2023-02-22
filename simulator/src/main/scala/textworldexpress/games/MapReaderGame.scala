@@ -517,14 +517,15 @@ class MapReaderGameGenerator {
       val room = new Room(name = shuffledLocationNames(i))
 
       // Add some number of random distractor objects
-      val numDistractors = r.nextInt(maxDistractorItemsPerLocation)
-      for (j <- 0 until numDistractors) {
-        val randObj = TWCObjectDatabase.mkRandomObject(r, fold)
-        if (randObj.isDefined) {
-          room.addObject(randObj.get)
+      if (maxDistractorItemsPerLocation > 0) {
+        val numDistractors = r.nextInt(maxDistractorItemsPerLocation)
+        for (j <- 0 until numDistractors) {
+          val randObj = TWCObjectDatabase.mkRandomObject(r, fold)
+          if (randObj.isDefined) {
+            room.addObject(randObj.get)
+          }
         }
       }
-
       locations.append(room)
     }
 
@@ -1037,7 +1038,7 @@ class MapReaderGameGenerator {
   }
 
 
-  def mkGame(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
+  def mkGame(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 3, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):MapReaderGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -1058,7 +1059,7 @@ class MapReaderGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 0, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 11, maxDistanceApart:Int = 4, maxDistractorItemsPerLocation:Int = 3, includeDoors:Boolean = false, limitInventorySize:Boolean = false, fold:String = "train"):(MapReaderGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 1
     val rg = new Random()
 

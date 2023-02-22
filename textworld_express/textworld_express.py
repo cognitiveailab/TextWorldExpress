@@ -113,7 +113,7 @@ class TextWorldExpressEnv:
             self.load(self.gameName, self.gameParams)
 
         self.gameFold = gameFold or self.gameFold
-        self.seed = seed or self.seed
+        self.seed = seed if seed is not None else self.seed
 
         self.goldPathGenerated = generateGoldPath
         if self.seed is None:

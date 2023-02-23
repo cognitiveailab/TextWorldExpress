@@ -3,7 +3,8 @@ from textworld_express import TextWorldExpressEnv
 
 GAME_PARAMS = {
     "cookingworld": "numLocations=1, numIngredients=2, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
-    "twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
+    #"twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
+    "twc": "numLocations=1,numItemsToPutAway=1,includeDoors=0,limitInventorySize=0",
     "coin": "numLocations=1, numDistractorItems=5, limitInventorySize=0",
     "arithmetic": "",
     "mapreader": "numLocations=2, maxDistanceApart=1, maxDistractorItemsPerLocation=2, includeDoors=0, limitInventorySize=0",
@@ -65,3 +66,12 @@ def test_multiple_instances():
     env2.step("open fridge")
     obs2_2, _, _, _ = env2.step("look around")
     assert obs1_2 == obs2_2
+
+
+def test_generate_goldpath():
+    env = TextWorldExpressEnv()
+    # Test all games with some fixed params.
+    for game_name in env.getGameNames():
+        print(game_name)
+        _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name], generateGoldPath=True)
+        print(env.getGoldActionSequence())

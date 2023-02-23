@@ -33,8 +33,13 @@ class TWCGoldAgent(game:TWCGame) {
       }
     }
 
+    // Make a shallow copy of the inventory
+    // We will iterate through this list and remove items as we put them down
+    // This is to avoid concurrent modification exceptions
+    val inventoryObjects = game.agentInventory.contents.clone()
+
     // Check to see if there is anything to put down in its cannonical location
-    for (iObj <- game.agentInventory.contents) {
+    for (iObj <- inventoryObjects) {
       val cannonicalLocations = iObj.canonicalLocations
 
       breakable {
@@ -115,4 +120,3 @@ class TWCGoldAgent(game:TWCGame) {
   }
 
 }
-

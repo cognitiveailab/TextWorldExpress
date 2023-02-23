@@ -207,6 +207,7 @@ class TextWorldExpressEnv:
         # Step 1: Take a step in the environment
         infos = self.parseJSONResponse(self.server.stepJSON(inputStr))
         observation = infos["observation"]
+        infos['lastActionStr'] = inputStr
 
         # Step 2: Calculate reward
         score = infos['score']

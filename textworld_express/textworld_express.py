@@ -2,7 +2,10 @@
 import os
 import logging
 
-import orjson  # faster json serialization
+try:
+    import orjson  # faster json serialization
+except ImportError:
+    import json as orjson
 
 from py4j.java_gateway import launch_gateway
 from py4j.java_gateway import JavaGateway, GatewayParameters, CallbackServerParameters
@@ -33,13 +36,14 @@ class TextWorldExpressEnv:
             print("Attach debugger within the next 10 seconds")
             time.sleep(10)  # Give time for user to attach debugger
         else:
-            port = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH)
+            port, proc = launch_gateway(classpath=serverPath, die_on_exit=True, cwd=BASEPATH, return_proc=True)
 
         # Connect python side to Java side with Java dynamic port and start python
         # callback server with a dynamic port
         self._gateway = JavaGateway(
             gateway_parameters=GatewayParameters(auto_field=True, port=port),
-            callback_server_parameters=CallbackServerParameters(port=0, daemonize=True))
+            callback_server_parameters=CallbackServerParameters(port=0, daemonize=True),
+            java_process=proc)
 
         # Retrieve the port on which the python callback server was bound to.
         python_port = self._gateway.get_callback_server().get_listening_port()
@@ -55,9 +59,6 @@ class TextWorldExpressEnv:
 
         # Keep track of the last step score, to calculate reward from score
         self.lastStepScore = 0
-
-        # Load the script
-        #self.load(self.gameName, 0, "")
 
         # Set the environment step limit
         self.envStepLimit = envStepLimit
@@ -139,6 +140,18 @@ class TextWorldExpressEnv:
         msg = self.server.load(self.gameName, self.gameParams)
         if msg:
             raise ValueError(msg)
+
+    def close(self) -> None:
+        self._gateway.shutdown()
+
+        # According to https://github.com/py4j/py4j/issues/320#issuecomment-553599210
+        # we need to send a newline to the process to make it exit.
+        if self._gateway.java_process.poll() is None:
+            self._gateway.java_process.stdin.write("\n".encode("utf-8"))
+            self._gateway.java_process.stdin.flush()
+
+    def __del__(self):
+        self.close()
 
 
     # Get a list of valid tasks/environments

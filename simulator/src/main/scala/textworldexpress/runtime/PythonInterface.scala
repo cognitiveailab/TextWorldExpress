@@ -1,5 +1,7 @@
 package textworldexpress.runtime
 
+import java.io.PrintWriter
+
 import py4j.GatewayServer
 import textworldexpress.generator.GameGenerator
 import textworldexpress.struct.{StepResult, TextGame}
@@ -160,6 +162,18 @@ class PythonInterface() {
     return this.game.getTaskDescription()
   }
 
+  def getObjectTree(path:String = ""):String = {
+    if (this.game == null) return "Object tree unavailable -- game is not initialized. Call env.reset first."
+
+    val objTree = this.game.getObjectTree()
+    if (path == "") return objTree
+
+    val pw = new PrintWriter(path)
+    pw.print(objTree)
+    pw.close()
+    return ""
+  }
+
   /*
    * Train/development/test sets
    */
@@ -239,9 +253,6 @@ class PythonInterface() {
     val stepResult = this.step(userInputString)
     stepResult.toJSON()
   }
-
-
-
 
 }
 

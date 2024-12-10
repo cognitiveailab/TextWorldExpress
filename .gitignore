@@ -1,6 +1,7 @@
 .idea/**
 dist/
 *.egg-info
+*.class
 __pycache__/
 build/
 
@@ -10,4 +11,5 @@ simulator/project/build.properties
 simulator/project/project/
 simulator/project/target/
 simulator/target/
+simulator/project
 precrawledpaths/

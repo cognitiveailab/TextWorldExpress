@@ -75,3 +75,43 @@ def test_generate_goldpath():
         print(game_name)
         _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name], generateGoldPath=True)
         print(env.getGoldActionSequence())
+
+
+def test_object_tree_cookingworld():
+    env = TextWorldExpressEnv()
+    obs, infos = env.reset(gameName="cookingworld", seed=20221120, gameFold="train", generateGoldPath=True)
+
+    obj_tree = env.getObjectTree()
+
+    expected_location_names = ['backyard', 'bathroom', 'bedroom', 'corridor', 'driveway', 'kitchen', 'laundry room', 'living room', 'pantry', 'street', 'supermarket']
+    assert sorted(obj_tree["locations"].keys()) == expected_location_names
+    assert obj_tree["player_location"] == "kitchen"
+    assert sorted(obj_tree["inventory"].keys()) == []
+    assert sorted(obj_tree["deleted_objects"].keys()) == []
+
+    # Follow walkthrough
+    for cmd in env.getGoldActionSequence():
+        env.step(cmd)
+
+    obj_tree_end = env.getObjectTree()
+    assert sorted(obj_tree_end["deleted_objects"].keys()) == ["meal"]
+    assert sorted(obj_tree_end["inventory"].keys()) == ["cookbook", "knife"]
+
+    def _extract_contents(root):
+        if "contents" not in root:
+            return {}
+
+        objs = dict(root["contents"])
+        for node in root["contents"].values():
+            objs.update(_extract_contents(node))
+
+        return objs
+
+    # check objects in the kitchen
+    expected_objs_in_kitchen = ['counter', 'cutlery drawer', 'dining chair', 'dining table', 'dishwasher', 'fridge', 'oven', 'stove', 'trash can']
+    assert sorted(obj_tree["locations"]["kitchen"]["contents"].keys()) == expected_objs_in_kitchen
+
+    # collect all objects in the kitchen (including nested ones)
+    objs = _extract_contents(obj_tree["locations"]["kitchen"])
+    expected_nested_objs_in_kitchen = ['cookbook', 'counter', 'cutlery drawer', 'dining chair', 'dining table', 'dishwasher', 'fridge', 'green bell pepper', 'knife', 'oven', 'stove', 'trash can']
+    assert sorted(objs.keys()) == expected_nested_objs_in_kitchen

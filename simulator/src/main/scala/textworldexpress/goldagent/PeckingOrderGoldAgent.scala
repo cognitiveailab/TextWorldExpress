@@ -10,7 +10,7 @@ class PeckingOrderGoldAgent(game:PeckingOrderGame) {
     val stepResult = game.initalStep()
 
     for (i <- 0 until game.objectOrder.length) {
-      game.step("read instructions")
+      game.step("read instructions book")
       val obj = game.objectOrder(i)
       game.step("take " + obj.name)
     }

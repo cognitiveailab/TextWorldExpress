@@ -1,7 +1,7 @@
 package textworldexpress
 
 import textworldexpress.generator.GameGenerator
-import textworldexpress.goldagent.KitchenGoldAgent
+import textworldexpress.goldagent.CookingWorldGoldAgent
 import textworldexpress.objects.{Counter, FastObject, Fridge, Room}
 import textworldexpress.struct.TextGame
 

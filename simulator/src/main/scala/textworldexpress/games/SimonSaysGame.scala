@@ -327,7 +327,7 @@ class SimonSaysGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(SimonSaysGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):(SimonSaysGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -335,7 +335,7 @@ class SimonSaysGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, fold)
+        val game = this.mkGame(seed, gameLength, numDistractors, fold)
         val goldAgent = new SimonSaysGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
@@ -349,7 +349,7 @@ class SimonSaysGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, fold)
+    val game = this.mkGame(seed, gameLength, numDistractors, fold)
     return (game, goldPath)
   }
 

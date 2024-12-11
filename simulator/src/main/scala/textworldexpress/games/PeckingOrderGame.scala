@@ -43,7 +43,7 @@ class PeckingOrderScoring(val objectOrder:Array[FastObject], val inventory:FastO
       }
     }
 
-    // If we failued the task, then set the score to -1, regardless of progress
+    // If we failed the task, then set the score to -1, regardless of progress
     if (taskFailure) {
       val scores = new GameScore(scoreRaw = -1, scoreNormalized = -1, taskSuccess = false, taskFailure = true)
       this.curScore = scores
@@ -121,7 +121,7 @@ class PeckingOrderGame(val locations:Array[Room], val objectOrder:Array[FastObje
    * Task Description
    */
   def getTaskDescription():String = {
-    return "Your task is to read and follow the instructions presented in the environment.  Repeat this until the game is completed."
+    return "Your task is to read and follow the instructions book found in the environment. Repeat this until the game is completed."
   }
 
   /*

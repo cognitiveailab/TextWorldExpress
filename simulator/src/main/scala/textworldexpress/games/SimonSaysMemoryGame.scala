@@ -110,7 +110,7 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
    * Task Description
    */
   def getTaskDescription():String = {
-    return "Your task is to take exactly the actions that are requested of you."
+    return "Your task is to do exactly what Simon says."
   }
 
   /*
@@ -333,7 +333,7 @@ class SimonSaysMemoryGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(SimonSaysMemoryGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):(SimonSaysMemoryGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -341,7 +341,7 @@ class SimonSaysMemoryGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, fold)
+        val game = this.mkGame(seed, gameLength, numDistractors, fold)
         val goldAgent = new SimonSaysMemoryGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
@@ -355,7 +355,7 @@ class SimonSaysMemoryGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, fold)
+    val game = this.mkGame(seed, gameLength, numDistractors, fold)
     return (game, goldPath)
   }
 

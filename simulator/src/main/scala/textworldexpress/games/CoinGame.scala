@@ -1,7 +1,7 @@
 package textworldexpress.games
 
 import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON, RecipeIngredient}
-import textworldexpress.goldagent.{CoinGoldAgent, KitchenGoldAgent}
+import textworldexpress.goldagent.{CoinGoldAgent, CookingWorldGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Coin, Cookbook, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Meal, Pantry, Room, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 

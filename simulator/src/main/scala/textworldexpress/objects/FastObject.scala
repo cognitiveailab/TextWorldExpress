@@ -824,7 +824,7 @@ class MathProblem() extends FastObject(name = "math problem") {
 }
 
 // A set of instructions for what to do
-class Instructions() extends FastObject(name = "instructions") {
+class Instructions() extends FastObject(name = "instructions book") {
   this.isReadable = true
   this.isMovable = true
 

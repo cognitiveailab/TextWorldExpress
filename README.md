@@ -6,7 +6,7 @@ TextWorldExpress is a highly optimized reimplementation of three text game bench
 
 
 # Quickstart
-**Before running:** You will have to have `Java 1.8` installed on your system (shipped with most linux distributions).
+**Before running:** You will need `Java 1.8` installed on your system (shipped with most linux distributions).
 
 Install with pip:
 

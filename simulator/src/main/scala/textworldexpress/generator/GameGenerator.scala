@@ -322,7 +322,7 @@ class GameGeneratorSorting() extends GameGenerator {
 /*
  * Simon Says Game
  */
-class GameGeneratorSimonSays() extends GameGenerator {
+class GameGeneratorSimonSays(gameLength:Int = 5, numDistractors:Int = 3) extends GameGenerator {
   val generator = new SimonSaysGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
@@ -352,11 +352,11 @@ class GameGeneratorSimonSays() extends GameGenerator {
    * Game generation
    */
   def mkGame(seed:Long, fold:String):TextGame = {
-    return generator.mkGame(seed=seed, fold=fold)
+    return generator.mkGame(seed=seed, gameLength=gameLength, numDistractors=numDistractors, fold=fold)
   }
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
-    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+    return generator.mkGameWithGoldPath(seed=seed, gameLength=gameLength, numDistractors=numDistractors, fold=fold)
   }
 
 }
@@ -365,7 +365,7 @@ class GameGeneratorSimonSays() extends GameGenerator {
 /*
  * Simon Says (long memory version) Game
  */
-class GameGeneratorSimonSaysMemory() extends GameGenerator {
+class GameGeneratorSimonSaysMemory(gameLength:Int = 5, numDistractors:Int = 3) extends GameGenerator {
   val generator = new SimonSaysMemoryGameGenerator()
   this.errorStr = this.checkValidConfiguration()
 
@@ -395,11 +395,11 @@ class GameGeneratorSimonSaysMemory() extends GameGenerator {
    * Game generation
    */
   def mkGame(seed:Long, fold:String):TextGame = {
-    return generator.mkGame(seed=seed, fold=fold)
+    return generator.mkGame(seed=seed, gameLength=gameLength, numDistractors=numDistractors, fold=fold)
   }
 
   def mkGameWithGoldPath(seed:Long, fold:String):(TextGame, Array[String]) = {
-    return generator.mkGameWithGoldPath(seed=seed, fold=fold)
+    return generator.mkGameWithGoldPath(seed=seed, gameLength=gameLength, numDistractors=numDistractors, fold=fold)
   }
 
 }
@@ -577,12 +577,10 @@ object GameGenerator {
     val memorization:Boolean = if(properties.getOrElse("memorization", 0) == 1) { true } else { false }
 
     // Make game
-    if (memorization) {
-      val game = new GameGeneratorSimonSaysMemory()
-      return game
+    val game = if (memorization) {
+      new GameGeneratorSimonSaysMemory(gameLength=gameLength, numDistractors=numDistractors)
     } else {
-      val game = new GameGeneratorSimonSays()
-      return game
+      new GameGeneratorSimonSays(gameLength=gameLength, numDistractors=numDistractors)
     }
 
     // Check for unrecognized properties

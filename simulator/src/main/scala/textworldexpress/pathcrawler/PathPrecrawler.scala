@@ -202,7 +202,7 @@ object PathPrecrawler {
 
 
     // Convert
-    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT, string2Idx = StepResultHashed.string2IDX.toMap)
+    val precrawled = PrecrawledPath.make(root = precrawledGameTree.get, stringLUT = StepResultHashed.stringLUT)
     //## println( precrawled.StringLUTToString() )
 
     // Save

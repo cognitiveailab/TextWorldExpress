@@ -1,7 +1,7 @@
 package textworldexpress.games
 
 import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON, RecipeIngredient}
-import textworldexpress.goldagent.KitchenGoldAgent
+import textworldexpress.goldagent.CookingWorldGoldAgent
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Cookbook, Corridor, Counter, DoorMaker, Driveway, FastObject, Kitchen, Knife, LaundryRoom, LivingRoom, Meal, Pantry, Room, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
@@ -12,7 +12,7 @@ import scala.util.control.Breaks._
 
 
 // 'recipe' and 'taskObjects' are parallel arrays representing the same objects
-class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject]) extends Scorer {
+class CookingWorldGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject]) extends Scorer {
   var maxScoreFromPrep:Double = 0.0
   var ingredientsFound:Array[Boolean] = Array.fill(taskObjects.length) { false }
 
@@ -103,7 +103,7 @@ class KitchenGameScoring(val recipe:ArrayBuffer[RecipeIngredient], val taskObjec
 
 }
 
-class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class CookingWorldGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngredient], val taskObjects:ArrayBuffer[FastObject], limitInventorySize:Boolean, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -115,7 +115,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer = new KitchenGameScoring(recipe, taskObjects)
+  val scorer = new CookingWorldGameScoring(recipe, taskObjects)
   var meal:Option[FastObject] = None    // Prepared meal (for scoring)
 
   // A list of the most recently generated valid actions (for step() )
@@ -135,7 +135,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
   def deepCopy():TextGame = {
     println ("TODO: Cloning not implemented -- creating shallow copy.")
 
-    return new KitchenGame(locations, recipe, taskObjects, this.limitInventorySize, seed=this.seed, this.generationProperties)
+    return new CookingWorldGame(locations, recipe, taskObjects, this.limitInventorySize, seed=this.seed, this.generationProperties)
     /*
     val clonedTaskObjects = new ArrayBuffer[FastObject]
 
@@ -151,7 +151,7 @@ class KitchenGame(val locations:Array[Room], val recipe:ArrayBuffer[RecipeIngred
     // Step 3: Create new game
     val recipeCloned = new ArrayBuffer[RecipeIngredient]
     recipeCloned.insertAll(0, recipe)
-    val game = new KitchenGame(locationsClone, recipeCloned, clonedTaskObjects, this.limitInventorySize, seed = this.seed)
+    val game = new CookingWorldGame(locationsClone, recipeCloned, clonedTaskObjects, this.limitInventorySize, seed = this.seed)
 
     // Also clone the agent inventory
     game.agentInventory = this.agentInventory.deepCopy(existingTaskObjects = taskObjects, copyTaskObjects = clonedTaskObjects)
@@ -1190,7 +1190,7 @@ class CookingWorldGameGenerator {
   }
 
 
-  def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, numIngredients:Int = 3, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):KitchenGame = {
+  def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, numIngredients:Int = 3, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CookingWorldGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -1204,13 +1204,13 @@ class CookingWorldGameGenerator {
     // Generate Game
     val r = new Random(seed)
     val (locations, recipe, taskObjects) = mkEnvironment(r, numLocations, numDistractorItems, numIngredients, includeDoors, fold)
-    val game = new KitchenGame( locations.toArray, recipe, taskObjects, limitInventorySize, generationProperties = props.toMap )
+    val game = new CookingWorldGame( locations.toArray, recipe, taskObjects, limitInventorySize, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, numIngredients:Int = 3, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(KitchenGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, numIngredients:Int = 3, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):(CookingWorldGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random(seed)
 
@@ -1219,7 +1219,7 @@ class CookingWorldGameGenerator {
     breakable {
       while (attempts < MAX_ATTEMPTS) {
         val game = this.mkGame(seed, numLocations, numDistractorItems, numIngredients, includeDoors, limitInventorySize, fold)
-        val goldAgent = new KitchenGoldAgent(game)
+        val goldAgent = new CookingWorldGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 

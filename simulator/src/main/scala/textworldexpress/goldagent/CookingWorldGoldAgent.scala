@@ -1,13 +1,13 @@
 package textworldexpress.goldagent
 
-import textworldexpress.games.KitchenGame
+import textworldexpress.games.CookingWorldGame
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import scala.util.control.Breaks._
 
-class KitchenGoldAgent(game:KitchenGame) {
+class CookingWorldGoldAgent(game:CookingWorldGame) {
   val foundIngredients = new ArrayBuffer[String]()
   val mapConnections = mutable.Map[String, mutable.Set[String]]()
 

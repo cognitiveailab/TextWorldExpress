@@ -9,6 +9,8 @@ GAME_PARAMS = {
     "arithmetic": "",
     "mapreader": "numLocations=2, maxDistanceApart=1, maxDistractorItemsPerLocation=2, includeDoors=0, limitInventorySize=0",
     "sorting": "",
+    "simonsays": "",
+    "peckingorder": "",
 }
 
 

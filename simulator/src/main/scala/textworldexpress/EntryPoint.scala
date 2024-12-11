@@ -1,6 +1,5 @@
 package textworldexpress
 
-import textworldexpress.games.{CoinGame, CoinGameGenerator, KitchenGame, KitchenGameGenerator, TWCGame, TWCGameGenerator}
 import textworldexpress.generator.GameGenerator
 import textworldexpress.goldagent.KitchenGoldAgent
 import textworldexpress.objects.{Counter, FastObject, Fridge, Room}

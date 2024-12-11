@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.goldagent.{SimonSaysGoldAgent, SimonSaysMemoryGoldAgent}
+import textworldexpress.goldagent.SimonSaysMemoryGoldAgent
 import textworldexpress.objects.FastObject
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
 
@@ -312,19 +312,18 @@ class SimonSaysMemoryGameGenerator {
   }
 
 
-  def mkGame(seed:Long, fold:String = "train"):SimonSaysMemoryGame = {
+  def mkGame(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):SimonSaysMemoryGame = {
     val r = new Random(seed)
-    val gameLength:Int = r.nextInt(3) + 3   // Game lengths between 3-5 actions
-
 
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
-    props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
     props("gameLength") = gameLength
+    props("numDistractors") = numDistractors
+    props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
-    val actionSequence = this.mkActionSequence(r, gameFold = fold, length = gameLength+2)   // Overgenerate by 2, to have distractors
+    val actionSequence = this.mkActionSequence(r, gameFold = fold, length = gameLength+numDistractors)  // Overgenerate by numDistractors.
     val goldSequence = actionSequence.slice(0, gameLength)
     val possibleActions = actionSequence
 

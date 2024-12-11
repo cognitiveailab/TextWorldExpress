@@ -1,7 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator}
-import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent, TakeThisActionGoldAgent}
+import textworldexpress.goldagent.PeckingOrderGoldAgent
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Instructions, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -13,8 +12,7 @@ import scala.util.control.Breaks.{break, breakable}
 
 
 
-// 'taskObjects' just contains the reference to any coin(s) to be collected in the agent's inventory
-class TakeThisActionGameScoring(val objectOrder:Array[FastObject], val inventory:FastObject) extends Scorer {
+class PeckingOrderScoring(val objectOrder:Array[FastObject], val inventory:FastObject) extends Scorer {
 
   def doScoring(): Unit = {
     // Check status of each object
@@ -73,7 +71,7 @@ class TakeThisActionGameScoring(val objectOrder:Array[FastObject], val inventory
 
 
 
-class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastObject], val instructionBook:Instructions, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
+class PeckingOrderGame(val locations:Array[Room], val objectOrder:Array[FastObject], val instructionBook:Instructions, val seed:Long = 0, val generationProperties:Map[String, Int]) extends TextGame {
 
   // Inventory
   var agentInventory = new FastObject("inventory")
@@ -85,7 +83,7 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
   val deletedObjects = new ArrayBuffer[FastObject]()
 
   // Scorer
-  val scorer:Scorer = new TakeThisActionGameScoring(objectOrder, this.agentInventory)
+  val scorer:Scorer = new PeckingOrderScoring(objectOrder, this.agentInventory)
 
   // A list of the most recently generated valid actions (for step() )
   var lastValidActions = ListBuffer.empty[(String, Int, Array[FastObject])]
@@ -104,10 +102,10 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
    */
 
   // TODO: Not implemented
-  def deepCopy():TakeThisActionGame = {
+  def deepCopy():PeckingOrderGame = {
     println ("NOTE: deepCopy() not implemented -- returning a shallow copy")
     // Return
-    return new TakeThisActionGame(locations, objectOrder, instructionBook, seed, generationProperties)
+    return new PeckingOrderGame(locations, objectOrder, instructionBook, seed, generationProperties)
   }
 
 
@@ -519,9 +517,7 @@ class TakeThisActionGame(val locations:Array[Room], val objectOrder:Array[FastOb
 }
 
 
-class TakeThisActionGameGenerator {
-  //val TWCObjectDatabase = new LoadTWCDataJSON()
-  //val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+class PeckingOrderGameGenerator {
   val doorMaker = new DoorMaker()
 
 
@@ -605,7 +601,7 @@ class TakeThisActionGameGenerator {
 
 
   //def mkGame(seed:Long, numLocations:Int = 12, numDistractorItems:Int = 10, includeDoors:Boolean = true, limitInventorySize:Boolean = true, fold:String = "train"):CoinGame = {
-  def mkGame(seed:Long, fold:String = "train"):TakeThisActionGame = {
+  def mkGame(seed:Long, fold:String = "train"):PeckingOrderGame = {
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
@@ -614,13 +610,13 @@ class TakeThisActionGameGenerator {
     // Generate Game
     val r = new Random(seed)
     val (locations, taskObjects, instructionBook) = mkEnvironment(r, seed.toInt, fold)
-    val game = new TakeThisActionGame( locations.toArray, taskObjects, instructionBook, seed, generationProperties = props.toMap )
+    val game = new PeckingOrderGame( locations.toArray, taskObjects, instructionBook, seed, generationProperties = props.toMap )
 
     return game
   }
 
 
-  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(TakeThisActionGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, fold:String = "train"):(PeckingOrderGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -629,7 +625,7 @@ class TakeThisActionGameGenerator {
     breakable {
       while (attempts < MAX_ATTEMPTS) {
         val game = this.mkGame(seed, fold)
-        val goldAgent = new TakeThisActionGoldAgent(game)
+        val goldAgent = new PeckingOrderGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
 

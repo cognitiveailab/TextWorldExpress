@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.util.Random
 
-case class TWKitchenObject(name:String, indefinite:String, properties:Set[String], locations:Array[String]) {
+case class CookingWorldObject(name:String, indefinite:String, properties:Set[String], locations:Array[String]) {
 
   // Convert to a FastObject
   def toFastObject():FastObject = {
@@ -61,14 +61,14 @@ case class RecipeIngredient(name:String, preparation:Set[String]) {
 }
 
 // Loads the data from TWC Kitchen
-class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILENAME) {
+class LoadCookingWorldDataJSON(filename:String = LoadCookingWorldDataJSON.DEFAULT_FILENAME) {
 
   val (allObjs, lutObj, lutLocation, foodSplitsTrain, foodSplitsDev, foodSplitsTest, foodPrepTrain, foodPrepDev, foodPrepTest) = this.load(filename)
 
   /*
    * Getters
    */
-  def getObjByName(name:String):TWKitchenObject = {
+  def getObjByName(name:String):CookingWorldObject = {
     return lutObj(name)
   }
 
@@ -78,7 +78,7 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
     if (lutObj.contains(name)) return lutObj(name).toFastObject()
     // Some objects don't exist, so make a default one
     // TODO: SLOW?
-    val obj = new TWKitchenObject(name, indefinite = "", properties = Set("raw", "uncut", "cuttable", "cookable", "edible"), locations = Array("counter", "shelf", "kitchen cupboard"))
+    val obj = new CookingWorldObject(name, indefinite = "", properties = Set("raw", "uncut", "cuttable", "cookable", "edible"), locations = Array("counter", "shelf", "kitchen cupboard"))
     return obj.toFastObject()
      */
   }
@@ -132,7 +132,7 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
    */
 
   // Load the JSON file, and convert to storage classes referenced by look-up-tables.
-  def load(filenameIn:String):(Array[TWKitchenObject], Map[String, TWKitchenObject], Map[String, ArrayBuffer[TWKitchenObject]], Set[String], Set[String], Set[String], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]]) = {
+  def load(filenameIn:String):(Array[CookingWorldObject], Map[String, CookingWorldObject], Map[String, ArrayBuffer[CookingWorldObject]], Set[String], Set[String], Set[String], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]], Map[String, Array[Set[String]]]) = {
     // Step 1: Load the TextWorld Common Sense object file
     val jsonString = Source.fromFile(filenameIn).getLines.mkString
     val dataRaw = ujson.read(jsonString).value.asInstanceOf[mutable.LinkedHashMap[String, Any]]
@@ -151,7 +151,7 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
     //println ("foodsCompact: " + foodsCompact)
 
     // Step 2A: Objects (foods_compact): Convert from the JSON format to an internal storage class (TWCObject)
-    val out = new ArrayBuffer[TWKitchenObject]()
+    val out = new ArrayBuffer[CookingWorldObject]()
     for (key <- foodsCompact.keySet) {
       val record = foodsCompact(key).asInstanceOf[ujson.Obj].value
       //println("key: " + key + "   " + record.toString())
@@ -170,11 +170,11 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
 
       if (alternateNames.length == 0) {
         // Single name
-        out.append( new TWKitchenObject(name, indefinite, properties, locations) )
+        out.append( new CookingWorldObject(name, indefinite, properties, locations) )
       } else {
         // This object has multiple names
         for (altName <- alternateNames) {
-          out.append(new TWKitchenObject(altName, indefinite, properties, locations))
+          out.append(new CookingWorldObject(altName, indefinite, properties, locations))
         }
       }
       //println("obj: " + obj.toString())
@@ -187,16 +187,16 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
      */
 
     // Step 2A: Make object look-up-table
-    val lutObj = mutable.Map[String, TWKitchenObject]()
+    val lutObj = mutable.Map[String, CookingWorldObject]()
     for (obj <- out) {
       lutObj(obj.name) = obj
     }
 
     // Step 2B: Make location look-up-table
-    val lutLocation = mutable.Map[String, ArrayBuffer[TWKitchenObject]]()
+    val lutLocation = mutable.Map[String, ArrayBuffer[CookingWorldObject]]()
     for (obj <- out) {
       for (location <- obj.locations) {
-        if (!lutLocation.contains(location)) lutLocation(location) = new ArrayBuffer[TWKitchenObject]()
+        if (!lutLocation.contains(location)) lutLocation(location) = new ArrayBuffer[CookingWorldObject]()
         lutLocation(location).append(obj)
       }
     }
@@ -265,11 +265,11 @@ class LoadTWKitchenDataJSON(filename:String = LoadTWKitchenDataJSON.DEFAULT_FILE
 }
 
 
-object LoadTWKitchenDataJSON {
+object LoadCookingWorldDataJSON {
   val DEFAULT_FILENAME = "cooking_world.json"
 
   def main(args:Array[String]): Unit = {
-    val d = new LoadTWKitchenDataJSON()
+    val d = new LoadCookingWorldDataJSON()
     println ("Loaded " + d.allObjs.length + " objects")
   }
 

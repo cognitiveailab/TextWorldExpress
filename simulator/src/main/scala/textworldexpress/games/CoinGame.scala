@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, RecipeIngredient}
+import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON, RecipeIngredient}
 import textworldexpress.goldagent.{CoinGoldAgent, KitchenGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Coin, Cookbook, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, Meal, Pantry, Room, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -539,7 +539,7 @@ class CoinGame(val locations:Array[Room], val taskObjects:ArrayBuffer[FastObject
 
 class CoinGameGenerator {
   val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  val CookingWorldObjectDatabase = new LoadCookingWorldDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -609,7 +609,7 @@ class CoinGameGenerator {
         //println("location: " + location.name)
 
         val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
+        //val distractorItem = CookingWorldObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (distractorItem.isDefined) {
           if (!objectNamesAdded.contains(distractorItem.get.name)) {
             container.addObject(distractorItem.get)

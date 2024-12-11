@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON}
+import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON}
 import textworldexpress.goldagent.{CoinGoldAgent, MapReaderConstraintsGoldAgent}
 import textworldexpress.objects.{Alley, Backyard, Bathroom, Bedroom, Box, Coin, Corridor, DoorMaker, Driveway, FastObject, Foyer, Garage, Kitchen, LaundryRoom, LivingRoom, Mapbook, Pantry, Room, Sideyard, Street, Supermarket}
 import textworldexpress.struct.{ActionHistory, GameScore, Scorer, StepResult, TextGame}
@@ -500,7 +500,7 @@ class MapReaderConstraintsGame(val locations:Array[Room], val taskObjects:ArrayB
 
 class MapReaderConstraintsGameGenerator {
   val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  val CookingWorldObjectDatabase = new LoadCookingWorldDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -742,7 +742,7 @@ class MapReaderConstraintsGameGenerator {
         //println("location: " + location.name)
 
         val item = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
+        //val distractorItem = CookingWorldObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (item.isDefined) {
           //println ("Item: " + item.get.name)
 

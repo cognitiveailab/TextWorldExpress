@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator}
+import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON, MathProblemGenerator}
 import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem
@@ -556,7 +556,7 @@ class ArithmeticGame(val locations:Array[Room], val mathProblemObj:MathProblem, 
 
 class ArithmeticGameGenerator {
   val TWCObjectDatabase = new LoadTWCDataJSON()
-  val TWKitchenObjectDatabase = new LoadTWKitchenDataJSON()
+  val CookingWorldObjectDatabase = new LoadCookingWorldDataJSON()
   val doorMaker = new DoorMaker()
 
 
@@ -688,7 +688,7 @@ class ArithmeticGameGenerator {
         //println("location: " + location.name)
 
         val distractorItem = TWCObjectDatabase.mkRandomObjectByLocation(r, container.name, fold)
-        //val distractorItem = TWKitchenObjectDatabase.mkRandomObjectByLocation(r, container.name)
+        //val distractorItem = CookingWorldObjectDatabase.mkRandomObjectByLocation(r, container.name)
         if (distractorItem.isDefined) {
           if (!objectNamesAdded.contains(distractorItem.get.name)) {
             container.addObject(distractorItem.get)

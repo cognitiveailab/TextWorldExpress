@@ -5,7 +5,7 @@ JAR_FILE = 'textworld-express.jar'
 JAR_PATH = os.path.join(BASEPATH, JAR_FILE)
 
 
-GAME_NAMES = ['cookingworld', 'coin', 'twc', 'mapreader', 'arithmetic', 'sorting']
+GAME_NAMES = ['cookingworld', 'coin', 'twc', 'mapreader', 'arithmetic', 'sorting', 'simonsays', 'peckingorder']
 
 
 def is_in_debug_mode() -> bool:

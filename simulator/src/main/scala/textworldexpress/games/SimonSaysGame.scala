@@ -110,7 +110,7 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
    * Task Description
    */
   def getTaskDescription():String = {
-    return "Your task is to take exactly the actions that are requested of you."
+    return "Your task is to do exactly what Simon says."
   }
 
   /*
@@ -181,7 +181,7 @@ class SimonSaysGame(val goldActionSequence:Array[String], val possibleActions:Ar
       return "Task Completed."
     }
 
-    val os = "Simon says, take this action: " + this.goldActionSequence(curStage)
+    val os = "Simon says, '" + this.goldActionSequence(curStage) + "'."
     return os
   }
 
@@ -306,19 +306,18 @@ class SimonSaysGameGenerator {
   }
 
 
-  def mkGame(seed:Long, fold:String = "train"):SimonSaysGame = {
+  def mkGame(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):SimonSaysGame = {
     val r = new Random(seed)
-    val gameLength:Int = r.nextInt(3) + 3   // Game lengths between 3-5 actions
-
 
     // Store properties in a form that are user accessible later on
     val props = mutable.Map[String, Int]()
     props("seed") = seed.toInt
-    props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
     props("gameLength") = gameLength
+    props("numDistractors") = numDistractors
+    props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
-    val actionSequence = this.mkActionSequence(r, gameFold = fold, length = gameLength+2)   // Overgenerate by 2, to have distractors
+    val actionSequence = this.mkActionSequence(r, gameFold = fold, length = gameLength+numDistractors)   // Overgenerate by numDistractors.
     val goldSequence = actionSequence.slice(0, gameLength)
     val possibleActions = actionSequence
 

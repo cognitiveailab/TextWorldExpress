@@ -1,6 +1,6 @@
 package textworldexpress.games
 
-import textworldexpress.data.{LoadTWCDataJSON, LoadTWKitchenDataJSON, MathProblemGenerator, SortingProblemGenerator}
+import textworldexpress.data.{LoadTWCDataJSON, LoadCookingWorldDataJSON, MathProblemGenerator, SortingProblemGenerator}
 import textworldexpress.goldagent.{ArithmeticGoldAgent, CoinGoldAgent, SortingGoldAgent}
 import textworldexpress.objects.{Backyard, Bathroom, Bedroom, Box, BundleOfObjects, Coin, Corridor, DoorMaker, Driveway, FastObject, Kitchen, LaundryRoom, LivingRoom, MathProblem, Pantry, Room, Street, Supermarket}
 import textworldexpress.preprocessing.ArithmeticProblem

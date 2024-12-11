@@ -1,16 +1,14 @@
 package textworldexpress.goldagent
 
-import textworldexpress.games.{ArithmeticGame, TakeThisActionGame}
+import textworldexpress.games.PeckingOrderGame
 
 import scala.util.Random
 
-class TakeThisActionGoldAgent(game:TakeThisActionGame) {
+class PeckingOrderGoldAgent(game:PeckingOrderGame) {
 
-  private def mkGoldPathTakeThisAction(r:Random): Boolean = {
-    //game.step("look around")
+  private def mkGoldPathPeckingOrder(r:Random): Boolean = {
     val stepResult = game.initalStep()
 
-    // Step 1: read math problem
     for (i <- 0 until game.objectOrder.length) {
       game.step("read instructions")
       val obj = game.objectOrder(i)
@@ -24,7 +22,7 @@ class TakeThisActionGoldAgent(game:TakeThisActionGame) {
 
 
   def mkGoldPath(r:Random):(Boolean, Array[String]) = {
-    val success = this.mkGoldPathTakeThisAction(r)
+    val success = this.mkGoldPathPeckingOrder(r)
     if (!success) return (false, Array.empty[String])
 
     // Success
@@ -33,5 +31,3 @@ class TakeThisActionGoldAgent(game:TakeThisActionGame) {
   }
 
 }
-
-

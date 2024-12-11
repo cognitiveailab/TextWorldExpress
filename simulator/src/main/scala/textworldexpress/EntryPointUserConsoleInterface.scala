@@ -23,7 +23,7 @@ object EntryPointUserConsoleInterface {
     //val SF_GAME_NAME:String = "mapreader"
     //val SF_GAME_NAME:String = "mapreader-random"
     val SF_GAME_NAME:String = "arithmetic"
-    //val SF_GAME_NAME:String = "takethisaction"
+    //val SF_GAME_NAME:String = "peckingorder"
     //val SF_GAME_NAME:String = "simonsays"
     //val SF_GAME_NAME:String = "sorting"
     //val SF_GAME_NAME:String = "simonsays-memory"

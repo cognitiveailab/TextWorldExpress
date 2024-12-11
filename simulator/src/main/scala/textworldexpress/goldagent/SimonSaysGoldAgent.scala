@@ -1,6 +1,6 @@
 package textworldexpress.goldagent
 
-import textworldexpress.games.{SimonSaysGame, TakeThisActionGame}
+import textworldexpress.games.SimonSaysGame
 
 import scala.util.Random
 
@@ -19,7 +19,6 @@ class SimonSaysGoldAgent(game:SimonSaysGame) {
 
     return success
   }
-
 
   def mkGoldPath(r:Random):(Boolean, Array[String]) = {
     val success = this.mkGoldPathSimonSays(r)

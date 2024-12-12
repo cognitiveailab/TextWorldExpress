@@ -76,7 +76,7 @@ class TextWorldExpressEnv:
         self.seed = None
         self.gameName = None
         self.gameParams = ""
-        self.gameFold = None
+        self.gameFold = "train"
         self.generateGoldPath = False
 
         self._obj_tree_tempfile = tempfile.NamedTemporaryFile()
@@ -266,3 +266,33 @@ class TextWorldExpressEnv:
         self.addStepToHistory(infos)
 
         return observation, reward, isCompleted, infos
+
+    def serialize(self):
+        state = {
+            "gameName": self.gameName,
+            "gameParams": self.gameParams,
+            "seed": self.seed,
+            "gameFold": self.gameFold,
+            "envStepLimit": self.envStepLimit,
+            "generateGoldPath": self.generateGoldPath,
+            "actions": [info["lastActionStr"] for info in self.runHistory[1:]],
+        }
+        return state
+
+    @classmethod
+    def deserialize(cls, state):
+        env = cls(envStepLimit=state["envStepLimit"])
+        env.reset(
+            seed=state["seed"],
+            gameFold=state["gameFold"],
+            gameName=state["gameName"],
+            gameParams=state["gameParams"],
+            generateGoldPath=state["generateGoldPath"]
+        )
+        for action in state["actions"]:
+            env.step(action)
+
+        return env
+
+    def clone(self):
+        return self.deserialize(self.serialize())

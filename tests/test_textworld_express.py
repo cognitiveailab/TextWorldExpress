@@ -1,3 +1,4 @@
+import time
 from textworld_express import TextWorldExpressEnv
 
 
@@ -119,3 +120,71 @@ def test_object_tree_cookingworld():
     objs = _extract_contents(obj_tree["locations"]["kitchen"])
     expected_nested_objs_in_kitchen = ['cookbook', 'counter', 'cutlery drawer', 'dining chair', 'dining table', 'dishwasher', 'fridge', 'green bell pepper', 'knife', 'oven', 'stove', 'trash can']
     assert sorted(objs.keys()) == expected_nested_objs_in_kitchen
+
+
+def test_reset_with_seed():
+    env = TextWorldExpressEnv()
+    obs1, _ = env.reset(seed=42, gameName="cookingworld")
+    obs2, _ = env.reset(seed=42, gameName="cookingworld")
+    assert obs1 == obs2
+
+
+def test_reset_without_seed():
+    env = TextWorldExpressEnv()
+    obs1, _ = env.reset(gameName="cookingworld")
+    obs2, _ = env.reset(gameName="cookingworld")
+    assert obs1 != obs2
+
+
+def test_step():
+    env = TextWorldExpressEnv()
+    env.reset(gameName="cookingworld")
+    obs, reward, done, infos = env.step("look around")
+    assert isinstance(obs, str)
+    assert isinstance(reward, float)
+    assert isinstance(done, bool)
+    assert isinstance(infos, dict)
+
+
+def test_clone():
+    env = TextWorldExpressEnv()
+    infos = env.reset(gameName="cookingworld", seed=42, generateGoldPath=True)
+    env.step("look around")
+    solution = env.getGoldActionSequence()
+    for action in solution[:len(solution) // 2]:
+        env.step(action)
+
+    clone_env = env.clone()
+    assert env.getRunHistory() == clone_env.getRunHistory()
+
+    # Continue the game in both env.
+    for action in solution[len(solution) // 2:]:
+        env.step(action)
+        clone_env.step(action)
+
+    assert env.getRunHistory() == clone_env.getRunHistory()
+
+
+def test_serialize_deserialize():
+    env = TextWorldExpressEnv()
+    env.reset(gameName="cookingworld", seed=42)
+    env.step("look around")
+    state = env.serialize()
+    new_env = TextWorldExpressEnv.deserialize(state)
+    assert env.getRunHistory() == new_env.getRunHistory()
+
+
+def test_close():
+    env = TextWorldExpressEnv()
+    env.reset(gameName="cookingworld")
+    assert env._gateway.java_process.poll() is None
+    env.close()
+    time.sleep(1)
+    assert env._gateway.java_process.poll() is not None
+
+
+def test_get_game_names():
+    env = TextWorldExpressEnv()
+    game_names = env.getGameNames()
+    assert isinstance(game_names, list)
+    assert "cookingworld" in game_names

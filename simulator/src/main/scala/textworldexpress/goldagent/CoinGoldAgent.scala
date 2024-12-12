@@ -1,6 +1,6 @@
 package textworldexpress.goldagent
 
-import textworldexpress.games.{CoinGame, KitchenGame}
+import textworldexpress.games.CoinGame
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

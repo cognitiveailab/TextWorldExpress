@@ -1,30 +1,21 @@
 from textworld_express import TextWorldExpressEnv
 
 
-GAME_PARAMS = {
-    "cookingworld": "numLocations=1, numIngredients=2, numDistractorItems=5, includeDoors=0, limitInventorySize=0",
-    #"twc": "numLocations=1, numItemsToPutAway=2, includeDoors=0, limitInventorySize=0",
-    "twc": "numLocations=1,numItemsToPutAway=1,includeDoors=0,limitInventorySize=0",
-    "coin": "numLocations=1, numDistractorItems=5, limitInventorySize=0",
-    "arithmetic": "",
-    "mapreader": "numLocations=2, maxDistanceApart=1, maxDistractorItemsPerLocation=2, includeDoors=0, limitInventorySize=0",
-    "sorting": "",
-}
+GAME_PARAMS = [
+    ("cookingworld", "numLocations=1, numIngredients=2, numDistractorItems=5, includeDoors=0, limitInventorySize=0"),
+    ("twc", "numLocations=1,numItemsToPutAway=1,includeDoors=0,limitInventorySize=0"),
+    ("coin", "numLocations=1, numDistractorItems=5, limitInventorySize=0"),
+    ("arithmetic", ""),
+    ("mapreader", "numLocations=2, maxDistanceApart=1, maxDistractorItemsPerLocation=2, includeDoors=0, limitInventorySize=0"),
+    ("sorting", ""),
+    ("simonsays", "gameLength=2, numDistractors=1, memorization=0"),
+    ("simonsays", "gameLength=6, numDistractors=4, memorization=1"),
+    ("peckingorder", ""),
+]
 
 
 def test_observation_is_deterministic():
     env = TextWorldExpressEnv()
-    # Test all games with some fixed params.
-    for game_name in env.getGameNames():
-        obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name])
-
-        for i in range(30):
-            obs, _ = env.reset()
-            assert obs == obs_orig
-
-            obs, _, _, _ = env.step("look around")
-            assert obs == obs_orig
-
     # Test all games with their default params.
     for game_name in env.getGameNames():
         obs_orig, _ = env.reset(seed=0, gameFold="train", gameName=game_name, gameParams="")
@@ -33,8 +24,21 @@ def test_observation_is_deterministic():
             obs, _ = env.reset()
             assert obs == obs_orig
 
-            obs, _, _, _ = env.step("look around")
+            if game_name not in ["simonsays"]:
+                obs, _, _, _ = env.step("look around")
+                assert obs == obs_orig
+
+    # Test all games with some fixed params.
+    for game_name, game_params in GAME_PARAMS:
+        obs_orig, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=game_params)
+
+        for i in range(30):
+            obs, _ = env.reset()
             assert obs == obs_orig
+
+            if game_name not in ["simonsays"]:
+                obs, _, _, _ = env.step("look around")
+                assert obs == obs_orig
 
 
 def test_multiple_instances():
@@ -71,9 +75,9 @@ def test_multiple_instances():
 def test_generate_goldpath():
     env = TextWorldExpressEnv()
     # Test all games with some fixed params.
-    for game_name in env.getGameNames():
+    for game_name, game_params in GAME_PARAMS:
         print(game_name)
-        _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=GAME_PARAMS[game_name], generateGoldPath=True)
+        _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=game_params, generateGoldPath=True)
         print(env.getGoldActionSequence())
 
 

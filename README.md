@@ -6,7 +6,7 @@ TextWorldExpress is a highly optimized reimplementation of three text game bench
 
 
 # Quickstart
-**Before running:** You will have to have `Java 1.8` installed on your system (shipped with most linux distributions).
+**Before running:** You will need `Java 1.8` installed on your system (shipped with most linux distributions).
 
 Install with pip:
 
@@ -67,6 +67,11 @@ them in the box”), and must then perform the arithmetic then take 18 apples an
 ### Sorting ("sorting")
 The Sorting environment requires agents to pick objects and place them in an answer box one at a time based on order of increasing quantity. To add complexity to the game, quantities optionally include units (e.g. 5kg of copper, 8mg of steel, 2g of iron) across measures of volume, mass, or length. The score is the normalized proportion of objects sorted in the correct order, where perfect sorts receive a score of 1.0, and errors cause the score to revert to zero and the game to end. The number of objects to sort is between 3 and 5. At the moment, task complexity cannot be controlled yet.
 
+### Simon Says ("simonsays")
+The Simon Says environment is rather simple and it is mainly used as a sanity check for learning agents. The task is to repeat exactly the action requested of you. Task complexity can be controlled by varying the game length, the number of distractor actions, and whether the agent has to memorize the entire action sequence at its first step.
+
+### Pecking Order ("peckingorder")
+The Pecking Order environment is rather simple and it is mainly used as a sanity check for learning agents. The task is to read and follow the instructions found in the environment until game completion. At the moment, the task complexity cannot be controlled.
 
 # Usage
 
@@ -129,7 +134,7 @@ Environments initialize with default parameters.  To change the parameters, supp
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
 | numLocations        | The number of locations in the environment  | 1-11 |
-| numDistractorItems   | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
+| numDistractorItems  | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
 | includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
 | limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
 
@@ -146,6 +151,16 @@ Environments initialize with default parameters.  To change the parameters, supp
 This environment has no tweakable parameters yet.
 
 **Sorting:**
+This environment has no tweakable parameters yet.
+
+**Simon Says:**
+| Parameter      | Description | Valid range |
+| ----------- | ----------- |  ----------- |
+| gameLength      | The number of actions to repeat in order  | 1-10 |
+| numDistractors  | The number of irrelevant actions    | 0-10 |
+| memorization    | Whether the entire sequence of actions is shown at the first step (and only then)     | 0 or 1 |
+
+**Pecking Order:**
 This environment has no tweakable parameters yet.
 
 **Querying current game parameters:** Sometimes you may want to know what parameters the current game is generated with.  These can be queried using the `getGenerationProperties()` method:

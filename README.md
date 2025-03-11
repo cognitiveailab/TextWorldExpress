@@ -159,6 +159,7 @@ This environment has no tweakable parameters yet.
 | gameLength      | The number of actions to repeat in order  | 1-1000 (Default: 5) |
 | numDistractors  | The number of irrelevant actions    | 0-5 (Default: 3) |
 | memorization    | Whether the entire sequence of actions is shown at the first step (and only then)     | 0 or 1 (Default: 0) |
+| verbose         | Whether positive feedback is provided after each successful action (only used with memorization) | 0 or 1 (Default: 0) |
 
 **Pecking Order:**
 This environment has no tweakable parameters yet.

@@ -183,12 +183,15 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
       return "Simon says, you have completed the game.  You win!"
     }
 
-    if (curAction == this.goldActionSequence(curStage-1)) {
+    if (curAction != this.goldActionSequence(curStage-1)) {
+      return "Incorrect!"
+    }
+
+    if (this.generationProperties("verbose") == 1) {
       return "Correct!"
     }
 
-    return "Incorrect!"
-
+    return ""
   }
 
 
@@ -321,7 +324,7 @@ class SimonSaysMemoryGameGenerator {
   }
 
 
-  def mkGame(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):SimonSaysMemoryGame = {
+  def mkGame(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, verbose:Int = 0, fold:String = "train"):SimonSaysMemoryGame = {
     val r = new Random(seed)
 
     // Store properties in a form that are user accessible later on
@@ -329,6 +332,7 @@ class SimonSaysMemoryGameGenerator {
     props("seed") = seed.toInt
     props("gameLength") = gameLength
     props("numDistractors") = numDistractors
+    props("verbose") = verbose
     props("gameSet") = if (fold == "train") { 1 } else if (fold == "dev") { 2 } else if (fold == "test") { 3 } else -1
 
     // Generate Game
@@ -342,7 +346,7 @@ class SimonSaysMemoryGameGenerator {
   }
 
 
-  def mkGameWithGoldPath(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, fold:String = "train"):(SimonSaysMemoryGame, Array[String]) = {
+  def mkGameWithGoldPath(seed:Long, gameLength:Int = 5, numDistractors:Int = 3, verbose:Int = 0, fold:String = "train"):(SimonSaysMemoryGame, Array[String]) = {
     val MAX_ATTEMPTS:Int = 50
     val rg = new Random()
 
@@ -350,7 +354,7 @@ class SimonSaysMemoryGameGenerator {
     var goldPath = Array.empty[String]
     breakable {
       while (attempts < MAX_ATTEMPTS) {
-        val game = this.mkGame(seed, gameLength, numDistractors, fold)
+        val game = this.mkGame(seed, gameLength, numDistractors, verbose, fold)
         val goldAgent = new SimonSaysMemoryGoldAgent(game)
         val (success, _goldPath) = goldAgent.mkGoldPath(rg)
         if (success) goldPath = _goldPath
@@ -364,7 +368,7 @@ class SimonSaysMemoryGameGenerator {
     }
 
     // Create fresh copy of game
-    val game = this.mkGame(seed, gameLength, numDistractors, fold)
+    val game = this.mkGame(seed, gameLength, numDistractors, verbose, fold)
     return (game, goldPath)
   }
 

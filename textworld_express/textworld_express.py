@@ -103,7 +103,7 @@ class TextWorldExpressEnv:
         return packed
 
     def addStepToHistory(self, step):
-        self.runHistory.append(step)
+        self.runHistory.append(dict(step))
 
     def getNumSteps(self):
         return len(self.runHistory)
@@ -231,6 +231,12 @@ class TextWorldExpressEnv:
     # Step
     #
     def step(self, inputStr:str):
+        # Step 0: If `help` command, print the task description.
+        if inputStr == "help":
+            observation = self.getTaskDescription()
+            infos = dict(self.runHistory[-1])
+            return observation, 0, False, infos
+
         # Step 1: Take a step in the environment
         infos = self.parseJSONResponse(self.server.stepJSON(inputStr))
         observation = infos["observation"]

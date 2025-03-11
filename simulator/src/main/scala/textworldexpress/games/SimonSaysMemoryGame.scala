@@ -171,23 +171,23 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
   /*
    * Make current observation for Simon Says
    */
-  def mkObservation(curStage:Int):String = {
-    // Check for task completion
-    if (this.getScore().taskFailure) {
-      return "Task failure."
-    }
-
-    if (curStage >= this.goldActionSequence.length) {
-      return "Task Completed."
-    }
+  def mkObservation(curAction: String, curStage:Int):String = {
 
     if (curStage == 0) {
       // First step
       return "Simon says, take these actions in order: " + this.goldActionSequence.mkString(", ") + "."
-    } else {
-      // Subsequent steps -- if we reach here, they are making progress.
-      return "Good work!"
     }
+
+    if (curStage >= this.goldActionSequence.length) {
+      // Last step
+      return "Simon says, you have completed the game.  You win!"
+    }
+
+    if (curAction == this.goldActionSequence(curStage-1)) {
+      return "Correct!"
+    }
+
+    return "Incorrect!"
 
   }
 
@@ -238,7 +238,7 @@ class SimonSaysMemoryGame(val goldActionSequence:Array[String], val possibleActi
     val freeLookStr = ""
     val inventoryStr = ""
 
-    val observationStr = this.mkObservation(curStage = this.currentStep)                       //## Special to this task: Observation is generated, rather than coming from environment
+    val observationStr = this.mkObservation(curAction = actionStr, curStage = this.currentStep)                       //## Special to this task: Observation is generated, rather than coming from environment
 
     // This part is a bit weird -- the scorer uses the history to generate the score.  But the history stores the score, so there's a circular reference.
     // So, we add a faux entry to the history -- calculate the score, then pop it off and put the real one on.
@@ -275,7 +275,7 @@ class SimonSaysMemoryGameGenerator {
     val objectNamesDev    = Array(("broccoli", "brocollis"), ("onion", "onions"), ("cucumber", "cucumbers"), ("potato", "potatoes"), ("cucumber", "cucumbers"), ("coconut", "coconuts"), ("watermelon", "watermelons"), ("mango", "mangos"), ("olive", "olives"), ("lime", "limes"), ("pear", "pears") )
     val objectNamesTest   = Array(("pepper", "peppers"), ("tomato", "tomatoes"), ("eggplant", "eggplants"), ("squash", "squashes"), ("pumpkin", "pumpkins"), ("pea", "peas"), ("avocado", "avocados"), ("cabbage", "cabbages"), ("prune", "prunes"), ("blueberry", "blueberries") )
 
-    val numObjects:Int = 4
+    val numObjects:Int = 10
 
     // Find appropriate set, and shuffle order
     val objectNames:Array[(String, String)] = if (gameFold == "train") { objectNamesTrain } else if (gameFold == "dev") { objectNamesDev } else if (gameFold == "test") { objectNamesTest } else { Array.empty[(String, String)] }
@@ -285,9 +285,12 @@ class SimonSaysMemoryGameGenerator {
     val actionsOut = new ArrayBuffer[String]
     for (i <- 0 until numObjects) {
       val objName = shuffled(i)._1
-      var indefinite = if (Array("a", "e", "i", "o", "u").contains(objName.charAt(0).toString)) { "an" } else { "a" }
-      actionsOut.append("take " + indefinite + " " + objName)
-      actionsOut.append("eat " + indefinite + " " + objName)
+      actionsOut.append("take " + objName)
+      actionsOut.append("eat " + objName)
+      actionsOut.append("examine " + objName)
+      actionsOut.append("smell " + objName)
+      actionsOut.append("touch " + objName)
+      actionsOut.append("slice " + objName)
     }
 
     // Step 2: Action actions (from canonical simon says games)
@@ -305,10 +308,16 @@ class SimonSaysMemoryGameGenerator {
 
     // Shuffle final actions
     val shuffledOut = r.shuffle(actionsOut).toArray
-    val out = shuffledOut.slice(0, length)
+
+    // Sample from the shuffled list, and add to the end
+    val out = new ArrayBuffer[String]
+    for (i <- 0 until length) {
+      val idx = r.nextInt(shuffledOut.length)
+      out.append(shuffledOut(idx))
+    }
 
     // Return
-    return shuffledOut.toArray
+    return out.toArray
   }
 
 

@@ -1,6 +1,6 @@
 name := "textworldexpress"
 
-version := "1.1.0"
+version := "1.1.0rc4"
 
 //scalaVersion := "2.12.9"
 scalaVersion := "2.13.8"

@@ -331,6 +331,12 @@ class GameGeneratorSimonSays(gameLength:Int = 5, numDistractors:Int = 3) extends
    */
   private def checkValidConfiguration():String = {
     val os = new StringBuilder
+    if (gameLength < 1) os.append("Length of the game must be greater than one (specified value = " + gameLength + "). ")
+    if (gameLength > 1000) os.append("Length of the game must be less than or equal to 1000 (specified value = " + gameLength + "). ")
+
+    if (numDistractors < 0) os.append("Number of distractor commands must be greater than or equal to zero (specified value = " + numDistractors + "). ")
+    if (numDistractors > 5) os.append("Number of distractor commands must be less than or equal to 5 (specified value = " + numDistractors + "). ")
+
     return os.toString()
   }
 
@@ -374,6 +380,12 @@ class GameGeneratorSimonSaysMemory(gameLength:Int = 5, numDistractors:Int = 3) e
    */
   private def checkValidConfiguration():String = {
     val os = new StringBuilder
+    if (gameLength < 1) os.append("Length of the game must be greater than one (specified value = " + gameLength + "). ")
+    if (gameLength > 1000) os.append("Length of the game must be less than or equal to 1000 (specified value = " + gameLength + "). ")
+
+    if (numDistractors < 0) os.append("Number of distractor commands must be greater than or equal to zero (specified value = " + numDistractors + "). ")
+    if (numDistractors > 5) os.append("Number of distractor commands must be less than or equal to 5 (specified value = " + numDistractors + "). ")
+
     return os.toString()
   }
 

@@ -116,36 +116,36 @@ Environments initialize with default parameters.  To change the parameters, supp
 **CookingWorld:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| numLocations        | The number of locations in the environment  | 1-11 |
-| numIngredients   | The number of ingredients to use in generating the random recipe         | 1-5 |
-| numDistractorItems   | The number of distractor ingredients (not used in the recipe) in the environment    | 0-10 |
-| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
-| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+| numLocations        | The number of locations in the environment  | 1-11 (Default: 11) |
+| numIngredients   | The number of ingredients to use in generating the random recipe         | 1-5 (Default: 3) |
+| numDistractorItems   | The number of distractor ingredients (not used in the recipe) in the environment    | 0-10 (Default: 10) |
+| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 (Default: 1) |
+| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 (Default: 1) |
 
 **TextWorld Common Sense:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| numLocations        | The number of locations in the environment  | 1-3 |
-| numItemsToPutAway   | The number of items to put away             | 1-10 |
-| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
-| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+| numLocations        | The number of locations in the environment  | 1-3 (Default: 3) |
+| numItemsToPutAway   | The number of items to put away             | 1-10 (Default: 4) |
+| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 (Default: 0) |
+| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 (Default: 0) |
 
 **Coin Collector:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| numLocations        | The number of locations in the environment  | 1-11 |
-| numDistractorItems  | The number of distractor (i.e. non-coin) items in the environment    | 0-10 |
-| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
-| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+| numLocations        | The number of locations in the environment  | 1-11 (Default: 11) |
+| numDistractorItems  | The number of distractor (i.e. non-coin) items in the environment    | 0-10 (Default: 0) |
+| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 (Default: 1) |
+| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 (Default: 1) |
 
 **Map Reader:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| numLocations        | The number of locations in the environment  | 1-50 |
-| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-8 |
-| maxDistractorItemsPerLocation   | The maximum number of distractor (i.e. non-coin) items per location  | 0-3 |
-| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 |
-| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 |
+| numLocations        | The number of locations in the environment  | 1-50 (Default: 15) |
+| maxDistanceApart   | The number of locations to go through before finding the coin    | 1-8 (Default: 4) |
+| maxDistractorItemsPerLocation   | The maximum number of distractor (i.e. non-coin) items per location  | 0-3 (Default: 3) |
+| includeDoors        | Whether rooms have doors that need to be opened    | 0 or 1 (Default: 0) |
+| limitInventorySize  | Whether the size of the inventory is limited       | 0 or 1 (Default: 0) |
 
 **Arithmetic:**
 This environment has no tweakable parameters yet.
@@ -156,9 +156,9 @@ This environment has no tweakable parameters yet.
 **Simon Says:**
 | Parameter      | Description | Valid range |
 | ----------- | ----------- |  ----------- |
-| gameLength      | The number of actions to repeat in order  | 1-10 |
-| numDistractors  | The number of irrelevant actions    | 0-10 |
-| memorization    | Whether the entire sequence of actions is shown at the first step (and only then)     | 0 or 1 |
+| gameLength      | The number of actions to repeat in order  | 1-1000 (Default: 5) |
+| numDistractors  | The number of irrelevant actions    | 0-5 (Default: 3) |
+| memorization    | Whether the entire sequence of actions is shown at the first step (and only then)     | 0 or 1 (Default: 0) |
 
 **Pecking Order:**
 This environment has no tweakable parameters yet.

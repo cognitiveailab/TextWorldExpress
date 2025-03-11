@@ -11,6 +11,8 @@ GAME_PARAMS = [
     ("sorting", ""),
     ("simonsays", "gameLength=2, numDistractors=1, memorization=0"),
     ("simonsays", "gameLength=6, numDistractors=4, memorization=1"),
+    ("simonsays", "gameLength=1000, numDistractors=4, memorization=0"),
+    ("simonsays", "gameLength=1000, numDistractors=4, memorization=1"),
     ("peckingorder", ""),
 ]
 
@@ -79,6 +81,7 @@ def test_generate_goldpath():
     for game_name, game_params in GAME_PARAMS:
         print(game_name)
         _, _ = env.reset(seed=20221120, gameFold="train", gameName=game_name, gameParams=game_params, generateGoldPath=True)
+        print(len(env.getGoldActionSequence()))
         print(env.getGoldActionSequence())
 
 
